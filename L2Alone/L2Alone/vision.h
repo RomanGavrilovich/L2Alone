@@ -28,8 +28,8 @@ struct BitMapInfo {
 
 enum L2Window {
 	UNKNOWN,
-	AGREEMENT,
 	MAIN_WINDOW,
+	AGREEMENT,
 	ACCOUNT_IN_USE,
 	INVALID_CREDENTIALS,
 	SERVERS,
@@ -92,7 +92,7 @@ public:
 	void captureRefButton(BitMapInfo& bitMapInfo, ButtonRef bRef) {
 
 		if (hDistribution.size() > 0) {
-			throw exception("Ref button is already captured");
+			hDistribution.clear();
 		}
 		initVDistribution(bitMapInfo, bRef, hDistribution);
 	}
@@ -671,15 +671,6 @@ BitMapInfo createBitMapInfo(HBITMAP hBitmap) {
 ButtonClassifier buttonClassifier = ButtonClassifier(1360, 768);
 vector<WindowClassifier> windowClassifiers;
 
-bool isLoaded(BitMapInfo& bitMapInfo) {
-	int hw = bitMapInfo.width / 2;
-	int hh = bitMapInfo.height / 2;
-
-	int r, g, b;
-	getPixelRgb(bitMapInfo, hw, hh, r, g, b);
-	return r != 0 && g != 0 && b != 0;
-}
-
 void logCapture(BitMapInfo& bitMapInfo, string pathToLogs, string suffix) {
 
 	stringstream ss;
@@ -691,13 +682,22 @@ void logCapture(BitMapInfo& bitMapInfo, string pathToLogs, string suffix) {
 	WriteBmpToFile(path.c_str(), bitMapInfo);
 }
 
+bool isLoaded(BitMapInfo& bitMapInfo) {
+	int hw = bitMapInfo.width / 2;
+	int hh = bitMapInfo.height / 2;
+
+	int r, g, b;
+	getPixelRgb(bitMapInfo, hw, hh, r, g, b);
+	return r != 0 && g != 0 && b != 0;
+}
+
 void initializeWindowClassifier(HWND hWnd, string pathToLogs, bool capturingEnabled)
 {
 	logger.log("Initialize window classifier");
 
 	bool initialized = false;
 
-	for (int i = 0; i < 100; ++i) {
+	for (int i = 0; i < 50; ++i) {
 		HDC hWindowDC = GetDC(hWnd);
 		HDC hMemDC = CreateCompatibleDC(hWindowDC);
 		RECT rcClient;
@@ -711,52 +711,52 @@ void initializeWindowClassifier(HWND hWnd, string pathToLogs, bool capturingEnab
 		if (isLoaded(bitMapInfo)) {
 			buttonClassifier.captureRefButton(bitMapInfo, ButtonRef{ 583, 402, 94, 21 });
 
-			
-			//stringstream ss;
-			//ss << pathToLogs  << "ref.bmp";
-			//auto path = ss.str();
+			auto mainWindowClassifier = WindowClassifier(L2Window::MAIN_WINDOW);
+			mainWindowClassifier.addBtn(ButtonRef{ 583, 402, 94, 21 });
+			mainWindowClassifier.addBtn(ButtonRef{ 683, 402, 94, 21 });
+			mainWindowClassifier.addBtn(ButtonRef{ 1219, 576, 94, 21 });
+			mainWindowClassifier.addBtn(ButtonRef{ 1219, 601, 94, 21 });
+			mainWindowClassifier.addBtn(ButtonRef{ 1219, 626, 94, 21 });
+			mainWindowClassifier.addBtn(ButtonRef{ 1219, 651, 94, 21 });
+			mainWindowClassifier.addBtn(ButtonRef{ 1219, 675, 94, 21 });
 
-			//WriteBmpToFile(path.c_str(), bitMapInfo);
+			if (mainWindowClassifier.isWindow(bitMapInfo, buttonClassifier)) {
 
-			auto accountInUseClassifier = WindowClassifier(L2Window::ACCOUNT_IN_USE);
-			accountInUseClassifier.addBtn(ButtonRef{ 583, 402, 94, 21 });
-			accountInUseClassifier.addBtn(ButtonRef{ 683, 402, 94, 21 });
-			accountInUseClassifier.addText(200, 300);
-			windowClassifiers.push_back(accountInUseClassifier);
+				auto accountInUseClassifier = WindowClassifier(L2Window::ACCOUNT_IN_USE);
+				accountInUseClassifier.addBtn(ButtonRef{ 583, 402, 94, 21 });
+				accountInUseClassifier.addBtn(ButtonRef{ 683, 402, 94, 21 });
+				accountInUseClassifier.addText(200, 300);
+				windowClassifiers.push_back(accountInUseClassifier);
 
-			auto incorrectPasswordClassifier = WindowClassifier(L2Window::INVALID_CREDENTIALS);
-			incorrectPasswordClassifier.addBtn(ButtonRef{ 583, 402, 94, 21 });
-			incorrectPasswordClassifier.addBtn(ButtonRef{ 683, 402, 94, 21 });
-			incorrectPasswordClassifier.addText(400, 500);
-			windowClassifiers.push_back(incorrectPasswordClassifier);
+				auto incorrectPasswordClassifier = WindowClassifier(L2Window::INVALID_CREDENTIALS);
+				incorrectPasswordClassifier.addBtn(ButtonRef{ 583, 402, 94, 21 });
+				incorrectPasswordClassifier.addBtn(ButtonRef{ 683, 402, 94, 21 });
+				incorrectPasswordClassifier.addText(400, 500);
+				windowClassifiers.push_back(incorrectPasswordClassifier);
 
-			auto agreementWindowClassifier = WindowClassifier(L2Window::AGREEMENT);
-			agreementWindowClassifier.addBtn(ButtonRef{ 603, 568, 74, 21 });
-			agreementWindowClassifier.addBtn(ButtonRef{ 683, 568, 74, 21 });
-			windowClassifiers.push_back(agreementWindowClassifier);
+				auto agreementWindowClassifier = WindowClassifier(L2Window::AGREEMENT);
+				agreementWindowClassifier.addBtn(ButtonRef{ 603, 568, 74, 21 });
+				agreementWindowClassifier.addBtn(ButtonRef{ 683, 568, 74, 21 });
+				windowClassifiers.push_back(agreementWindowClassifier);
 
-			auto serverWindowClassifier = WindowClassifier(L2Window::SERVERS);
-			serverWindowClassifier.addBtn(ButtonRef{ 563, 410, 74, 21 });
-			serverWindowClassifier.addBtn(ButtonRef{ 643, 410, 74, 21 });
-			serverWindowClassifier.addBtn(ButtonRef{ 724, 410, 74, 21 });
-			windowClassifiers.push_back(serverWindowClassifier);
+				auto serverWindowClassifier = WindowClassifier(L2Window::SERVERS);
+				serverWindowClassifier.addBtn(ButtonRef{ 563, 410, 74, 21 });
+				serverWindowClassifier.addBtn(ButtonRef{ 643, 410, 74, 21 });
+				serverWindowClassifier.addBtn(ButtonRef{ 724, 410, 74, 21 });
+				windowClassifiers.push_back(serverWindowClassifier);
 
-			auto charsWindowClassifier = WindowClassifier(L2Window::CHARACTERS);
-			charsWindowClassifier.addBtn(ButtonRef{ 623, 668, 114, 29, RefAnchor::CenterBottom });
-			charsWindowClassifier.addBtn(ButtonRef{ 1219, 589, 94, 21, RefAnchor::BottomRight });
-			charsWindowClassifier.addBtn(ButtonRef{ 1219, 613, 94, 21, RefAnchor::BottomRight });
-			charsWindowClassifier.addBtn(ButtonRef{ 1219, 663, 94, 21, RefAnchor::BottomRight });
-			windowClassifiers.push_back(charsWindowClassifier);
+				auto charsWindowClassifier = WindowClassifier(L2Window::CHARACTERS);
+				charsWindowClassifier.addBtn(ButtonRef{ 623, 668, 114, 29, RefAnchor::CenterBottom });
+				charsWindowClassifier.addBtn(ButtonRef{ 1219, 589, 94, 21, RefAnchor::BottomRight });
+				charsWindowClassifier.addBtn(ButtonRef{ 1219, 613, 94, 21, RefAnchor::BottomRight });
+				charsWindowClassifier.addBtn(ButtonRef{ 1219, 663, 94, 21, RefAnchor::BottomRight });
+				windowClassifiers.push_back(charsWindowClassifier);
 
-			if (capturingEnabled) {
-				logCapture(bitMapInfo, pathToLogs, "INIT");
+				initialized = true;
 			}
-
-			initialized = true;
-			break;
 		}
 
-		Sleep(50);
+		Sleep(100);
 
 		delete[] bitMapInfo.data;
 
@@ -764,6 +764,10 @@ void initializeWindowClassifier(HWND hWnd, string pathToLogs, bool capturingEnab
 		DeleteDC(hMemDC);
 		ReleaseDC(hWnd, hWindowDC);
 		DeleteObject(hBitmap);
+
+		if (initialized) {
+			break;
+		}
 	}
 
 	if (!initialized) {

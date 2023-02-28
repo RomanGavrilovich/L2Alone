@@ -17,6 +17,7 @@
 #include "autologin.h"
 #include "config_utils.h"
 #include "files_utils.h"
+#include "window_utils.h"
 
 using namespace std;
 
@@ -34,10 +35,6 @@ string getLogFilePath(string absFilePath);
 void autoLoginL2(string login, string password, L2AloneConfig& config);
 
 void showMessage(string message);
-
-volatile int dwL2WindowThread;
-volatile int dwL2Window;
-volatile int dwL2Process;
 
 int main(int argc, char* argv[])
 {
@@ -93,59 +90,7 @@ string getWindowName(HWND HWnd) {
 	return text;
 }
 
-BOOL CALLBACK FindL2MainWindow(HWND hwnd, LPARAM lParam)
-{
-	auto params = (FindL2WindowParams*)lParam;
-
-	DWORD windowProcessId;
-	DWORD windowThreadId = GetWindowThreadProcessId(hwnd, &windowProcessId);
-
-	if (windowProcessId == params->dwProcess)
-	{
-		string windowText = getWindowName(hwnd);
-
-		bool eq = contains(windowText, params->windowName) && !contains(windowText, "(");
-
-		if (eq) {
-			dwL2Window = (int)hwnd;
-			dwL2WindowThread = (int)windowThreadId;
-			dwL2Process = windowProcessId;
-
-			return FALSE;
-		}
-	}
-
-	return TRUE;
-}
-
-
-void InitL2WindowData(int processId, string &windowName) {
-
-	FindL2WindowParams params;
-	params.dwProcess = processId;
-	params.windowName = windowName;
-
-	logger.log("Wait for main window");
-	for (int i = 0; i < 20; ++i) { // 10 sec timeout
-
-		logger.log("Run search for main window");
-		EnumWindows(FindL2MainWindow, (LPARAM)&params);
-
-		if (dwL2Window != NULL) {
-			logger.log("Waiting for main window completed");
-			break;
-		}
-
-		Sleep(500);
-	}
-
-	if (dwL2Window == NULL) {
-		throw exception("Didn't find L2 main window");
-	}
-}
-
 thread* tMonitor;
-
 
 void autoLoginL2(string login, string password, L2AloneConfig& config) {
 
@@ -179,15 +124,13 @@ void autoLoginL2(string login, string password, L2AloneConfig& config) {
 	try {
 		logger.log("L2 process started with id: ", pi.dwProcessId);
 
-		InitL2WindowData(pi.dwProcessId, config.l2WindowName);
-		
-		logger.log("L2 window: ", (HWND)dwL2Window, "(", dwL2Window, ")", "L2 thread : ", dwL2WindowThread);
+		L2WindowData d = InitL2WindowData(pi.dwProcessId, config.l2WindowName);
 
 		stringstream ssPathToCoreLogs;
 		ssPathToCoreLogs << L2_ALONE_LOGS_DIR << "\\" << "l2_" << pi.dwProcessId << ".log";
 		string pathToCoreLogs = ssPathToCoreLogs.str();
 
-		doAutologin((HWND)dwL2Window, login, password);
+		doAutologin((HWND)d.hWindow, login, password);
 
 		DWORD result = WaitForSingleObject(pi.hProcess, INFINITE);
 	}
