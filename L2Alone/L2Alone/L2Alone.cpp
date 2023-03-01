@@ -21,6 +21,7 @@
 #include "keyhandler.h"
 
 #include "L2EventService.h"
+#include "HotKeyHandler.h"
 
 using namespace std;
 
@@ -144,13 +145,13 @@ void autoLoginL2(string login, string password, L2AloneConfig& config) {
 		ssPathToCoreLogs << L2_ALONE_LOGS_DIR << "\\" << "l2_" << pi.dwProcessId << ".log";
 		string pathToCoreLogs = ssPathToCoreLogs.str();
 
+		auto hotKeyHandler = shared_ptr<L2HotKeyHandler>(new L2HotKeyHandler(d.dwProcessId));
+		eventService.setKeyboardHandler(d.hWindow, hotKeyHandler);
+
 		doAutologin((HWND)d.hWindow, login, password);
 
-		eventService.stop();
-
-		//StartKeyboardCaptuing(d.dwProcessId, d.hWindow);
-
-		//DWORD result = WaitForSingleObject(pi.hProcess, INFINITE);
+		DWORD result = WaitForSingleObject(pi.hProcess, INFINITE);
+		logger.log("Close L2 Alone on L2.exe completion");
 	}
 	catch (exception e) {
 		logger.log("Auto login failure: ", e.what());
