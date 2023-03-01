@@ -109,10 +109,11 @@ bool postConfirmationSequence(HWND hWindow) {
 	autoLoginState = DO_CONFIRMATION_SEQUENCE;
 
 	// 10 sec timeout
-	for (int i = 0; i < 50; ++i) {
+	for (int i = 0; i < 100; ++i) {
 
 		postControlMessage(hWindow, VK_RETURN);
 		Sleep(100);
+
 		auto w = CaptureWindow(hWindow, "D:\\WinLog\\screens", logger);
 		if (w == UNKNOWN) {
 			logger.log("Unknown window found, complete auto login");

@@ -146,9 +146,11 @@ void autoLoginL2(string login, string password, L2AloneConfig& config) {
 
 		doAutologin((HWND)d.hWindow, login, password);
 
-		StartKeyboardCaptuing(d.dwProcessId, d.hWindow);
+		eventService.stop();
 
-		DWORD result = WaitForSingleObject(pi.hProcess, INFINITE);
+		//StartKeyboardCaptuing(d.dwProcessId, d.hWindow);
+
+		//DWORD result = WaitForSingleObject(pi.hProcess, INFINITE);
 	}
 	catch (exception e) {
 		logger.log("Auto login failure: ", e.what());
