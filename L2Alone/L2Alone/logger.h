@@ -28,6 +28,16 @@ public:
         std::cout << s << std::endl;
     }
 
+    template<typename... Args>
+    void warn(const std::string& message, Args... args) {
+        log("WARN: ", message, args);
+    }
+
+    template<typename... Args>
+    void error(const std::string& message, Args... args) {
+        log("ERROR: ", message, args);
+    }
+
     void open(const std::string& filename) {
         file_.open(filename, std::ios::out);
         if (!file_.is_open()) {

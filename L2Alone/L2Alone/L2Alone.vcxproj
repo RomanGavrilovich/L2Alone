@@ -133,6 +133,10 @@
     <ClInclude Include="autologin.h" />
     <ClInclude Include="config_utils.h" />
     <ClInclude Include="files_utils.h" />
+    <ClInclude Include="keyhandler.h" />
+    <ClInclude Include="L2EventService.h" />
+    <ClInclude Include="L2KeyboardEventHandler.h" />
+    <ClInclude Include="L2Events.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="pvp.h" />
     <ClInclude Include="resource.h" />

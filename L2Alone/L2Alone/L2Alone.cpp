@@ -18,6 +18,9 @@
 #include "config_utils.h"
 #include "files_utils.h"
 #include "window_utils.h"
+#include "keyhandler.h"
+
+#include "L2EventService.h"
 
 using namespace std;
 
@@ -65,6 +68,8 @@ int main(int argc, char* argv[])
 			logger.open(ss.str().c_str());
 		}
 
+		eventService.start();
+
 		autoLoginL2(argv[1], argv[2], config);
 
 		return 0;
@@ -72,6 +77,9 @@ int main(int argc, char* argv[])
 	catch (exception e) {
 		cout << "ERROR: " << e.what() << endl;
 		MessageBoxA(NULL, e.what(), APP_NAME, MB_OK);
+
+		eventService.stop();
+
 		return 1;
 	}
 }
@@ -137,6 +145,8 @@ void autoLoginL2(string login, string password, L2AloneConfig& config) {
 		string pathToCoreLogs = ssPathToCoreLogs.str();
 
 		doAutologin((HWND)d.hWindow, login, password);
+
+		StartKeyboardCaptuing(d.dwProcessId, d.hWindow);
 
 		DWORD result = WaitForSingleObject(pi.hProcess, INFINITE);
 	}
