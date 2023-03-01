@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
 			logger.open(ss.str().c_str());
 		}
 
-		eventService.start();
+		eventService.start(config.l2WindowName);
 
 		autoLoginL2(argv[1], argv[2], config);
 

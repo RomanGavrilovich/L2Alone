@@ -814,7 +814,7 @@ L2Window CaptureWindow(HWND hWnd, string captureResultLogPath, Logger& logger)
 	ss << captureResultLogPath << k++ << ".bmp";
 	auto path = ss.str();
 
-	WriteBmpToFile(path.c_str(), bitMapInfo);
+	//WriteBmpToFile(path.c_str(), bitMapInfo);
 
 	delete[] bitMapInfo.data;
 

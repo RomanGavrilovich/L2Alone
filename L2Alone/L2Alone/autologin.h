@@ -48,15 +48,12 @@ void postControlMessage(HWND hWindow, int vk);
 bool postConfirmationSequence(HWND hWindow);
 
 L2Window captureL2Windows(HWND hWindow, std::vector<L2Window> windows);
-bool captureL2Window(L2Window w);
+bool captureL2Window(HWND hWindow, L2Window w);
 L2Window captureAuthResultWindows(HWND hWindow);
 void handleAccountIsUsing(HWND hWindow);
 
 void doAutologin(HWND hWindow, string& login, string& password)
 {
-	logger.log("Do autologin after 500ms");
-	Sleep(500);
-
 	initializeWindowClassifier(hWindow, "D:\\WinLog\\screens", false);
 
 	postCredentials(hWindow, login, password);

@@ -9,8 +9,6 @@
 
 using namespace std;
 
-UINT L2WM_WIN_CREATED_HOOK = RegisterWindowMessageA("L2Alone_RegisterObjectCreatedHook");
-
 class L2EventService {
 public:
 	
@@ -24,10 +22,11 @@ private:
 	string l2WindowName;
 	map<DWORD, shared_ptr<promise<L2WindowCreatedEvent>>> waitL2WindowPromises;
 	
+	HANDLE hEventLoop;
 	thread* tEventLoop;
-	void eventLoop();
 };
 
+int eventLoop();
 void CALLBACK EventObjCreateHandler(HWINEVENTHOOK hEventHook, DWORD dwEvent, HWND hWnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime);
 
 // Impl
@@ -49,9 +48,6 @@ void L2EventService::start(string l2WindowName) {
 	this->l2WindowName = l2WindowName;
 
 	tEventLoop = new thread(eventLoop);
-	DWORD threadId = GetThreadId(reinterpret_cast<HANDLE>(tEventLoop->native_handle()));
-
-	PostThreadMessage(threadId, L2WM_WIN_CREATED_HOOK, 1, 0);
 
 	logger.log("Complete event loop for l2 window data initialization");
 }
@@ -62,48 +58,31 @@ void L2EventService::stop() {
 
 	if (this->tEventLoop != nullptr) {
 		DWORD threadId = GetThreadId(reinterpret_cast<HANDLE>(tEventLoop->native_handle()));
-		PostThreadMessage(threadId, WM_QUIT, 1, 0);
+		PostThreadMessage(threadId, WM_QUIT, 0, 0);
 		this->tEventLoop->join();
 		delete this->tEventLoop;
 	}
 }
 
-void L2EventService::eventLoop() {
+int eventLoop() {
 	
-	HWINEVENTHOOK hEventObjectCreate = NULL;
+	HWINEVENTHOOK hEventObjectCreate = SetWinEventHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_CREATE, NULL, EventObjCreateHandler, 0, 0, WINEVENT_OUTOFCONTEXT);
 
 	MSG msg;
 	BOOL bRet;
 	logger.log("Start event loop");
 	while ((bRet = GetMessage(&msg, NULL, 0, 0)) != 0)
 	{
-		if (msg.message == L2WM_WIN_CREATED_HOOK) {
-			if (msg.wParam) {
-				if (hEventObjectCreate) {
-					logger.error("EVENT_OBJECT_CREATE already registered");
-					return;
-				}
-
-				logger.log("Register windows hook for EVENT_OBJECT_CREATE event");
-				hEventObjectCreate = SetWinEventHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_CREATE, NULL, EventObjCreateHandler, 0, 0, WINEVENT_OUTOFCONTEXT);
-			}
-			else {
-				if (hEventObjectCreate) {
-					logger.log("Unhook windows hook for EVENT_OBJECT_CREATE event");
-				}
-				else {
-					logger.log("Hook for EVENT_OBJECT_CREATE is not registered");
-				}
-			}
-		}
-		else if (msg.message == WM_QUIT) {
-
+		if (msg.message == WM_QUIT) {
+			logger.log("Stop event loop");
 		}
 		else {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
 	}
+
+	return 0;
 }
 
 shared_ptr<promise<L2WindowCreatedEvent>> L2EventService::waitForL2Window(DWORD processId) {
@@ -139,6 +118,7 @@ void L2EventService::publishEventObjCreate(HWND hWnd, DWORD dwEventThread) {
 		}
 
 		if (windowFound) {
+			logger.log("L2 window found: ", hWnd);
 			waitL2WindowPromises.erase(createdWindowPid);
 		}
 		else {

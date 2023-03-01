@@ -30,12 +30,26 @@ public:
 
     template<typename... Args>
     void warn(const std::string& message, Args... args) {
-        log("WARN: ", message, args);
+        std::stringstream ss;
+        expand(ss, message, args...);
+        auto s = ss.str();
+
+        if (file_.is_open()) {
+            file_ << "WARN:" << s << std::endl;
+        }
+        std::cout << "WARN:" << s << std::endl;
     }
 
     template<typename... Args>
     void error(const std::string& message, Args... args) {
-        log("ERROR: ", message, args);
+        std::stringstream ss;
+        expand(ss, message, args...);
+        auto s = ss.str();
+
+        if (file_.is_open()) {
+            file_ << "ERROR:" << s << std::endl;
+        }
+        std::cout << "ERROR:" << s << std::endl;
     }
 
     void open(const std::string& filename) {
