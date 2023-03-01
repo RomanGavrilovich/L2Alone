@@ -35,10 +35,16 @@ string getLogFilePath(string absFilePath);
 void autoLoginL2(string login, string password, L2AloneConfig& config);
 
 void showMessage(string message);
+bool isRunnedFromExe(string process);
 
 int main(int argc, char* argv[])
 {
 	try {
+
+		if (isRunnedFromExe(argv[0])) {
+			HWND hWnd = GetConsoleWindow();
+			ShowWindow(hWnd, SW_MINIMIZE);
+		}
 
 		if (argc < 2) {
 			showMessage("Login is not provided");
@@ -55,8 +61,8 @@ int main(int argc, char* argv[])
 			prepareDirectory(getAbsoluteFilePath(L2_ALONE_LOGS_DIR));
 
 			stringstream ss;
-			ss << L2_ALONE_LOGS_DIR << "l2_" << GetCurrentProcessId() << ".log";
-			logger.open(getAbsoluteFilePath(ss.str().c_str()));
+			ss << L2_ALONE_LOGS_DIR << "\\l2_" << GetCurrentProcessId() << ".log";
+			logger.open(ss.str().c_str());
 		}
 
 		autoLoginL2(argv[1], argv[2], config);

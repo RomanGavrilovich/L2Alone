@@ -89,20 +89,72 @@ public:
 		this->rtHeight = rtHeight;
 	}
 
-	void captureRefButton(BitMapInfo& bitMapInfo, ButtonRef bRef) {
+	bool captureRefButton(BitMapInfo& bitMapInfo, ButtonRef bRef) {
 
 		if (hDistribution.size() > 0) {
 			hDistribution.clear();
 		}
-		initVDistribution(bitMapInfo, bRef, hDistribution);
+
+		Point targetLb = toLbPoint(bitMapInfo, bRef);
+		int lbX = targetLb.x;
+		int lbY = targetLb.y - bRef.height;
+
+		initHDistribution(bitMapInfo, lbX, lbY, bRef.width, bRef.height, hDistribution);
+
+		// Bottom border
+		map<int, double> botBorderH;
+		initHDistribution(bitMapInfo, lbX, lbY, bRef.width, 1, botBorderH);
+		// Below bottom border
+		map<int, double> underBotBorderH;
+		initHDistribution(bitMapInfo, lbX, lbY - 1, bRef.width, 1, underBotBorderH);
+		if (getDistributionError(botBorderH, underBotBorderH) < 5) {
+			return false;
+		}
+
+		// Top border
+		map<int, double> topBorderH;
+		initHDistribution(bitMapInfo, lbX, lbY + bRef.height - 1, bRef.width, 1, topBorderH);
+		// Above top border
+		map<int, double> upperTopBorderH;
+		initHDistribution(bitMapInfo, lbX, lbY + bRef.height, bRef.width, 1, upperTopBorderH);
+		if (getDistributionError(topBorderH, upperTopBorderH) < 5) {
+			return false;
+		}
+
+		// Left border
+		map<int, double> leftBorderH;
+		initHDistribution(bitMapInfo, lbX, lbY, 1, bRef.height, leftBorderH);
+		// Before left border
+		map<int, double> beforeLeftBorderH;
+		initHDistribution(bitMapInfo, lbX - 1, lbY, 1, bRef.height, beforeLeftBorderH);
+		if (getDistributionError(leftBorderH, beforeLeftBorderH) < 5) {
+			return false;
+		}
+
+		// Right border
+		map<int, double> rightBorderH;
+		initHDistribution(bitMapInfo, lbX + bRef.width - 1, lbY, 1, bRef.height, rightBorderH);
+		// After right border
+		map<int, double> afterRightBorderH;
+		initHDistribution(bitMapInfo, lbX + bRef.width, lbY, 1, bRef.height, afterRightBorderH);
+		if (getDistributionError(rightBorderH, afterRightBorderH) < 5) {
+			return false;
+		}
+
+		return true;
 	}
 
-	bool isButton(BitMapInfo& bitMapInfo, ButtonRef buttonRef) {
+	bool isButton(BitMapInfo& bitMapInfo, ButtonRef bRef) {
 
 		map<int, double> actualDest;
-		initVDistribution(bitMapInfo, buttonRef, actualDest);
+		Point targetLb = toLbPoint(bitMapInfo, bRef);
+		int lbX = targetLb.x;
+		int lbY = targetLb.y - bRef.height;
 
-		double dError = getDistributionError(hDistribution, actualDest);
+		initHDistribution(bitMapInfo, lbX, lbY, bRef.width, bRef.height, actualDest);
+
+		auto dError = getDistributionError(hDistribution, actualDest);
+
 		return dError < 5;
 	}
 
@@ -168,17 +220,13 @@ private:
 		throw exception("Unrecognised ref anchor");
 	}
 
-	void initVDistribution(BitMapInfo& bitMapInfo, ButtonRef& buttonRef, map<int, double>& dest) {
-
-		Point targetLb = toLbViaCenterOffset(bitMapInfo.width, bitMapInfo.height, buttonRef.rtX, buttonRef.rtY);
-		int lbX = targetLb.x;
-		int lbY = targetLb.y - buttonRef.height;
+	void initHDistribution(BitMapInfo& bitMapInfo, int x, int y, int width, int height, map<int, double>& dest) {
 
 		map<int, double> tmp;
 
-		double total = buttonRef.width * buttonRef.height;
-		for (int iy = lbY; iy < lbY + buttonRef.height; iy++) {
-			for (int ix = lbX; ix < lbX + buttonRef.width; ix++) {
+		double total = width * height;
+		for (int iy = y; iy < y + height; iy++) {
+			for (int ix = x; ix < x + width; ix++) {
 				int h, s, v;
 				getPixelHsv(bitMapInfo, ix, iy, h, s, v);
 
@@ -187,10 +235,6 @@ private:
 		}
 
 		collapse(tmp, dest);
-
-		if (capturingEnabled) {
-			drawRect(lbX, lbY, buttonRef.width, buttonRef.height, bitMapInfo);
-		}
 	}
 
 	void collapse(map<int, double>& source, map<int, double>& dest) {
@@ -218,20 +262,6 @@ private:
 				dVal = pair.second;
 			}
 			currentH = pair.first;
-		}
-		if (dest.count(dH) == 0) {
-			dest[dH] = seqVal;
-		}
-
-		if (capturingEnabled) {
-			logger.log(">> Before collapse");
-			for (auto& pair : source) {
-				logger.log("P: ", pair.first, ", ", pair.second);
-			}
-			logger.log(">> After collapse");
-			for (auto& pair : dest) {
-				logger.log("P: ", pair.first, ", ", pair.second);
-			}
 		}
 	}
 
@@ -264,23 +294,6 @@ private:
 				sum += fp->second;
 				++fp;
 			}
-		}
-
-		if (capturingEnabled) {
-
-			cout << "Calculate distribution " << endl;
-
-			cout << "First" << endl;
-			for (auto& pair : first) {
-				cout << pair.first << " " << pair.second << endl;
-			}
-
-			cout << "Second" << endl;
-			for (auto& pair : second) {
-				cout << pair.first << " " << pair.second << endl;
-			}
-
-			cout << "error: " << sum << endl;
 		}
 
 		return sum;
@@ -683,12 +696,20 @@ void logCapture(BitMapInfo& bitMapInfo, string pathToLogs, string suffix) {
 }
 
 bool isLoaded(BitMapInfo& bitMapInfo) {
-	int hw = bitMapInfo.width / 2;
-	int hh = bitMapInfo.height / 2;
 
 	int r, g, b;
-	getPixelRgb(bitMapInfo, hw, hh, r, g, b);
-	return r != 0 && g != 0 && b != 0;
+	getPixelRgb(bitMapInfo, 0, 0, r, g, b);
+	for (int i = 0; i < bitMapInfo.height; ++i) {
+		for (int j = 0; j < bitMapInfo.width; ++j) {
+			int r2, g2, b2;
+			getPixelRgb(bitMapInfo, j, i, r2, g2, b2);
+			if (r != r2 && g != g2 && b != b2) {
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 void initializeWindowClassifier(HWND hWnd, string pathToLogs, bool capturingEnabled)
@@ -709,18 +730,7 @@ void initializeWindowClassifier(HWND hWnd, string pathToLogs, bool capturingEnab
 		BitMapInfo bitMapInfo = createBitMapInfo(hBitmap);
 
 		if (isLoaded(bitMapInfo)) {
-			buttonClassifier.captureRefButton(bitMapInfo, ButtonRef{ 583, 402, 94, 21 });
-
-			auto mainWindowClassifier = WindowClassifier(L2Window::MAIN_WINDOW);
-			mainWindowClassifier.addBtn(ButtonRef{ 583, 402, 94, 21 });
-			mainWindowClassifier.addBtn(ButtonRef{ 683, 402, 94, 21 });
-			mainWindowClassifier.addBtn(ButtonRef{ 1219, 576, 94, 21 });
-			mainWindowClassifier.addBtn(ButtonRef{ 1219, 601, 94, 21 });
-			mainWindowClassifier.addBtn(ButtonRef{ 1219, 626, 94, 21 });
-			mainWindowClassifier.addBtn(ButtonRef{ 1219, 651, 94, 21 });
-			mainWindowClassifier.addBtn(ButtonRef{ 1219, 675, 94, 21 });
-
-			if (mainWindowClassifier.isWindow(bitMapInfo, buttonClassifier)) {
+			if (buttonClassifier.captureRefButton(bitMapInfo, ButtonRef{ 583, 402, 94, 21 })) {
 
 				auto accountInUseClassifier = WindowClassifier(L2Window::ACCOUNT_IN_USE);
 				accountInUseClassifier.addBtn(ButtonRef{ 583, 402, 94, 21 });
