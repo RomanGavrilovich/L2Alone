@@ -13,12 +13,11 @@
 #include <exception>
 #include <string>
 
-#include "logger.h"
 #include "autologin.h"
 #include "config_utils.h"
 #include "files_utils.h"
-#include "window_utils.h"
 
+#include "Logger.h"
 #include "L2EventService.h"
 #include "L2QuitKeyHandler.h"
 #include "L2PvpModeHandler.h"
@@ -39,14 +38,17 @@ void autoLoginL2(string login, string password, L2AloneConfig& config);
 
 void showMessage(string message);
 bool isRunnedFromExe(string process);
+L2WindowCreatedEvent waitL2WindowCreated(int processId);
 
 int main(int argc, char* argv[])
 {
 	try {
 
 #ifdef NDEBUG
-		HWND hWnd = GetConsoleWindow();
-		ShowWindow(hWnd, SW_HIDE);
+		if (isRunnedFromExe(argv[0])) {
+			HWND hWnd = GetConsoleWindow();
+			ShowWindow(hWnd, SW_HIDE);
+		}
 #endif // NDEBUG
 
 		if (argc < 2) {
@@ -120,7 +122,7 @@ void autoLoginL2(string login, string password, L2AloneConfig& config) {
 	try {
 		logger.log("L2 process started with id: ", pi.dwProcessId);
 
-		L2WindowData d = InitL2WindowData(pi.dwProcessId);
+		L2WindowCreatedEvent d = waitL2WindowCreated(pi.dwProcessId);
 
 		if (config.captureLogsEnabled) {
 			stringstream ssPathToCoreLogs;
@@ -128,7 +130,7 @@ void autoLoginL2(string login, string password, L2AloneConfig& config) {
 			string pathToCoreLogs = ssPathToCoreLogs.str();
 		}
 
-		auto hotKeyHandler = shared_ptr<L2QuitKeyHandler>(new L2QuitKeyHandler(d.dwProcessId));
+		auto hotKeyHandler = shared_ptr<L2QuitKeyHandler>(new L2QuitKeyHandler(d.processId));
 		eventService.setKeyboardHandler(d.hWindow, hotKeyHandler);
 
 		auto pvpHandler = shared_ptr<L2PvpModeHandler>(new L2PvpModeHandler());
@@ -138,6 +140,7 @@ void autoLoginL2(string login, string password, L2AloneConfig& config) {
 		doAutologin((HWND)d.hWindow, login, password);
 
 		DWORD result = WaitForSingleObject(pi.hProcess, INFINITE);
+
 		logger.log("Close L2 Alone on L2.exe completion");
 	}
 	catch (exception e) {
@@ -147,6 +150,20 @@ void autoLoginL2(string login, string password, L2AloneConfig& config) {
 
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
+}
+
+L2WindowCreatedEvent waitL2WindowCreated(int processId) {
+
+	auto futurePtr = eventService.waitForL2Window(processId);
+	auto l2WindowFuture = futurePtr->get_future();
+	std::future_status status = l2WindowFuture.wait_for(std::chrono::seconds(10));
+
+	if (status != std::future_status::ready)
+	{
+		throw exception("Can't find L2 window in 10 seconds");
+	}
+
+	return l2WindowFuture.get();
 }
 
 string getLogFilePath(string absFilePath) {

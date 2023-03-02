@@ -44,9 +44,6 @@
     <ClInclude Include="resource1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="window_utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="L2KeyboardEventHandler.h">
       <Filter>Header Files\Events</Filter>
     </ClInclude>

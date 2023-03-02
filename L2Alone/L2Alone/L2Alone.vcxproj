@@ -147,7 +147,6 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="resource1.h" />
     <ClInclude Include="vision.h" />
-    <ClInclude Include="window_utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="L2Alone.rc" />
