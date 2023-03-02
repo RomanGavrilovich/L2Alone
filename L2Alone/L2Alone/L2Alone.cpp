@@ -44,13 +44,10 @@ int main(int argc, char* argv[])
 {
 	try {
 
+#ifdef NDEBUG
 		HWND hWnd = GetConsoleWindow();
-		ShowWindow(hWnd, SW_SHOW);
-
-//#ifdef NDEBUG
-//		HWND hWnd = GetConsoleWindow();
-//		ShowWindow(hWnd, SW_HIDE);
-//#endif // NDEBUG
+		ShowWindow(hWnd, SW_HIDE);
+#endif // NDEBUG
 
 		if (argc < 2) {
 			showMessage("Login is not provided");

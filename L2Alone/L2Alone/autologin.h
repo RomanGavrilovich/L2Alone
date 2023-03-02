@@ -80,8 +80,17 @@ void doAutologin(HWND hWindow, string& login, string& password)
 
 void handleAccountIsUsing(HWND hWindow) {
 
-	if (!postConfirmationSequence(hWindow)) {
-		logger.log("Post agreement sequence timed out after handling accoint is using");
+	for (int i = 0; i < 10; ++i) {
+		postControlMessage(hWindow, VK_RETURN);
+		L2Window w = captureAuthResultWindows(hWindow);
+
+		if (w == AGREEMENT) {
+			if (!postConfirmationSequence(hWindow)) {
+				logger.log("Post agreement sequence timed out after handling accoint is using");
+			}
+			return;
+		}
+		Sleep(200);
 	}
 }
 

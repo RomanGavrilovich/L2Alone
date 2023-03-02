@@ -16,6 +16,9 @@
     <Filter Include="Header Files\Events">
       <UniqueIdentifier>{8dde292d-8eaf-4943-a0ff-2848933cd59c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Common">
+      <UniqueIdentifier>{a01a1c84-220c-42f3-9343-9f250b4ee840}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="L2Alone.cpp">
@@ -30,9 +33,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="files_utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vision.h">
@@ -64,6 +64,9 @@
     </ClInclude>
     <ClInclude Include="L2FocusEventHandler.h">
       <Filter>Header Files\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
+      <Filter>Header Files\Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
