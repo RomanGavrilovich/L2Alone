@@ -7,57 +7,19 @@
 
 class Logger {
 public:
-    Logger() {
-    }
-
-    ~Logger() {
-        if (file_.is_open()) {
-            file_.close();
-        }
-    }
+    
+    ~Logger();
 
     template<typename... Args>
-    void log(const std::string& message, Args... args) {
-        std::stringstream ss;
-        expand(ss, message, args...);
-        auto s = ss.str();
-
-        if (file_.is_open()) {
-            file_ << s << std::endl;
-        }
-        std::cout << s << std::endl;
-    }
+    void log(const std::string& message, Args... args);
 
     template<typename... Args>
-    void warn(const std::string& message, Args... args) {
-        std::stringstream ss;
-        expand(ss, message, args...);
-        auto s = ss.str();
-
-        if (file_.is_open()) {
-            file_ << "WARN:" << s << std::endl;
-        }
-        std::cout << "WARN:" << s << std::endl;
-    }
-
+    void warn(const std::string& message, Args... args);
+    
     template<typename... Args>
-    void error(const std::string& message, Args... args) {
-        std::stringstream ss;
-        expand(ss, message, args...);
-        auto s = ss.str();
+    void error(const std::string& message, Args... args);
 
-        if (file_.is_open()) {
-            file_ << "ERROR:" << s << std::endl;
-        }
-        std::cout << "ERROR:" << s << std::endl;
-    }
-
-    void open(const std::string& filename) {
-        file_.open(filename, std::ios::out);
-        if (!file_.is_open()) {
-            std::cerr << "Failed to open file: " << filename << std::endl;
-        }
-    }
+    void open(const std::string& filename);
 
 private:
     std::ofstream file_;
@@ -74,5 +36,77 @@ private:
     }
 };
 
-
 Logger logger;
+
+#ifndef L2A_RELEASE
+
+template<typename... Args>
+void Logger::log(const std::string& message, Args... args) {
+    std::stringstream ss;
+    expand(ss, message, args...);
+    auto s = ss.str();
+
+    if (file_.is_open()) {
+        file_ << s << std::endl;
+    }
+    std::cout << s << std::endl;
+}
+
+template<typename... Args>
+void Logger::warn(const std::string& message, Args... args) {
+    std::stringstream ss;
+    expand(ss, message, args...);
+    auto s = ss.str();
+
+    if (file_.is_open()) {
+        file_ << "WARN:" << s << std::endl;
+    }
+    std::cout << "WARN:" << s << std::endl;
+}
+
+template<typename... Args>
+void Logger::error(const std::string& message, Args... args) {
+    std::stringstream ss;
+    expand(ss, message, args...);
+    auto s = ss.str();
+
+    if (file_.is_open()) {
+        file_ << "ERROR:" << s << std::endl;
+    }
+    std::cout << "ERROR:" << s << std::endl;
+}
+
+void Logger::open(const std::string& filename) {
+    file_.open(filename, std::ios::out);
+    if (!file_.is_open()) {
+        std::cerr << "Failed to open file: " << filename << std::endl;
+    }
+}
+
+Logger::~Logger() {
+    if (file_.is_open()) {
+        file_.close();
+    }
+}
+
+#else
+
+template<typename... Args>
+void Logger::log(const std::string& message, Args... args) {
+}
+
+template<typename... Args>
+void Logger::warn(const std::string& message, Args... args) {
+}
+
+template<typename... Args>
+void Logger::error(const std::string& message, Args... args) {
+}
+
+void Logger::open(const std::string& filename) {
+}
+
+Logger::~Logger() {
+}
+
+#endif // !L2A_RELEASE

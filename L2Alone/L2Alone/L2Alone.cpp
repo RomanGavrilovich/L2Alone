@@ -44,12 +44,10 @@ int main(int argc, char* argv[])
 {
 	try {
 
-#ifdef NDEBUG
-		if (isRunnedFromExe(argv[0])) {
+#ifdef L2A_RELEASE
 			HWND hWnd = GetConsoleWindow();
 			ShowWindow(hWnd, SW_HIDE);
-		}
-#endif // NDEBUG
+#endif // L2A_RELEASE
 
 		if (argc < 2) {
 			showMessage("Login is not provided");

@@ -54,7 +54,7 @@ void handleAccountIsUsing(HWND hWindow);
 
 void doAutologin(HWND hWindow, string& login, string& password)
 {
-	initializeWindowClassifier(hWindow, "D:\\WinLog\\screens", false);
+	initializeWindowClassifier(hWindow, false);
 
 	postCredentials(hWindow, login, password);
 	logger.log("Credentials posted");

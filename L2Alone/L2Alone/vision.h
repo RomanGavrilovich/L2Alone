@@ -538,6 +538,7 @@ BitMapInfo ReadBmpFile(const char* filename)
 
 void WriteBmpToFile(const char* filename, BitMapInfo& bitMapInfo) {
 
+#ifndef L2A_RELEASE
 	BITMAPINFOHEADER bih = {};
 	bih.biSize = sizeof(BITMAPINFOHEADER);
 	bih.biWidth = bitMapInfo.width;
@@ -562,6 +563,7 @@ void WriteBmpToFile(const char* filename, BitMapInfo& bitMapInfo) {
 	file.write(reinterpret_cast<const char*>(&bih), sizeof(bih));
 	file.write(reinterpret_cast<const char*>(bitMapInfo.data), dwBmpSize);
 	return;
+#endif // !L2A_RELEASE
 }
 
 double getMax(double a, double b, double c) {
@@ -712,7 +714,7 @@ bool isLoaded(BitMapInfo& bitMapInfo) {
 	return false;
 }
 
-void initializeWindowClassifier(HWND hWnd, string pathToLogs, bool capturingEnabled)
+void initializeWindowClassifier(HWND hWnd, bool capturingEnabled)
 {
 	logger.log("Initialize window classifier");
 
