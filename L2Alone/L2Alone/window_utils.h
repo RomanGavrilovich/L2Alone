@@ -15,7 +15,7 @@ struct L2WindowData {
 	HWND hWindow;
 };
 
-L2WindowData InitL2WindowData(DWORD processId, string& windowName) {
+L2WindowData InitL2WindowData(DWORD processId) {
 
 	auto futurePtr = eventService.waitForL2Window(processId);
 	auto l2WindowFuture = futurePtr->get_future();

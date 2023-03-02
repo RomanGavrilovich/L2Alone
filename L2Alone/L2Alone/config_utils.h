@@ -9,13 +9,11 @@
 #define L2_ALONE_CONFIG_FILE_NAME "L2Alone.config"
 
 #define L2_FILE_CONFIG_KEY "PathToL2exe"
-#define L2_WINDOW_NAME_KEY "L2WindowName"
 #define LOGS_ENABLED_CONFIG_KEY "LogsEnabled"
 #define CAPTURE_LOGS_ENABLED_CONFIG_KEY "CaptureLogsEnabled"
 
 struct L2AloneConfig {
 	string pathToL2;
-	string l2WindowName = "Lineage";
 	bool logsEnabled = false;
 	bool captureLogsEnabled = false;
 };
@@ -31,12 +29,10 @@ L2AloneConfig loadL2AloneConfig() {
 
 	ifstream configFile;
 
-	auto configFileAbsPath = getAbsoluteFilePath(L2_ALONE_CONFIG_FILE_NAME);
-
-	configFile.open(configFileAbsPath);
+	configFile.open(L2_ALONE_CONFIG_FILE_NAME);
 	if (!configFile.is_open()) {
 		string s;
-		s.append("Can't open config file ").append(configFileAbsPath);
+		s.append("Can't open config file ").append(L2_ALONE_CONFIG_FILE_NAME);
 
 		throw std::exception(s.c_str());
 	}
@@ -64,10 +60,6 @@ L2AloneConfig loadL2AloneConfig() {
 			else if (k == CAPTURE_LOGS_ENABLED_CONFIG_KEY) {
 				config.captureLogsEnabled = toBoolean(v);
 				cout << "Capture logs enabled: " << config.captureLogsEnabled << endl;
-			}
-			else if (k == L2_WINDOW_NAME_KEY) {
-				config.l2WindowName = v;
-				cout << "L2 Window name: '" << config.l2WindowName << "'" << endl;
 			}
 		}
 	}

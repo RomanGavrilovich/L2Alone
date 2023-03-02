@@ -15,12 +15,12 @@ UINT L2WM_KEY_LL_HOOK = RegisterWindowMessageA("L2Alone_KeyLowLevelHook");
 
 class L2EventService {
 public:
-	
+
 	L2EventService();
-	void start(string l2WindowName);
+	void start();
 	void stop();
 	shared_ptr<promise<L2WindowCreatedEvent>> waitForL2Window(DWORD processId);
-	
+
 	void publishEventObjCreate(HWND hWnd, DWORD dwEventThread);
 	void publishForegroundWindowChanged(HWND hWnd, DWORD dwEventThread);
 	void publishKeyboard(KBDLLHOOKSTRUCT* kbdll, bool keyDown);
@@ -29,10 +29,9 @@ public:
 	void removeKeyboardHandler(HWND hWindow, shared_ptr<L2KeyboardEventHandler> handler);
 
 private:
-	string l2WindowName;
 	map<DWORD, shared_ptr<promise<L2WindowCreatedEvent>>> waitL2WindowPromises;
 	map<HWND, vector<shared_ptr<L2KeyboardEventHandler>>> windowKeyHandlers;
-	
+
 	DWORD tEventLoopNativeId;
 	thread* tEventLoop;
 
@@ -75,19 +74,14 @@ LRESULT CALLBACK l2EventServiceLowLevelKeyboardProc(int nCode, WPARAM wParam, LP
 		else if (wParam == WM_SYSKEYUP || wParam == WM_KEYUP) {
 			eventService.publishKeyboard(pKeyboard, false);
 		}
-		else {
-			logger.log("Received unexpected WM param", wParam);
-		}
 	}
 
 	return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
-void L2EventService::start(string l2WindowName) {
+void L2EventService::start() {
 
 	logger.log("Start event service");
-
-	this->l2WindowName = l2WindowName;
 
 	tEventLoop = new thread(l2EventServiceEventLoop);
 	tEventLoopNativeId = GetThreadId(reinterpret_cast<HANDLE>(tEventLoop->native_handle()));
@@ -107,14 +101,14 @@ void L2EventService::stop() {
 }
 
 int l2EventServiceEventLoop() {
-	
+
 	HWINEVENTHOOK hForegroundHook = SetWinEventHook(
-		EVENT_SYSTEM_FOREGROUND, 
-		EVENT_SYSTEM_FOREGROUND, 
-		NULL, 
-		L2EventServiceForegroundCheckHook, 
-		0, 
-		0, 
+		EVENT_SYSTEM_FOREGROUND,
+		EVENT_SYSTEM_FOREGROUND,
+		NULL,
+		L2EventServiceForegroundCheckHook,
+		0,
+		0,
 		WINEVENT_OUTOFCONTEXT);
 	HWINEVENTHOOK hEventObjectCreate = NULL;
 	HHOOK hKeyLowLevelHook = NULL;
@@ -208,15 +202,30 @@ void L2EventService::publishEventObjCreate(HWND hWnd, DWORD dwEventThread) {
 
 			bool windowFound = false;
 
-			char szWindowText[256];
-			int nLength = GetWindowTextA(hWnd, szWindowText, sizeof(szWindowText));
-			if (string(szWindowText).find(l2WindowName) == string::npos) {
-				return;
-			}
-
 			DWORD createdWindowPid = GetProcessIdOfThread(hThread);
 			for (auto& pair : waitL2WindowPromises) {
 				if (pair.first == createdWindowPid) {
+
+
+					RECT rcClient;
+					GetClientRect(hWnd, &rcClient);
+					int wWidth = rcClient.right - rcClient.left;
+					if (wWidth < 650) {
+						break;
+					}
+
+					int wHeight = rcClient.bottom - rcClient.top;
+					if (wHeight < 400) {
+						break;
+					}
+
+					char szWindowText[256];
+					int nLength = GetWindowTextA(hWnd, szWindowText, sizeof(szWindowText));
+					if (nLength == 0) {
+						break;
+					}
+
+					logger.log("Window found");
 					pair.second->set_value(L2WindowCreatedEvent{ hWnd, createdWindowPid, dwEventThread });
 					windowFound = true;
 					break;
@@ -230,9 +239,6 @@ void L2EventService::publishEventObjCreate(HWND hWnd, DWORD dwEventThread) {
 				waitL2WindowPromises.erase(createdWindowPid);
 
 				PostThreadMessage(tEventLoopNativeId, L2WM_WIN_HOOK, 0, 0);
-			}
-			else {
-				logger.error("L2 window ", hWnd, " has been created without event handler");
 			}
 		}
 		else {
@@ -249,7 +255,7 @@ void L2EventService::publishForegroundWindowChanged(HWND hWindow, DWORD dwEventT
 }
 
 void L2EventService::setKeyboardHandler(HWND hWindow, shared_ptr<L2KeyboardEventHandler> handler) {
-	
+
 	if (windowKeyHandlers.size() == 0) {
 		PostThreadMessage(tEventLoopNativeId, L2WM_KEY_LL_HOOK, 1, 0);
 	}
@@ -263,7 +269,7 @@ void L2EventService::removeKeyboardHandler(HWND hWindow, shared_ptr<L2KeyboardEv
 		logger.warn("There is no key handlers for window ", hWindow);
 	}
 
-	auto &handlers = windowKeyHandlers[hWindow];
+	auto& handlers = windowKeyHandlers[hWindow];
 	auto pErase = handlers.erase(remove_if(
 		handlers.begin(),
 		handlers.end(),
@@ -280,9 +286,8 @@ void L2EventService::removeKeyboardHandler(HWND hWindow, shared_ptr<L2KeyboardEv
 
 void L2EventService::publishKeyboard(KBDLLHOOKSTRUCT* kbdll, bool keyDown) {
 
-	logger.log("Received input with active window ", activeHwnd);
 	if (windowKeyHandlers.count(activeHwnd) > 0) {
-		auto &handlers = windowKeyHandlers[activeHwnd];
+		auto& handlers = windowKeyHandlers[activeHwnd];
 		for (auto& handler : handlers) {
 			if (keyDown) {
 				handler->onKeyDown(kbdll);

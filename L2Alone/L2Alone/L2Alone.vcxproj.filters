@@ -38,9 +38,6 @@
     <ClInclude Include="logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pvp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="vision.h">
       <Filter>Header Files</Filter>
     </ClInclude>
