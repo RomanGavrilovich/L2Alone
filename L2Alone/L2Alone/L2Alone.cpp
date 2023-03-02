@@ -34,7 +34,7 @@ struct FindL2WindowParams {
 #define L2_ALONE_LOGS_DIR "logs"
 
 string getLogFilePath(string absFilePath);
-void autoLoginL2(string login, string password, L2AloneConfig& config);
+int autoLoginL2(string login, string password, L2AloneConfig& config);
 
 void showMessage(string message);
 bool isRunnedFromExe(string process);
@@ -70,7 +70,14 @@ int main(int argc, char* argv[])
 
 		eventService.start();
 
-		autoLoginL2(argv[1], argv[2], config);
+		string account = argv[1];
+		string password = argv[2];
+
+		int nextAutoLoginIndex = autoLoginL2(account, password, config);
+		while (nextAutoLoginIndex >= 0) {
+			L2AccountHotKey nextConfig = config.accountHotKeys[nextAutoLoginIndex];
+			nextAutoLoginIndex = autoLoginL2(nextConfig.login, nextConfig.password, config);
+		}
 
 		return 0;
 	}
@@ -88,7 +95,7 @@ int main(int argc, char* argv[])
 	MessageBoxA(NULL, message.c_str(), APP_NAME, MB_OK);
 }
 
-void autoLoginL2(string login, string password, L2AloneConfig& config) {
+int autoLoginL2(string login, string password, L2AloneConfig& config) {
 
 	STARTUPINFOA si;
 	PROCESS_INFORMATION pi;
@@ -128,7 +135,7 @@ void autoLoginL2(string login, string password, L2AloneConfig& config) {
 			string pathToCoreLogs = ssPathToCoreLogs.str();
 		}
 
-		auto hotKeyHandler = shared_ptr<L2QuitKeyHandler>(new L2QuitKeyHandler(d.processId));
+		auto hotKeyHandler = shared_ptr<L2QuitKeyHandler>(new L2QuitKeyHandler(d.processId, &config.accountHotKeys));
 		eventService.setKeyboardHandler(d.hWindow, hotKeyHandler);
 
 		auto pvpHandler = shared_ptr<L2PvpModeHandler>(new L2PvpModeHandler());
@@ -137,7 +144,20 @@ void autoLoginL2(string login, string password, L2AloneConfig& config) {
 
 		doAutologin((HWND)d.hWindow, login, password);
 
-		DWORD result = WaitForSingleObject(pi.hProcess, INFINITE);
+		WaitForSingleObject(pi.hProcess, INFINITE);
+
+		eventService.removeKeyboardHandler(d.hWindow, hotKeyHandler);
+		eventService.removeKeyboardHandler(d.hWindow, pvpHandler);
+		eventService.removeFocusHandler(d.hWindow, pvpHandler);
+
+		DWORD exitCode;
+		if (!GetExitCodeProcess(pi.hProcess, &exitCode)) {
+			throw exception("Can't run new window on hot key, because can't get previous process exit code");
+		}
+
+		if (isExitHotKeyCode(exitCode)) {
+			return getNextHotKeyIndex(exitCode);
+		}
 
 		logger.log("Close L2 Alone on L2.exe completion");
 	}
@@ -148,6 +168,8 @@ void autoLoginL2(string login, string password, L2AloneConfig& config) {
 
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
+
+	return -1;
 }
 
 L2WindowCreatedEvent waitL2WindowCreated(int processId) {

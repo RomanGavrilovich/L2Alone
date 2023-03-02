@@ -5,23 +5,34 @@
 
 #include "logger.h"
 #include "files_utils.h"
+#include "Utils.h"
 
 #define L2_ALONE_CONFIG_FILE_NAME "L2Alone.config"
 
 #define L2_FILE_CONFIG_KEY "PathToL2exe"
 #define LOGS_ENABLED_CONFIG_KEY "LogsEnabled"
 #define CAPTURE_LOGS_ENABLED_CONFIG_KEY "CaptureLogsEnabled"
+#define ACCOUNT_KEY "Account"
+
+struct L2AccountHotKey {
+	int fKey;
+	string login;
+	string password;
+};
 
 struct L2AloneConfig {
 	string pathToL2;
 	bool logsEnabled = false;
 	bool captureLogsEnabled = false;
+	vector<L2AccountHotKey> accountHotKeys;
 };
 
 using namespace std;
 
 bool splitParam(string s, string& k, string& v);
 bool toBoolean(string s);
+
+L2AccountHotKey getAccountHotKey(string& hotKeyConfigKey, string hotKeyConfigValue);
 
 L2AloneConfig loadL2AloneConfig() {
 
@@ -60,6 +71,9 @@ L2AloneConfig loadL2AloneConfig() {
 			else if (k == CAPTURE_LOGS_ENABLED_CONFIG_KEY) {
 				config.captureLogsEnabled = toBoolean(v);
 				cout << "Capture logs enabled: " << config.captureLogsEnabled << endl;
+			}
+			else if (startWith(k, ACCOUNT_KEY)) {
+				config.accountHotKeys.push_back(getAccountHotKey(k, v));
 			}
 		}
 	}
@@ -105,4 +119,51 @@ bool splitParam(string s, string& k, string& v) {
 	}
 
 	return false;
+}
+
+bool parseAccountFKey(string s, int &fKey) {
+	auto dotIndex = s.find(".");
+	if (dotIndex > 0) {
+		string indexString = s.substr(dotIndex + 1);
+		indexString = trim(indexString);
+		fKey = stoi(indexString);
+		return true;
+	}
+
+	return false;
+}
+
+bool splitHotKeyAccountValue(string s, string& login, string& password) {
+	auto index = s.find(",");
+	if (index > 0) {
+
+		login = trim(s.substr(0, index));
+		password = trim(s.substr(index + 1));
+
+		return true;
+	}
+
+	return false;
+}
+
+L2AccountHotKey getAccountHotKey(string& hotKeyConfigKey, string hotKeyConfigValue) {
+
+	int fKey;
+	if (!parseAccountFKey(hotKeyConfigKey, fKey)) {
+
+		stringstream ss;
+		ss << "Can't parse configuration '" << hotKeyConfigKey << "'. Format should be Account.index. E.g Account.1";
+		throw exception(ss.str().c_str());
+	}
+
+	if (fKey < 1 && fKey > 12) {
+		stringstream ss;
+		ss << "Invalid configuration. Account key must be [1,12]. Found " << fKey;
+		throw exception(ss.str().c_str());
+	}
+
+	string login, password;
+	splitHotKeyAccountValue(hotKeyConfigValue, login, password);
+
+	return L2AccountHotKey{ fKey, login, password };
 }

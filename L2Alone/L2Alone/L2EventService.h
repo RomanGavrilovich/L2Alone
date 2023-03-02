@@ -302,11 +302,8 @@ void L2EventService::removeKeyboardHandler(HWND hWindow, shared_ptr<L2KeyboardEv
 		[handler](shared_ptr<L2KeyboardEventHandler> ptr) {return ptr.get() == handler.get();})
 	);
 
-	if (pErase != handlers.end()) {
-		logger.log("Handler has been removed");
-	}
-	else {
-		logger.warn("Handler was not found");
+	if (handlers.size() == 0) {
+		windowKeyHandlers.erase(hWindow);
 	}
 }
 
@@ -333,11 +330,8 @@ void L2EventService::removeFocusHandler(HWND hWindow, shared_ptr<L2FocusEventHan
 		[handler](shared_ptr<L2FocusEventHandler> ptr) {return ptr.get() == handler.get();})
 	);
 
-	if (pErase != handlers.end()) {
-		logger.log("Focus handler has been removed");
-	}
-	else {
-		logger.warn("Focus handler was not found");
+	if (handlers.size() == 0) {
+		windowFocusHandlers.erase(hWindow);
 	}
 }
 

@@ -51,14 +51,14 @@ BitMapInfo ReadBmpFile(const char* filename);
 
 void WriteBmpToFile(const char* filename, BitMapInfo& info);
 
-void getPixelRgb(BitMapInfo bitMapInfo, int pixelX, int pixelY, int& r, int& g, int& b);
+void getPixelRgb(BitMapInfo &bitMapInfo, int pixelX, int pixelY, int& r, int& g, int& b);
 
-int getPixelIndex(BitMapInfo bitMapInfo, int x, int y);
+int getPixelIndex(BitMapInfo &bitMapInfo, int x, int y);
 void RgbToHsv(int R, int G, int B, int& H, int& S, int& V);
 void drawRect(int startX, int startY, int width, int height, BitMapInfo& info);
-void drawPixelRgb(BitMapInfo bitMapInfo, int x, int y, int r, int g, int b);
+void drawPixelRgb(BitMapInfo &bitMapInfo, int x, int y, int r, int g, int b);
 
-void getPixelHsv(BitMapInfo info, int x, int y, int& h, int& s, int& v);
+void getPixelHsv(BitMapInfo &info, int x, int y, int& h, int& s, int& v);
 
 void drawRect(int startX, int startY, int width, int height, BitMapInfo& info);
 
@@ -352,7 +352,7 @@ private:
 };
 
 
-void getPixelHsv(BitMapInfo info, int x, int y, int& h, int& s, int& v) {
+void getPixelHsv(BitMapInfo &info, int x, int y, int& h, int& s, int& v) {
 	int r, g, b;
 
 	getPixelRgb(info, x, y, r, g, b);
@@ -463,7 +463,7 @@ void drawRect(int startX, int startY, int width, int height, BitMapInfo& info) {
 	}
 }
 
-void getPixelRgb(BitMapInfo bitMapInfo, int pixelX, int pixelY, int& r, int& g, int& b) {
+void getPixelRgb(BitMapInfo &bitMapInfo, int pixelX, int pixelY, int& r, int& g, int& b) {
 
 	int index = getPixelIndex(bitMapInfo, pixelX, pixelY);
 
@@ -472,7 +472,7 @@ void getPixelRgb(BitMapInfo bitMapInfo, int pixelX, int pixelY, int& r, int& g, 
 	b = bitMapInfo.data[index];
 }
 
-void drawPixelRgb(BitMapInfo bitMapInfo, int x, int y, int r, int g, int b) {
+void drawPixelRgb(BitMapInfo &bitMapInfo, int x, int y, int r, int g, int b) {
 
 	int index = getPixelIndex(bitMapInfo, x, y);
 	bitMapInfo.data[index + 2] = r;
@@ -480,7 +480,7 @@ void drawPixelRgb(BitMapInfo bitMapInfo, int x, int y, int r, int g, int b) {
 	bitMapInfo.data[index] = b;
 }
 
-int getPixelIndex(BitMapInfo bitMapInfo, int x, int y) {
+int getPixelIndex(BitMapInfo &bitMapInfo, int x, int y) {
 	return (y * bitMapInfo.width + x) * bitMapInfo.multiplier;
 }
 
@@ -792,7 +792,7 @@ void initializeWindowClassifier(HWND hWnd, bool capturingEnabled)
 
 int k = 0;
 
-L2Window CaptureWindow(HWND hWnd, string captureResultLogPath, Logger& logger)
+L2Window CaptureWindow(HWND hWnd, Logger& logger)
 {
 	HDC hWindowDC = GetDC(hWnd);
 	HDC hMemDC = CreateCompatibleDC(hWindowDC);
@@ -800,6 +800,7 @@ L2Window CaptureWindow(HWND hWnd, string captureResultLogPath, Logger& logger)
 	GetClientRect(hWnd, &rcClient);
 	HBITMAP hBitmap = CreateCompatibleBitmap(hWindowDC, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top);
 	HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
+
 	BitBlt(hMemDC, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, hWindowDC, 0, 0, SRCCOPY);
 
 	BitMapInfo bitMapInfo = createBitMapInfo(hBitmap);
@@ -812,13 +813,9 @@ L2Window CaptureWindow(HWND hWnd, string captureResultLogPath, Logger& logger)
 		}
 	}
 
-	stringstream ss;
-	ss << captureResultLogPath << k++ << ".bmp";
-	auto path = ss.str();
-
-	//WriteBmpToFile(path.c_str(), bitMapInfo);
-
 	delete[] bitMapInfo.data;
+
+	Sleep(100);
 
 	SelectObject(hMemDC, hOldBitmap);
 	DeleteDC(hMemDC);

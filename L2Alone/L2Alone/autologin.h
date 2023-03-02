@@ -58,6 +58,7 @@ void doAutologin(HWND hWindow, string& login, string& password)
 
 	postCredentials(hWindow, login, password);
 	logger.log("Credentials posted");
+	Sleep(100); // give some time to process credentials post
 
 	L2Window w = captureAuthResultWindows(hWindow);
 	logger.log("Captured auth result: ", getL2WindowName(w));
@@ -124,7 +125,7 @@ bool postConfirmationSequence(HWND hWindow) {
 		postControlMessage(hWindow, VK_RETURN);
 		Sleep(100);
 
-		auto w = CaptureWindow(hWindow, "D:\\WinLog\\screens", logger);
+		auto w = CaptureWindow(hWindow, logger);
 		if (w == UNKNOWN) {
 			unknownCounter++;
 			if (unknownCounter == 5) {
@@ -158,13 +159,12 @@ L2Window captureL2Windows(HWND hWindow, std::vector<L2Window> windows) {
 	for (int i = 0; i < windows.size(); ++i) {
 		ss << getL2WindowName(windows[i]) << " ";
 	}
-
 	logger.log("Start window capturing: ", ss.str());
 
 	for (int i = 0; i < 30; ++i) { // 3 sec
 		logger.log("Capture window");
 		try {
-			L2Window w = CaptureWindow(hWindow, "D:\\WinLog\\screens", logger);
+			L2Window w = CaptureWindow(hWindow, logger);
 			logger.log("Capture window result: ", w);
 			if (find(windows.begin(), windows.end(), w) != windows.end()) {
 				return w;
@@ -176,7 +176,7 @@ L2Window captureL2Windows(HWND hWindow, std::vector<L2Window> windows) {
 			}
 
 			logger.log("Didn't capture window");
-			Sleep(50);
+			Sleep(100);
 		}
 		catch (exception e) {
 			logger.log("Capturing failed with exception: ", e.what());
