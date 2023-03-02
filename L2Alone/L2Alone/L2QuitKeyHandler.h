@@ -1,15 +1,16 @@
 #pragma once
 
 #include "L2KeyboardEventHandler.h"
+#include <Windows.h>
 
-class L2HotKeyHandler : public L2KeyboardEventHandler {
+class L2QuitKeyHandler : public L2KeyboardEventHandler {
 public:
 
-	L2HotKeyHandler(DWORD l2ProcessId) {
+	L2QuitKeyHandler(DWORD l2ProcessId) {
 		this->l2ProcessId = l2ProcessId;
 	}
 
-	void onKeyDown(KBDLLHOOKSTRUCT* kbdll) override {
+	bool onKeyDown(KBDLLHOOKSTRUCT* kbdll) override {
 
 		if (kbdll->vkCode == VK_ESCAPE) {
 			DWORD currentTick = GetTickCount64();
@@ -21,9 +22,8 @@ public:
 
 			lastEscapeTick = currentTick;
 		}
-	}
 
-	void onKeyUp(KBDLLHOOKSTRUCT* kbdll) override {
+		return true;
 	}
 
 private:

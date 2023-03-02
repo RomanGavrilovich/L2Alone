@@ -3,7 +3,12 @@
 class L2KeyboardEventHandler {
 
 public:
-	virtual void onKeyDown(KBDLLHOOKSTRUCT* kbdll) = 0;
 
-	virtual void onKeyUp(KBDLLHOOKSTRUCT* kbdll) = 0;
+	virtual bool onKeyDown(KBDLLHOOKSTRUCT* kbdll) {
+		return true;
+	}
+
+	virtual bool onKeyUp(KBDLLHOOKSTRUCT* kbdll) {
+		return true;
+	}
 };

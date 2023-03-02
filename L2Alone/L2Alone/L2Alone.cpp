@@ -20,7 +20,8 @@
 #include "window_utils.h"
 
 #include "L2EventService.h"
-#include "HotKeyHandler.h"
+#include "L2QuitKeyHandler.h"
+#include "L2PvpModeHandler.h"
 
 using namespace std;
 
@@ -43,10 +44,13 @@ int main(int argc, char* argv[])
 {
 	try {
 
-#ifdef NDEBUG
 		HWND hWnd = GetConsoleWindow();
-		ShowWindow(hWnd, SW_HIDE);
-#endif // NDEBUG
+		ShowWindow(hWnd, SW_SHOW);
+
+//#ifdef NDEBUG
+//		HWND hWnd = GetConsoleWindow();
+//		ShowWindow(hWnd, SW_HIDE);
+//#endif // NDEBUG
 
 		if (argc < 2) {
 			showMessage("Login is not provided");
@@ -83,7 +87,7 @@ int main(int argc, char* argv[])
 	}
 }
 
-void showMessage(string message) {
+ void showMessage(string message) {
 	MessageBoxA(NULL, message.c_str(), APP_NAME, MB_OK);
 }
 
@@ -127,8 +131,12 @@ void autoLoginL2(string login, string password, L2AloneConfig& config) {
 			string pathToCoreLogs = ssPathToCoreLogs.str();
 		}
 
-		auto hotKeyHandler = shared_ptr<L2HotKeyHandler>(new L2HotKeyHandler(d.dwProcessId));
+		auto hotKeyHandler = shared_ptr<L2QuitKeyHandler>(new L2QuitKeyHandler(d.dwProcessId));
 		eventService.setKeyboardHandler(d.hWindow, hotKeyHandler);
+
+		auto pvpHandler = shared_ptr<L2PvpModeHandler>(new L2PvpModeHandler());
+		eventService.setKeyboardHandler(d.hWindow, pvpHandler);
+		eventService.setFocusHandler(d.hWindow, pvpHandler);
 
 		doAutologin((HWND)d.hWindow, login, password);
 

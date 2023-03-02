@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "L2KeyboardEventHandler.h"
+#include "L2FocusEventHandler.h"
 #include "L2Events.h"
 #include "logger.h"
 
@@ -23,14 +24,18 @@ public:
 
 	void publishEventObjCreate(HWND hWnd, DWORD dwEventThread);
 	void publishForegroundWindowChanged(HWND hWnd, DWORD dwEventThread);
-	void publishKeyboard(KBDLLHOOKSTRUCT* kbdll, bool keyDown);
+	bool publishKeyboard(KBDLLHOOKSTRUCT* kbdll, bool keyDown);
 
 	void setKeyboardHandler(HWND hWindow, shared_ptr<L2KeyboardEventHandler> handler);
 	void removeKeyboardHandler(HWND hWindow, shared_ptr<L2KeyboardEventHandler> handler);
 
+	void setFocusHandler(HWND hWindow, shared_ptr<L2FocusEventHandler> handler);
+	void removeFocusHandler(HWND hWindow, shared_ptr<L2FocusEventHandler> handler);
+
 private:
 	map<DWORD, shared_ptr<promise<L2WindowCreatedEvent>>> waitL2WindowPromises;
 	map<HWND, vector<shared_ptr<L2KeyboardEventHandler>>> windowKeyHandlers;
+	map<HWND, vector<shared_ptr<L2FocusEventHandler>>> windowFocusHandlers;
 
 	DWORD tEventLoopNativeId;
 	thread* tEventLoop;
@@ -64,19 +69,27 @@ void CALLBACK L2EventServiceForegroundCheckHook(HWINEVENTHOOK hHook, DWORD event
 }
 
 LRESULT CALLBACK l2EventServiceLowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
+	
+	bool propagate = true;
+	
 	if (nCode == HC_ACTION)
 	{
 		KBDLLHOOKSTRUCT* pKeyboard = (KBDLLHOOKSTRUCT*)lParam;
 
 		if (wParam == WM_SYSKEYDOWN || wParam == WM_KEYDOWN) {
-			eventService.publishKeyboard(pKeyboard, true);
+			propagate = eventService.publishKeyboard(pKeyboard, true);
 		}
 		else if (wParam == WM_SYSKEYUP || wParam == WM_KEYUP) {
-			eventService.publishKeyboard(pKeyboard, false);
+			propagate = eventService.publishKeyboard(pKeyboard, false);
 		}
 	}
 
-	return CallNextHookEx(NULL, nCode, wParam, lParam);
+	if (propagate) {
+		return CallNextHookEx(NULL, nCode, wParam, lParam);
+	}
+	else {
+		return 1;
+	}
 }
 
 void L2EventService::start() {
@@ -252,6 +265,19 @@ void L2EventService::publishEventObjCreate(HWND hWnd, DWORD dwEventThread) {
 
 void L2EventService::publishForegroundWindowChanged(HWND hWindow, DWORD dwEventThread) {
 	activeHwnd = hWindow;
+
+	for (auto& pair : windowFocusHandlers) {
+		if (pair.first == activeHwnd) {
+			for (auto& handler : pair.second) {
+				handler->onFocusReceived();
+			}
+		}
+		else {
+			for (auto& handler : pair.second) {
+				handler->onFocusLost();
+			}
+		}
+	}
 }
 
 void L2EventService::setKeyboardHandler(HWND hWindow, shared_ptr<L2KeyboardEventHandler> handler) {
@@ -284,22 +310,56 @@ void L2EventService::removeKeyboardHandler(HWND hWindow, shared_ptr<L2KeyboardEv
 	}
 }
 
-void L2EventService::publishKeyboard(KBDLLHOOKSTRUCT* kbdll, bool keyDown) {
+void L2EventService::setFocusHandler(HWND hWindow, shared_ptr<L2FocusEventHandler> handler) {
+	windowFocusHandlers[hWindow].push_back(handler);
+	if (hWindow != activeHwnd) {
+		handler->onFocusLost();
+	}
+	else {
+		handler->onFocusReceived();
+	}
+}
 
+void L2EventService::removeFocusHandler(HWND hWindow, shared_ptr<L2FocusEventHandler> handler) {
+
+	if (windowFocusHandlers.count(hWindow) == 0) {
+		logger.warn("There is no focus handlers for window ", hWindow);
+	}
+
+	auto& handlers = windowFocusHandlers[hWindow];
+	auto pErase = handlers.erase(remove_if(
+		handlers.begin(),
+		handlers.end(),
+		[handler](shared_ptr<L2FocusEventHandler> ptr) {return ptr.get() == handler.get();})
+	);
+
+	if (pErase != handlers.end()) {
+		logger.log("Focus handler has been removed");
+	}
+	else {
+		logger.warn("Focus handler was not found");
+	}
+}
+
+bool L2EventService::publishKeyboard(KBDLLHOOKSTRUCT* kbdll, bool keyDown) {
+
+	bool propagate = true;
 	if (windowKeyHandlers.count(activeHwnd) > 0) {
 		auto& handlers = windowKeyHandlers[activeHwnd];
 		for (auto& handler : handlers) {
 			if (keyDown) {
-				handler->onKeyDown(kbdll);
+				if (!handler->onKeyDown(kbdll)) {
+					propagate = false;
+				}
 			}
 			else {
-				handler->onKeyUp(kbdll);
+				if (!handler->onKeyUp(kbdll)) {
+					propagate = false;
+				}
 			}
 		}
 	}
-	else {
-		logger.log("No window key handlers found for ", activeHwnd);
-	}
+	return propagate;
 }
 
 L2EventService::L2EventService() {

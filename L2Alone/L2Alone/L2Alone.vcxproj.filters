@@ -16,9 +16,6 @@
     <Filter Include="Header Files\Events">
       <UniqueIdentifier>{8dde292d-8eaf-4943-a0ff-2848933cd59c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Hotkeys">
-      <UniqueIdentifier>{f642a004-0b11-4b0b-a997-ec5df48924fd}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="L2Alone.cpp">
@@ -59,8 +56,14 @@
     <ClInclude Include="L2Events.h">
       <Filter>Header Files\Events</Filter>
     </ClInclude>
-    <ClInclude Include="HotKeyHandler.h">
-      <Filter>Header Files\Hotkeys</Filter>
+    <ClInclude Include="L2QuitKeyHandler.h">
+      <Filter>Header Files\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="L2PvpModeHandler.h">
+      <Filter>Header Files\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="L2FocusEventHandler.h">
+      <Filter>Header Files\Events</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

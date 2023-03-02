@@ -137,7 +137,9 @@
     <ClInclude Include="autologin.h" />
     <ClInclude Include="config_utils.h" />
     <ClInclude Include="files_utils.h" />
-    <ClInclude Include="HotKeyHandler.h" />
+    <ClInclude Include="L2FocusEventHandler.h" />
+    <ClInclude Include="L2PvpModeHandler.h" />
+    <ClInclude Include="L2QuitKeyHandler.h" />
     <ClInclude Include="L2EventService.h" />
     <ClInclude Include="L2KeyboardEventHandler.h" />
     <ClInclude Include="L2Events.h" />
