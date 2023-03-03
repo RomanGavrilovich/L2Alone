@@ -1,0 +1,6 @@
+TODO:
+
+1. Adapt for C2
+2. Improve vision, check cases when we don't capture screen and figure out what to don
+3. Add feature flags
+4. Improve loading speed

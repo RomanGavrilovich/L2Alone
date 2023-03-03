@@ -815,8 +815,6 @@ L2Window CaptureWindow(HWND hWnd, Logger& logger)
 
 	delete[] bitMapInfo.data;
 
-	Sleep(100);
-
 	SelectObject(hMemDC, hOldBitmap);
 	DeleteDC(hMemDC);
 	ReleaseDC(hWnd, hWindowDC);
