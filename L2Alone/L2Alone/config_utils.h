@@ -4,15 +4,21 @@
 #include <vector>
 
 #include "logger.h"
-#include "files_utils.h"
 #include "Utils.h"
 
 #define L2_ALONE_CONFIG_FILE_NAME "L2Alone.config"
 
 #define L2_FILE_CONFIG_KEY "PathToL2exe"
+#define L2_VERSION "L2Version"
 #define LOGS_ENABLED_CONFIG_KEY "LogsEnabled"
 #define CAPTURE_LOGS_ENABLED_CONFIG_KEY "CaptureLogsEnabled"
 #define ACCOUNT_KEY "Account"
+
+enum L2Version {
+	NONE,
+	C2,
+	C5,
+};
 
 struct L2AccountHotKey {
 	int fKey;
@@ -21,7 +27,8 @@ struct L2AccountHotKey {
 };
 
 struct L2AloneConfig {
-	string pathToL2;
+	L2Version version = L2Version::NONE;
+	string pathToL2 = "";
 	bool logsEnabled = false;
 	bool captureLogsEnabled = false;
 	vector<L2AccountHotKey> accountHotKeys;
@@ -33,6 +40,7 @@ bool splitParam(string s, string& k, string& v);
 bool toBoolean(string s);
 
 L2AccountHotKey getAccountHotKey(string& hotKeyConfigKey, string hotKeyConfigValue);
+L2Version toL2Version(string value);
 
 L2AloneConfig loadL2AloneConfig() {
 
@@ -75,10 +83,32 @@ L2AloneConfig loadL2AloneConfig() {
 			else if (startWith(k, ACCOUNT_KEY)) {
 				config.accountHotKeys.push_back(getAccountHotKey(k, v));
 			}
+			else if (k == L2_VERSION) {
+				config.version = toL2Version(v);
+			}
 		}
 	}
 
+	if (config.version == L2Version::NONE) {
+		stringstream ss;
+		ss << "Specify '" << L2_VERSION << "' in " << L2_ALONE_CONFIG_FILE_NAME << ", e.g '" << L2_VERSION << "=C5'";
+		throw exception(ss.str().c_str());
+	}
+
 	return config;
+}
+
+L2Version toL2Version(string value) {
+	if (value == "C2") {
+		return L2Version::C2;
+	}
+	else if (value == "C5") {
+		return L2Version::C5;
+	}
+
+	stringstream ss;
+	ss << "Error in configuration. Invalid " << L2_VERSION << " '" << value << "'" << ". Expected 'C2' or 'C5' ";
+	throw exception(ss.str().c_str());
 }
 
 bool toBoolean(string s) {

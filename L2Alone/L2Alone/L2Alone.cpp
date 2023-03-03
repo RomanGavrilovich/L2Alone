@@ -13,14 +13,15 @@
 #include <exception>
 #include <string>
 
-#include "autologin.h"
 #include "config_utils.h"
-#include "files_utils.h"
+#include "Utils.h"
 
 #include "Logger.h"
 #include "L2EventService.h"
 #include "L2QuitKeyHandler.h"
 #include "L2PvpModeHandler.h"
+#include "AutologinStrategy.h"
+#include "C5AutologinStrategy.h"
 
 using namespace std;
 
@@ -142,7 +143,12 @@ int autoLoginL2(string login, string password, L2AloneConfig& config) {
 		eventService.setKeyboardHandler(d.hWindow, pvpHandler);
 		eventService.setFocusHandler(d.hWindow, pvpHandler);
 
-		doAutologin((HWND)d.hWindow, login, password);
+		unique_ptr<AutologinStrategy> pAutoLoginStrategy;
+		if (config.version == C5) {
+			pAutoLoginStrategy = unique_ptr<AutologinStrategy>(new C5AutologinStrategy());
+		}
+
+		pAutoLoginStrategy->doAutologin((HWND)d.hWindow, login, password);
 
 		WaitForSingleObject(pi.hProcess, INFINITE);
 

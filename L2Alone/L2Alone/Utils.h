@@ -27,3 +27,29 @@ int getNextHotKeyIndex(int exitCode) {
 bool isExitHotKeyCode(int exitCode) {
 	return EXIT_HOT_KEY_OFFSET <= exitCode && exitCode < EXIT_HOT_KEY_OFFSET + 12;
 }
+
+void prepareDirectory(string absPath) {
+	if (CreateDirectoryA(absPath.c_str(), NULL) || ERROR_ALREADY_EXISTS == GetLastError()) {
+		return;
+	}
+
+	throw std::exception(("Can't create directory" + absPath).c_str());
+}
+
+void postText(HWND hWindow, string& s) {
+
+	for (char c : s) {
+		PostMessage(hWindow, WM_CHAR, c, 0);
+	}
+}
+
+void postControlMessage(HWND hWindow, int vk) {
+	PostMessage(hWindow, WM_KEYDOWN, vk, 0);
+}
+
+void postCredentials(HWND hWindow, string& login, string& password) {
+	postText(hWindow, login);
+	postControlMessage(hWindow, VK_TAB);
+	postText(hWindow, password);
+	postControlMessage(hWindow, VK_RETURN);
+}

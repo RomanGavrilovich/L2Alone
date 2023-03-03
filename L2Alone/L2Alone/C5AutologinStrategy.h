@@ -1,7 +1,5 @@
 #pragma once
 
-#include "logger.h"
-
 #include <iostream>
 #include <fstream>
 #include <ostream>
@@ -26,34 +24,31 @@
 #include <dbt.h>
 #include <psapi.h>
 
+#include "AutologinStrategy.h"
 #include "logger.h"
 #include "vision.h"
 
 using namespace std;
 
-enum AutologinFLowState {
-	NONE,
-	INIT,
-	WINDOW_DETECTED,
-	FILL_CREDENTIALS,
-	DO_CONFIRMATION_SEQUENCE,
-	DONE
+class C5AutologinStrategy : public AutologinStrategy {
+
+public:
+	virtual void doAutologin(HWND hWindow, string& login, string& password) override;
+
+private:
+	void handleAccountIsUsing(HWND hWindow);
+
+	bool postConfirmationSequence(HWND hWindow);
+
+	bool captureL2Window(HWND hWindow, L2Window w);
+
+	L2Window captureAuthResultWindows(HWND hWindow);
+
+	L2Window captureL2Windows(HWND hWindow, std::vector<L2Window> windows);
 };
 
-volatile AutologinFLowState autoLoginState = NONE;
+void C5AutologinStrategy::doAutologin(HWND hWindow, string& login, string& password) {
 
-void postText(HWND hWindow, string& s);
-void postCredentials(HWND hWindow, string& login, string& password);
-void postControlMessage(HWND hWindow, int vk);
-bool postConfirmationSequence(HWND hWindow);
-
-L2Window captureL2Windows(HWND hWindow, std::vector<L2Window> windows);
-bool captureL2Window(HWND hWindow, L2Window w);
-L2Window captureAuthResultWindows(HWND hWindow);
-void handleAccountIsUsing(HWND hWindow);
-
-void doAutologin(HWND hWindow, string& login, string& password)
-{
 	initializeWindowClassifier(hWindow, false);
 
 	postCredentials(hWindow, login, password);
@@ -79,7 +74,7 @@ void doAutologin(HWND hWindow, string& login, string& password)
 	}
 }
 
-void handleAccountIsUsing(HWND hWindow) {
+void C5AutologinStrategy::handleAccountIsUsing(HWND hWindow) {
 
 	for (int i = 0; i < 10; ++i) {
 		postControlMessage(hWindow, VK_RETURN);
@@ -95,28 +90,9 @@ void handleAccountIsUsing(HWND hWindow) {
 	}
 }
 
-void postText(HWND hWindow, string& s) {
-
-	for (char c : s) {
-		PostMessage(hWindow, WM_CHAR, c, 0);
-	}
-}
-
-void postControlMessage(HWND hWindow, int vk) {
-	PostMessage(hWindow, WM_KEYDOWN, vk, 0);
-}
-
-void postCredentials(HWND hWindow, string& login, string& password) {
-	postText(hWindow, login);
-	postControlMessage(hWindow, VK_TAB);
-	postText(hWindow, password);
-	postControlMessage(hWindow, VK_RETURN);
-}
-
-bool postConfirmationSequence(HWND hWindow) {
+bool C5AutologinStrategy::postConfirmationSequence(HWND hWindow) {
 
 	logger.log("Post confirmation sequence");
-	autoLoginState = DO_CONFIRMATION_SEQUENCE;
 
 	int unknownCounter = 0;
 	// 10 sec timeout
@@ -125,12 +101,12 @@ bool postConfirmationSequence(HWND hWindow) {
 		postControlMessage(hWindow, VK_RETURN);
 		Sleep(100);
 
-		auto w = CaptureWindow(hWindow, logger);
+		string s = "";
+		auto w = CaptureWindow(hWindow, s);
 		if (w == UNKNOWN) {
 			unknownCounter++;
 			if (unknownCounter == 5) {
 				logger.log("Unknown window found, complete auto login");
-				autoLoginState = DONE;
 				break;
 			}
 		}
@@ -139,13 +115,13 @@ bool postConfirmationSequence(HWND hWindow) {
 	return false;
 }
 
-bool captureL2Window(HWND hWindow, L2Window w) {
+bool C5AutologinStrategy::captureL2Window(HWND hWindow, L2Window w) {
 	std::vector<L2Window> v;
 	v.push_back(w);
 	return captureL2Windows(hWindow, v) == w;
 }
 
-L2Window captureAuthResultWindows(HWND hWindow) {
+L2Window C5AutologinStrategy::captureAuthResultWindows(HWND hWindow) {
 	std::vector<L2Window> windows;
 	windows.push_back(L2Window::AGREEMENT);
 	windows.push_back(L2Window::INVALID_CREDENTIALS);
@@ -153,18 +129,19 @@ L2Window captureAuthResultWindows(HWND hWindow) {
 	return captureL2Windows(hWindow, windows);
 }
 
-L2Window captureL2Windows(HWND hWindow, std::vector<L2Window> windows) {
+L2Window C5AutologinStrategy::captureL2Windows(HWND hWindow, std::vector<L2Window> windows) {
 
 	stringstream ss;
 	for (int i = 0; i < windows.size(); ++i) {
-		ss << getL2WindowName(windows[i]) << " ";
+		ss << getL2WindowName(windows[i]) << "_";
 	}
 	logger.log("Start window capturing: ", ss.str());
 
+	string s = ss.str().c_str();
 	for (int i = 0; i < 30; ++i) { // 3 sec
 		logger.log("Capture window");
 		try {
-			L2Window w = CaptureWindow(hWindow, logger);
+			L2Window w = CaptureWindow(hWindow, s);
 			logger.log("Capture window result: ", w);
 			if (find(windows.begin(), windows.end(), w) != windows.end()) {
 				return w;

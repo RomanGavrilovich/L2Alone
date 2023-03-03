@@ -12,7 +12,9 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+
 #include "logger.h"
+#include "Utils.h"
 
 using namespace std;
 
@@ -792,7 +794,7 @@ void initializeWindowClassifier(HWND hWnd, bool capturingEnabled)
 
 int k = 0;
 
-L2Window CaptureWindow(HWND hWnd, Logger& logger)
+L2Window CaptureWindow(HWND hWnd, string &process)
 {
 	HDC hWindowDC = GetDC(hWnd);
 	HDC hMemDC = CreateCompatibleDC(hWindowDC);
@@ -811,6 +813,14 @@ L2Window CaptureWindow(HWND hWnd, Logger& logger)
 			w = wc.getWindow();
 			break;
 		}
+	}
+
+	if (w == UNKNOWN && process.length() > 0) {
+		prepareDirectory("CaptureFailure");
+
+		stringstream ss;
+		ss << "CaptureFailure/" << process << "_" << k++ << ".bmp";
+		WriteBmpToFile(ss.str().c_str(), bitMapInfo);
 	}
 
 	delete[] bitMapInfo.data;

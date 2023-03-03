@@ -13,11 +13,14 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\Events">
-      <UniqueIdentifier>{8dde292d-8eaf-4943-a0ff-2848933cd59c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Common">
       <UniqueIdentifier>{a01a1c84-220c-42f3-9343-9f250b4ee840}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Autologin">
+      <UniqueIdentifier>{9994c2f5-612c-49d7-8e41-3e166727b37a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Events">
+      <UniqueIdentifier>{8dde292d-8eaf-4943-a0ff-2848933cd59c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -26,13 +29,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="autologin.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="config_utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="files_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vision.h">
@@ -67,6 +64,12 @@
     </ClInclude>
     <ClInclude Include="Utils.h">
       <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="AutologinStrategy.h">
+      <Filter>Header Files\Autologin</Filter>
+    </ClInclude>
+    <ClInclude Include="C5AutologinStrategy.h">
+      <Filter>Header Files\Autologin</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

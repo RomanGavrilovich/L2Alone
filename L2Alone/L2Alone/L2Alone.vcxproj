@@ -138,9 +138,9 @@
     <ClCompile Include="L2Alone.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="autologin.h" />
+    <ClInclude Include="AutologinStrategy.h" />
+    <ClInclude Include="C5AutologinStrategy.h" />
     <ClInclude Include="config_utils.h" />
-    <ClInclude Include="files_utils.h" />
     <ClInclude Include="L2FocusEventHandler.h" />
     <ClInclude Include="L2PvpModeHandler.h" />
     <ClInclude Include="L2QuitKeyHandler.h" />
