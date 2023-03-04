@@ -14,7 +14,7 @@ SingleWindowClassifier* createWinClass(WindowDefinition& def) {
 	return new SingleWindowClassifier(def.width, def.height, def.bDefs, def.textMinSize, def.textMaxSize);
 }
 
-void testWelcomeWindowClassification() {
+bool testWelcomeWindowClassification() {
 
 	map<L2Window, WindowDefinition> dest;
 	initC5WindowsDefinitions(dest);
@@ -24,6 +24,19 @@ void testWelcomeWindowClassification() {
 
 	auto bmp = readBmpFile("TestResources/Vision/welcome.bmp");
 
+	return classifier->isWindow(bmp);
+}
+
+void testServerClassification() {
+
+	map<L2Window, WindowDefinition> dest;
+	initC5WindowsDefinitions(dest);
+
+	auto def = dest[L2Window::SERVERS];
+	SingleWindowClassifier* classifier = createWinClass(def);
+
+	auto bmp = readBmpFile("TestResources/Vision/servers.bmp");
+
 	auto result = classifier->isWindow(bmp);
 
 	cout << "Result: " << result;
@@ -31,7 +44,8 @@ void testWelcomeWindowClassification() {
 
 int main(int argc, char* argv[])
 {
-	testWelcomeWindowClassification();
+	testServerClassification();
+	//testWelcomeWindowClassification();
 }
 
 

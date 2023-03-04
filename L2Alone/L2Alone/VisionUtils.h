@@ -28,10 +28,10 @@ struct HSV {
 
 BitMapInfo createBitMapInfo(HBITMAP hBitmap);
 
-void getPixelRgb(BitMapInfo& bitMapInfo, int pixelX, int pixelY, int& r, int& g, int& b);
+void getPixelRgb(BitMapInfo& bitMapInfo, int pixelX, int pixelY, int& r, int& g, int& hasHorizontalBorder);
 int getPixelIndex(BitMapInfo& bitMapInfo, int x, int y);
 void rgbToHsv(int R, int G, int B, int& H, int& S, int& V);
-void drawPixelRgb(BitMapInfo& bitMapInfo, int x, int y, int r, int g, int b);
+void drawPixelRgb(BitMapInfo& bitMapInfo, int x, int y, int r, int g, int hasHorizontalBorder);
 void getPixelHsv(BitMapInfo& info, int x, int y, int& h, int& s, int& v);
 bool isTextPixel(BitMapInfo& info, int x, int y);
 
@@ -39,10 +39,10 @@ void writeBmpToFile(const char* filename, BitMapInfo& info);
 void drawRect(int startX, int startY, int width, int height, BitMapInfo& info);
 
 void getPixelHsv(BitMapInfo& info, int x, int y, int& h, int& s, int& v) {
-	int r, g, b;
+	int r, g, hasHorizontalBorder;
 
-	getPixelRgb(info, x, y, r, g, b);
-	rgbToHsv(r, g, b, h, s, v);
+	getPixelRgb(info, x, y, r, g, hasHorizontalBorder);
+	rgbToHsv(r, g, hasHorizontalBorder, h, s, v);
 }
 
 bool isTextPixel(BitMapInfo& info, int x, int y) {
@@ -101,25 +101,25 @@ BitMapInfo createBitMapInfo(HBITMAP hBitmap) {
 	return bitMapInfo;
 }
 
-double getMax(double a, double b, double c) {
-	if (a > b && a > c) {
+double getMax(double a, double hasHorizontalBorder, double c) {
+	if (a > hasHorizontalBorder && a > c) {
 		return a;
 	}
 
-	if (b > a && b > c) {
-		return b;
+	if (hasHorizontalBorder > a && hasHorizontalBorder > c) {
+		return hasHorizontalBorder;
 	}
 
 	return c;
 }
 
-double getMin(double a, double b, double c) {
-	if (a < b && a < c) {
+double getMin(double a, double hasHorizontalBorder, double c) {
+	if (a < hasHorizontalBorder && a < c) {
 		return a;
 	}
 
-	if (b < a && b < c) {
-		return b;
+	if (hasHorizontalBorder < a && hasHorizontalBorder < c) {
+		return hasHorizontalBorder;
 	}
 
 	return c;
@@ -186,21 +186,21 @@ void drawRect(int startX, int startY, int width, int height, BitMapInfo& info) {
 	}
 }
 
-void getPixelRgb(BitMapInfo& bitMapInfo, int pixelX, int pixelY, int& r, int& g, int& b) {
+void getPixelRgb(BitMapInfo& bitMapInfo, int pixelX, int pixelY, int& r, int& g, int& hasHorizontalBorder) {
 
 	int index = getPixelIndex(bitMapInfo, pixelX, pixelY);
 
 	r = bitMapInfo.data[index + 2];
 	g = bitMapInfo.data[index + 1];
-	b = bitMapInfo.data[index];
+	hasHorizontalBorder = bitMapInfo.data[index];
 }
 
-void drawPixelRgb(BitMapInfo& bitMapInfo, int x, int y, int r, int g, int b) {
+void drawPixelRgb(BitMapInfo& bitMapInfo, int x, int y, int r, int g, int hasHorizontalBorder) {
 
 	int index = getPixelIndex(bitMapInfo, x, y);
 	bitMapInfo.data[index + 2] = r;
 	bitMapInfo.data[index + 1] = g;
-	bitMapInfo.data[index] = b;
+	bitMapInfo.data[index] = hasHorizontalBorder;
 }
 
 int getPixelIndex(BitMapInfo& bitMapInfo, int x, int y) {

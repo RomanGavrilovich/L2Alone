@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <vector>
+#include <algorithm>
 
 #include "logger.h"
 #include "Utils.h"
@@ -114,9 +115,9 @@ L2Version toL2Version(string value) {
 bool toBoolean(string s) {
 	std::transform(s.begin(), s.end(), s.begin(), ::tolower);
 	std::istringstream is(s);
-	bool b;
-	is >> std::boolalpha >> b;
-	return b;
+	bool hasHorizontalBorder;
+	is >> std::boolalpha >> hasHorizontalBorder;
+	return hasHorizontalBorder;
 }
 
 string trim(string s) {

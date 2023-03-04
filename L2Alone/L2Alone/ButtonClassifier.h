@@ -11,203 +11,237 @@ class ButtonClassifier {
 
 public:
 
+	ButtonClassifier(int rtWidth, int rtHeight);
 
-	ButtonClassifier(int rtWidth, int rtHeight) {
-		this->rtWidth = rtWidth;
-		this->rtHeight = rtHeight;
-	}
+	bool isButton(BitMapInfo& bitMapInfo, ButtonDefinition bDef);
 
-	bool isButton(BitMapInfo& bitMapInfo, ButtonDefinition bDef) {
-		return hasBorders(bitMapInfo, bDef);
-	}
-
-	bool hasBorders(BitMapInfo& bitMapInfo, ButtonDefinition bDef) {
-
-		Point targetLb = toLbPoint(bitMapInfo, bDef);
-		int lbX = targetLb.x;
-		int lbY = targetLb.y - bDef.height;
-
-		// Bottom border
-		map<int, double> botBorderH;
-		initHDistribution(bitMapInfo, lbX, lbY, bDef.width, 1, botBorderH);
-		// Below bottom border
-		map<int, double> underBotBorderH;
-		initHDistribution(bitMapInfo, lbX, lbY - 1, bDef.width, 1, underBotBorderH);
-		if (getDistributionError(botBorderH, underBotBorderH) < 5) {
-			return false;
-		}
-
-		// Top border
-		map<int, double> topBorderH;
-		initHDistribution(bitMapInfo, lbX, lbY + bDef.height - 1, bDef.width, 1, topBorderH);
-		// Above top border
-		map<int, double> upperTopBorderH;
-		initHDistribution(bitMapInfo, lbX, lbY + bDef.height, bDef.width, 1, upperTopBorderH);
-		if (getDistributionError(topBorderH, upperTopBorderH) < 5) {
-			return false;
-		}
-
-		// Left border
-		map<int, double> leftBorderH;
-		initHDistribution(bitMapInfo, lbX, lbY, 1, bDef.height, leftBorderH);
-		// Before left border
-		map<int, double> beforeLeftBorderH;
-		initHDistribution(bitMapInfo, lbX - 1, lbY, 1, bDef.height, beforeLeftBorderH);
-		if (getDistributionError(leftBorderH, beforeLeftBorderH) < 5) {
-			return false;
-		}
-
-		// Right border
-		map<int, double> rightBorderH;
-		initHDistribution(bitMapInfo, lbX + bDef.width - 1, lbY, 1, bDef.height, rightBorderH);
-		// After right border
-		map<int, double> afterRightBorderH;
-		initHDistribution(bitMapInfo, lbX + bDef.width, lbY, 1, bDef.height, afterRightBorderH);
-		if (getDistributionError(rightBorderH, afterRightBorderH) < 5) {
-			return false;
-		}
-
-		return true;
-	}
+	bool hasBorders(BitMapInfo& bitMapInfo, ButtonDefinition bDef);
 
 private:
 	int rtWidth;
 	int rtHeight;
 
-	Point toLbViaCenterOffset(int lbWidth, int lbHeight, int rtX, int rtY) {
+	Point toLbViaCenterOffset(int lbWidth, int lbHeight, int rtX, int rtY);
 
-		int rtCenterX = rtWidth / 2;
-		int rtCenterY = rtHeight / 2;
-		int rtOffsetX = rtX - rtCenterX;
-		int rtOffsetY = rtY - rtCenterY;
+	Point toLbViaCenterBottomOffset(int lbWidth, int lbHeight, int rtX, int rtY);
 
-		int lbCenterX = lbWidth / 2;
-		int lbCenterY = lbHeight / 2;
+	Point toLbViaRightBottomOffset(int lbWidth, int lbHeight, int rtX, int rtY);
 
-		Point p;
-		p.x = lbCenterX + rtOffsetX;
-		p.y = lbCenterY - rtOffsetY;
+	Point toLbPoint(BitMapInfo& bitMapInfo, ButtonDefinition& bDef);
 
-		return p;
-	}
+	void initHDistribution(BitMapInfo& bitMapInfo, int x, int y, int width, int height, map<int, double>& dest);
 
-	Point toLbViaCenterBottomOffset(int lbWidth, int lbHeight, int rtX, int rtY) {
+	void collapse(map<int, double>& source, map<int, double>& dest);
 
-		int rtCenterX = rtWidth / 2;
-		int rtCenterY = rtHeight / 2;
-		int rtOffsetX = rtX - rtCenterX;
+	double getDistributionError(map<int, double>& first, map<int, double>& second);
 
-		int lbCenterX = lbWidth / 2;
+	bool hasHorizontalBorder(BitMapInfo& bitMapInfo, int lbX, int lbY, int width, int errorRange) {
 
-		Point p;
-		p.x = lbCenterX + rtOffsetX;
-		p.y = rtHeight - rtY;
-
-		return p;
-	}
-
-	Point toLbViaRightBottomOffset(int lbWidth, int lbHeight, int rtX, int rtY) {
-
-		Point p;
-		p.x = lbWidth - (rtWidth - rtX);
-		p.y = rtHeight - rtY;
-		return p;
-	}
-
-	Point toLbPoint(BitMapInfo& bitMapInfo, ButtonDefinition& bDef) {
-
-		if (bDef.anchor == RefAnchor::Center) {
-			return toLbViaCenterOffset(bitMapInfo.width, bitMapInfo.height, bDef.rtX, bDef.rtY);
-		}
-
-		if (bDef.anchor == RefAnchor::CenterBottom) {
-			return toLbViaCenterBottomOffset(bitMapInfo.width, bitMapInfo.height, bDef.rtX, bDef.rtY);
-		}
-
-		if (bDef.anchor == RefAnchor::BottomRight) {
-			return toLbViaRightBottomOffset(bitMapInfo.width, bitMapInfo.height, bDef.rtX, bDef.rtY);
-		}
-
-		throw exception("Unrecognised ref anchor");
-	}
-
-	void initHDistribution(BitMapInfo& bitMapInfo, int x, int y, int width, int height, map<int, double>& dest) {
-
-		map<int, double> tmp;
-
-		double total = width * height;
-		for (int iy = y; iy < y + height; iy++) {
-			for (int ix = x; ix < x + width; ix++) {
-				int h, s, v;
-				getPixelHsv(bitMapInfo, ix, iy, h, s, v);
-
-				tmp[h] += 100.0 / total;
+		int startY = lbY - errorRange / 2;
+		for (int i = 0; i < errorRange; ++i) {
+			map<int, double> hA;
+			initHDistribution(bitMapInfo, lbX, startY + i, width, 1, hA);
+			map<int, double> hB;
+			initHDistribution(bitMapInfo, lbX, startY + i - 1, width, 1, hB);
+			if (getDistributionError(hA, hB) > 5) {
+				return true;
 			}
 		}
 
-		collapse(tmp, dest);
+		return false;
 	}
 
-	void collapse(map<int, double>& source, map<int, double>& dest) {
+	bool hasVerticalBorder(BitMapInfo& bitMapInfo, int lbX, int lbY, int height, int errorRange) {
 
-		int currentH = source.begin()->first;
-		double seqVal = 0;
-
-		double dVal = 0;
-		int dH = currentH;
-
-		for (auto& pair : source) {
-
-			if (pair.first - currentH <= 3) {
-				seqVal += pair.second;
-
-				if (pair.second > dVal) {
-					dH = pair.first;
-					dVal = pair.second;
-				}
+		int startX = lbX - errorRange / 2;
+		for (int i = 0; i < errorRange; ++i) {
+			map<int, double> leftBorderH;
+			initHDistribution(bitMapInfo, startX + i, lbY, 1, height, leftBorderH);
+			map<int, double> beforeLeftBorderH;
+			initHDistribution(bitMapInfo, startX + i - 1, lbY, 1, height, beforeLeftBorderH);
+			if (getDistributionError(leftBorderH, beforeLeftBorderH) > 5) {
+				return true;
 			}
-			else {
-				dest[dH] = seqVal;
-				seqVal = pair.second;
+		}
+
+		return false;
+	}
+};
+
+ButtonClassifier::ButtonClassifier(int rtWidth, int rtHeight) {
+	this->rtWidth = rtWidth;
+	this->rtHeight = rtHeight;
+}
+
+bool ButtonClassifier::isButton(BitMapInfo& bitMapInfo, ButtonDefinition bDef) {
+	return hasBorders(bitMapInfo, bDef);
+}
+
+bool ButtonClassifier::hasBorders(BitMapInfo& bitMapInfo, ButtonDefinition bDef) {
+
+	int pixelRange = 5;
+
+	Point targetLb = toLbPoint(bitMapInfo, bDef);
+	int lbX = targetLb.x;
+	int lbY = targetLb.y - bDef.height;
+
+	// Bottom border
+	if (!hasHorizontalBorder(bitMapInfo, lbX, lbY, bDef.width, pixelRange)) {
+		return false;
+	}
+
+	// Top border
+	if (!hasHorizontalBorder(bitMapInfo, lbX, lbY + bDef.height, bDef.width, pixelRange)) {
+		return false;
+	}
+
+	// Left border
+	if (!hasVerticalBorder(bitMapInfo, lbX, lbY, bDef.height, pixelRange)) {
+		return false;
+	}
+
+	// Right border
+	if (!hasVerticalBorder(bitMapInfo, lbX + bDef.width, lbY, bDef.height, pixelRange)) {
+		return false;
+	}
+
+	return true;
+}
+
+Point ButtonClassifier::toLbViaCenterOffset(int lbWidth, int lbHeight, int rtX, int rtY) {
+
+	int rtCenterX = rtWidth / 2;
+	int rtCenterY = rtHeight / 2;
+	int rtOffsetX = rtX - rtCenterX;
+	int rtOffsetY = rtY - rtCenterY;
+
+	int lbCenterX = lbWidth / 2;
+	int lbCenterY = lbHeight / 2;
+
+	Point p;
+	p.x = lbCenterX + rtOffsetX;
+	p.y = lbCenterY - rtOffsetY;
+
+	return p;
+}
+
+
+Point ButtonClassifier::toLbViaCenterBottomOffset(int lbWidth, int lbHeight, int rtX, int rtY) {
+
+	int rtCenterX = rtWidth / 2;
+	int rtCenterY = rtHeight / 2;
+	int rtOffsetX = rtX - rtCenterX;
+
+	int lbCenterX = lbWidth / 2;
+
+	Point p;
+	p.x = lbCenterX + rtOffsetX;
+	p.y = rtHeight - rtY;
+
+	return p;
+}
+
+Point ButtonClassifier::toLbViaRightBottomOffset(int lbWidth, int lbHeight, int rtX, int rtY) {
+
+	Point p;
+	p.x = lbWidth - (rtWidth - rtX);
+	p.y = rtHeight - rtY;
+	return p;
+}
+
+Point ButtonClassifier::toLbPoint(BitMapInfo& bitMapInfo, ButtonDefinition& bDef) {
+
+	if (bDef.anchor == RefAnchor::Center) {
+		return toLbViaCenterOffset(bitMapInfo.width, bitMapInfo.height, bDef.rtX, bDef.rtY);
+	}
+
+	if (bDef.anchor == RefAnchor::CenterBottom) {
+		return toLbViaCenterBottomOffset(bitMapInfo.width, bitMapInfo.height, bDef.rtX, bDef.rtY);
+	}
+
+	if (bDef.anchor == RefAnchor::BottomRight) {
+		return toLbViaRightBottomOffset(bitMapInfo.width, bitMapInfo.height, bDef.rtX, bDef.rtY);
+	}
+
+	throw exception("Unrecognised ref anchor");
+}
+
+void ButtonClassifier::initHDistribution(BitMapInfo& bitMapInfo, int x, int y, int width, int height, map<int, double>& dest) {
+
+	map<int, double> tmp;
+
+	double total = width * height;
+	for (int iy = y; iy < y + height; iy++) {
+		for (int ix = x; ix < x + width; ix++) {
+			int h, s, v;
+			getPixelHsv(bitMapInfo, ix, iy, h, s, v);
+
+			tmp[h] += 100.0 / total;
+		}
+	}
+
+	collapse(tmp, dest);
+}
+
+void ButtonClassifier::collapse(map<int, double>& source, map<int, double>& dest) {
+
+	int currentH = source.begin()->first;
+	double seqVal = 0;
+
+	double dVal = 0;
+	int dH = currentH;
+
+	for (auto& pair : source) {
+
+		if (pair.first - currentH <= 3) {
+			seqVal += pair.second;
+
+			if (pair.second > dVal) {
 				dH = pair.first;
 				dVal = pair.second;
 			}
-			currentH = pair.first;
 		}
-		dest[dH] = seqVal;
+		else {
+			dest[dH] = seqVal;
+			seqVal = pair.second;
+			dH = pair.first;
+			dVal = pair.second;
+		}
+		currentH = pair.first;
+	}
+	dest[dH] = seqVal;
+}
+
+double ButtonClassifier::getDistributionError(map<int, double>& first, map<int, double>& second) {
+
+	auto fp = first.begin();
+	auto sp = second.begin();
+
+	double sum = 0;
+
+	while (fp != first.end() || sp != second.end()) {
+
+		if (fp == first.end()) {
+			sum += sp->second;
+			++sp;
+		}
+		else if (sp == second.end()) {
+			sum += fp->second;
+			++fp;
+		}
+		else if (abs(fp->first - sp->first) < 4) {
+			sum += abs(fp->second - fp->second);
+			++fp;
+			++sp;
+		}
+		else if (fp->first > sp->first) {
+			++sp;
+		}
+		else {
+			sum += fp->second;
+			++fp;
+		}
 	}
 
-	double getDistributionError(map<int, double>& first, map<int, double>& second) {
-
-		auto fp = first.begin();
-		auto sp = second.begin();
-
-		double sum = 0;
-
-		while (fp != first.end() || sp != second.end()) {
-
-			if (fp == first.end()) {
-				sum += sp->second;
-				++sp;
-			}
-			else if (sp == second.end()) {
-				sum += fp->second;
-				++fp;
-			}
-			else if (abs(fp->first - sp->first) < 4) {
-				sum += abs(fp->second - fp->second);
-				++fp;
-				++sp;
-			}
-			else if (fp->first > sp->first) {
-				++sp;
-			}
-			else {
-				sum += fp->second;
-				++fp;
-			}
-		}
-
-		return sum;
-	}
-};
+	return sum;
+}
