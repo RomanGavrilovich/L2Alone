@@ -54,25 +54,60 @@ void postCredentials(HWND hWindow, string& login, string& password) {
 	postControlMessage(hWindow, VK_RETURN);
 }
 
-void send_low_level_mouse_move(DWORD x, DWORD y) {
+
+void convertToGlobalClientRect(HWND hWindow, int x, int y, int& globalX, int& globalY) {
+
+	// Define the client coordinates to be converted
+	POINT clientPoint = { x, y };
+
+	// Get the screen coordinates of the entire window
+	RECT windowRect;
+	GetWindowRect(hWindow, &windowRect);
+
+	// Get the screen coordinates of the top-left corner of the client area
+	POINT topLeft;
+	topLeft.x = windowRect.left;
+	topLeft.y = windowRect.top;
+	ClientToScreen(hWindow, &topLeft);
+
+	// Convert the client coordinates to screen coordinates and adjust for the header
+	POINT screenPoint;
+	screenPoint.x = clientPoint.x + (topLeft.x - windowRect.left);
+	screenPoint.y = clientPoint.y + (topLeft.y - windowRect.top);
+
+	// The converted screen coordinates are now stored in the screenPoint structure
+	globalX = screenPoint.x;
+	globalY = screenPoint.y;
+}
+
+void send_low_level_mouse_move(HWND hWindow, DWORD x, DWORD y, int e) {
+
+	int globalX;
+	int globalY;
+
+	convertToGlobalClientRect(hWindow, x, y, globalX, globalY);
+
 	INPUT input = { 0 };
 	input.type = INPUT_MOUSE;
-	input.mi.dx = x * (65535 / GetSystemMetrics(SM_CXSCREEN));
-	input.mi.dy = y * (65535 / GetSystemMetrics(SM_CYSCREEN));
+	input.mi.dx = (globalX + 5) * (65535 / GetSystemMetrics(SM_CXSCREEN));
+	input.mi.dy = (globalY + 5) * (65535 / GetSystemMetrics(SM_CYSCREEN));
 	input.mi.mouseData = 0;
-	input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
+	input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | e;
 	input.mi.time = 0;
 	SendInput(1, &input, sizeof(INPUT));
 }
 
 void postClick(HWND hWindow, int x, int y) {
 
-	LPARAM lparam = MAKELPARAM(x, y);
+	SetForegroundWindow(hWindow);
+	for (int i = 0; i < 5; ++i) {
+		Sleep(50);
+		send_low_level_mouse_move(hWindow, x, y, MOUSEEVENTF_MOVE);
+		Sleep(50);
+		send_low_level_mouse_move(hWindow, x, y, MOUSEEVENTF_LEFTDOWN);
+		Sleep(50);
+		send_low_level_mouse_move(hWindow, x, y, MOUSEEVENTF_LEFTUP);
+	}
 
-	send_low_level_mouse_move(x, y);
-
-	//PostMessage(hWindow, WM_MOUSEMOVE, MK_LBUTTON, lparam);
-
-	//Sleep(100);
-	//PostMessage(hWindow, WM_LBUTTONUP, 0, lparam);
+	//send_low_level_mouse_move(x, y, MOUSEEVENTF_LEFTUP);
 }

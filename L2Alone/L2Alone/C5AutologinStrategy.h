@@ -98,16 +98,14 @@ void C5AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passw
 			throw exception("Can't detect characters window");
 		}
 
-		//int targetX = 141;
-		//int targetY = 294;
-
-		int targetX = 1238;
-		int targetY = 768-674;
+		int targetX = 1259;
+		int targetY = 675;
 
 		for (int i = 0; i < 100; ++i) {
 			Sleep(100);
 			logger.log("CLICK");
 			postClick(hWindow, targetX, targetY);
+			return;
 		}
 
 		return;
