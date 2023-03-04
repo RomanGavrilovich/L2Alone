@@ -1,5 +1,6 @@
 // L2Alone.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
+#ifndef TEST
 
 #include <windows.h>
 #include <iostream>
@@ -41,8 +42,6 @@ int autoLoginL2(string login, string password, L2AloneConfig& config);
 void showMessage(string message);
 bool isRunnedFromExe(string process);
 L2WindowCreatedEvent waitL2WindowCreated(int processId);
-
-#ifndef TEST
 
 int main(int argc, char* argv[])
 {
@@ -94,8 +93,6 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 }
-
-#endif // TEST
 
  void showMessage(string message) {
 	MessageBoxA(NULL, message.c_str(), APP_NAME, MB_OK);
@@ -233,3 +230,4 @@ bool isRunnedFromExe(string process) {
 
 	return consoleProcessNameStr == process;
 }
+#endif // !TEST

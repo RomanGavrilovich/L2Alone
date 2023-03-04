@@ -1,5 +1,10 @@
 #pragma once
 
+#include <Windows.h>
+#include <fstream>
+
+using namespace std;
+
 struct BitMapInfo {
 
 	BYTE* data;
@@ -28,6 +33,7 @@ int getPixelIndex(BitMapInfo& bitMapInfo, int x, int y);
 void rgbToHsv(int R, int G, int B, int& H, int& S, int& V);
 void drawPixelRgb(BitMapInfo& bitMapInfo, int x, int y, int r, int g, int b);
 void getPixelHsv(BitMapInfo& info, int x, int y, int& h, int& s, int& v);
+bool isTextPixel(BitMapInfo& info, int x, int y);
 
 void writeBmpToFile(const char* filename, BitMapInfo& info);
 void drawRect(int startX, int startY, int width, int height, BitMapInfo& info);
@@ -53,7 +59,6 @@ bool isTextPixel(BitMapInfo& info, int x, int y) {
 
 	return false;
 }
-
 
 BitMapInfo createBitMapInfo(HBITMAP hBitmap) {
 

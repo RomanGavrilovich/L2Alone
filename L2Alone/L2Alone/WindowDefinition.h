@@ -1,5 +1,9 @@
 #pragma once
 
+#include <vector>
+
+using namespace std;
+
 enum L2Window {
 	UNKNOWN,
 	WELCOME,
