@@ -44,6 +44,8 @@ WindowsClassifier::~WindowsClassifier() {
 	}
 }
 
+int k = 0;
+
 L2Window WindowsClassifier::captureWindow(HWND hWnd, vector<L2Window>& windows) {
 
 	HDC hWindowDC = GetDC(hWnd);
@@ -64,6 +66,19 @@ L2Window WindowsClassifier::captureWindow(HWND hWnd, vector<L2Window>& windows) 
 			w = i;
 			break;
 		}
+	}
+
+	// TODO: Remove
+	if (w == UNKNOWN) {
+		prepareDirectory("CapturesFailure");
+		stringstream ss;
+		ss << "CapturesFailure/" << k++;
+		for (auto& w : windows) {
+			ss << getL2WindowName(w) << ".";
+		}
+		ss << "bmp";
+
+		writeBmpToFile(ss.str().c_str(), bitMapInfo);
 	}
 
 	delete[] bitMapInfo.data;
