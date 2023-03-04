@@ -42,6 +42,8 @@ void showMessage(string message);
 bool isRunnedFromExe(string process);
 L2WindowCreatedEvent waitL2WindowCreated(int processId);
 
+#ifndef TEST
+
 int main(int argc, char* argv[])
 {
 	try {
@@ -92,6 +94,8 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 }
+
+#endif // TEST
 
  void showMessage(string message) {
 	MessageBoxA(NULL, message.c_str(), APP_NAME, MB_OK);

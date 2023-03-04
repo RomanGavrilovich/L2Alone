@@ -25,9 +25,21 @@
     <Filter Include="Header Files\Vision">
       <UniqueIdentifier>{3d21c3aa-d3cb-4408-a790-94b6922e603e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Test">
+      <UniqueIdentifier>{d5cfedd9-feb7-46a5-814e-735625a6f702}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Test">
+      <UniqueIdentifier>{7cacc891-c006-4415-bd0f-206b879c7fc3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Test\Vision">
+      <UniqueIdentifier>{1624e0e6-1fbc-44b3-b730-b590f5bd8e98}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="L2Alone.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="L2AloneTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -92,6 +104,9 @@
     <ClInclude Include="WindowsDefinitions.h">
       <Filter>Header Files\Vision</Filter>
     </ClInclude>
+    <ClInclude Include="VisionTestUtils.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="L2Alone.rc">
@@ -101,6 +116,9 @@
   <ItemGroup>
     <Image Include="..\..\..\..\L2AloneBuild\App.ico">
       <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="TestResources\Vision\welcome.bmp">
+      <Filter>Resource Files\Test\Vision</Filter>
     </Image>
   </ItemGroup>
 </Project>
