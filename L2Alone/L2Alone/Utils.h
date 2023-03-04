@@ -53,3 +53,26 @@ void postCredentials(HWND hWindow, string& login, string& password) {
 	postText(hWindow, password);
 	postControlMessage(hWindow, VK_RETURN);
 }
+
+void send_low_level_mouse_move(DWORD x, DWORD y) {
+	INPUT input = { 0 };
+	input.type = INPUT_MOUSE;
+	input.mi.dx = x * (65535 / GetSystemMetrics(SM_CXSCREEN));
+	input.mi.dy = y * (65535 / GetSystemMetrics(SM_CYSCREEN));
+	input.mi.mouseData = 0;
+	input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
+	input.mi.time = 0;
+	SendInput(1, &input, sizeof(INPUT));
+}
+
+void postClick(HWND hWindow, int x, int y) {
+
+	LPARAM lparam = MAKELPARAM(x, y);
+
+	send_low_level_mouse_move(x, y);
+
+	//PostMessage(hWindow, WM_MOUSEMOVE, MK_LBUTTON, lparam);
+
+	//Sleep(100);
+	//PostMessage(hWindow, WM_LBUTTONUP, 0, lparam);
+}
