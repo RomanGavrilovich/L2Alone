@@ -19,9 +19,9 @@ public:
 	WindowsClassifier(map<L2Window, WindowDefinition> &wDefs);
 	~WindowsClassifier();
 
-	L2Window waitForWindows(HWND hWnd, vector<L2Window>& windows);
-	L2Window waitForWindow(HWND hWnd, L2Window window);
-	L2Window waitForWindow(HWND hWnd);
+	L2Window waitForWindows(HWND hWnd, vector<L2Window>& windows, int timeousMs);
+	L2Window waitForWindow(HWND hWnd, L2Window window, int timeoutMs);
+	L2Window waitForWindow(HWND hWnd, int timeoutMs);
 
 	inline SingleWindowClassifier* createSingleWindowClassifier(WindowDefinition& def);
 	
@@ -91,16 +91,16 @@ L2Window WindowsClassifier::captureWindow(HWND hWnd, vector<L2Window>& windows) 
 	return w;
 }
 
-L2Window WindowsClassifier::waitForWindows(HWND hWnd, vector<L2Window>& windows) {
+L2Window WindowsClassifier::waitForWindows(HWND hWnd, vector<L2Window>& windows, int timeoutMs) {
 
 	stringstream ss;
 	for (int i = 0; i < windows.size(); ++i) {
-		ss << getL2WindowName(windows[i]) << "_";
+		ss << getL2WindowName(windows[i]) << "/";
 	}
-	logger.log("Start window capturing: ", ss.str());
+	logger.log("Start window capturing: ", ss.str(), " with ", timeoutMs, " ms timeout");
 
-	string s = ss.str().c_str();
-	for (int i = 0; i < 30; ++i) { // 3 sec
+	int startTick = GetTickCount64();
+	while(GetTickCount64() - startTick < timeoutMs) {
 		logger.log("Capture window");
 		try {
 			L2Window w = captureWindow(hWnd, windows);
@@ -115,7 +115,7 @@ L2Window WindowsClassifier::waitForWindows(HWND hWnd, vector<L2Window>& windows)
 			}
 
 			logger.log("Didn't capture window");
-			Sleep(2000);
+			Sleep(100);
 		}
 		catch (exception e) {
 			logger.error("Capturing failed with exception: ", e.what());
@@ -126,13 +126,13 @@ L2Window WindowsClassifier::waitForWindows(HWND hWnd, vector<L2Window>& windows)
 
 }
 
-L2Window WindowsClassifier::waitForWindow(HWND hWnd, L2Window window) {
+L2Window WindowsClassifier::waitForWindow(HWND hWnd, L2Window window, int timeoutMs) {
 	vector<L2Window> v;
 	v.push_back(window);
-	return waitForWindows(hWnd, v);
+	return waitForWindows(hWnd, v, timeoutMs);
 }
 
-L2Window WindowsClassifier::waitForWindow(HWND hWnd) {
+L2Window WindowsClassifier::waitForWindow(HWND hWnd, int timeoutMs) {
 	vector<L2Window> v;
 
 	v.push_back(L2Window::WELCOME);
@@ -141,7 +141,7 @@ L2Window WindowsClassifier::waitForWindow(HWND hWnd) {
 	v.push_back(L2Window::SERVERS);
 	v.push_back(L2Window::CHARACTERS);
 
-	return waitForWindows(hWnd, v);
+	return waitForWindows(hWnd, v, timeoutMs);
 }
 
 

@@ -72,7 +72,7 @@ void C5AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passw
 
 	unique_ptr<WindowsClassifier> wClassifier(new WindowsClassifier(winDefs));
 
-	if (wClassifier->waitForWindow(hWindow, L2Window::WELCOME) != L2Window::WELCOME) {
+	if (wClassifier->waitForWindow(hWindow, L2Window::WELCOME, 10000) != L2Window::WELCOME) {
 		throw exception("Can't detect welcome window");
 	}
 
@@ -85,9 +85,24 @@ void C5AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passw
 	if (w == AGREEMENT) {
 		logger.log("Agreement window detected");
 
-		if (!postConfirmationSequence(hWindow)) {
-			logger.log("Post agreement sequence timed out");
+		Sleep(100);
+		postControlMessage(hWindow, VK_RETURN);
+		if (wClassifier->waitForWindow(hWindow, L2Window::SERVERS, 3000) != L2Window::SERVERS) {
+			throw exception("Can't detect servers window");
 		}
+
+		logger.log("Post agreement");
+		Sleep(100);
+		postControlMessage(hWindow, VK_RETURN);
+		if (wClassifier->waitForWindow(hWindow, L2Window::CHARACTERS, 3000) != L2Window::CHARACTERS) {
+			throw exception("Can't detect characters window");
+		}
+
+		for (int i = 0; i < 10; ++i) {
+			Sleep(100);
+			postControlMessage(hWindow, VK_RETURN);
+		}
+		logger.log("Auto login flow completed");
 	}
 	else if (w == ACCOUNT_IN_USE) {
 		logger.log("Account already in use. Try again");
@@ -126,7 +141,7 @@ bool C5AutologinStrategy::postConfirmationSequence(HWND hWindow) {
 		postControlMessage(hWindow, VK_RETURN);
 		Sleep(100);
 
-		auto w = wClassifier->waitForWindow(hWindow);
+		auto w = wClassifier->waitForWindow(hWindow, 100);
 		if (w == UNKNOWN) {
 			logger.log("Unknown window found, complete auto login");
 			return true;
@@ -141,7 +156,7 @@ L2Window C5AutologinStrategy::captureAuthResultWindows(HWND hWindow) {
 	windows.push_back(L2Window::AGREEMENT);
 	windows.push_back(L2Window::INCORRECT_PASSWORD);
 	windows.push_back(L2Window::ACCOUNT_IN_USE);
-	return wClassifier->waitForWindows(hWindow, windows);
+	return wClassifier->waitForWindows(hWindow, windows, 5000);
 }
 
 void C5AutologinStrategy::initWindowsDefinitions(map<L2Window, WindowDefinition>& dest) {
