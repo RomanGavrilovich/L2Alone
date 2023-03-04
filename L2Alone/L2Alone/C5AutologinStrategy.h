@@ -126,14 +126,10 @@ bool C5AutologinStrategy::postConfirmationSequence(HWND hWindow) {
 		postControlMessage(hWindow, VK_RETURN);
 		Sleep(100);
 
-		string s = "";
 		auto w = wClassifier->waitForWindow(hWindow);
 		if (w == UNKNOWN) {
-			unknownCounter++;
-			if (unknownCounter == 5) {
-				logger.log("Unknown window found, complete auto login");
-				break;
-			}
+			logger.log("Unknown window found, complete auto login");
+			return true;
 		}
 	}
 

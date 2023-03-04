@@ -35,37 +35,9 @@ private:
 
 	double getDistributionError(map<int, double>& first, map<int, double>& second);
 
-	bool hasHorizontalBorder(BitMapInfo& bitMapInfo, int lbX, int lbY, int width, int errorRange) {
+	bool hasHorizontalBorder(BitMapInfo& bitMapInfo, int lbX, int lbY, int width, int errorRange);
 
-		int startY = lbY - errorRange / 2;
-		for (int i = 0; i < errorRange; ++i) {
-			map<int, double> hA;
-			initHDistribution(bitMapInfo, lbX, startY + i, width, 1, hA);
-			map<int, double> hB;
-			initHDistribution(bitMapInfo, lbX, startY + i - 1, width, 1, hB);
-			if (getDistributionError(hA, hB) > 5) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	bool hasVerticalBorder(BitMapInfo& bitMapInfo, int lbX, int lbY, int height, int errorRange) {
-
-		int startX = lbX - errorRange / 2;
-		for (int i = 0; i < errorRange; ++i) {
-			map<int, double> leftBorderH;
-			initHDistribution(bitMapInfo, startX + i, lbY, 1, height, leftBorderH);
-			map<int, double> beforeLeftBorderH;
-			initHDistribution(bitMapInfo, startX + i - 1, lbY, 1, height, beforeLeftBorderH);
-			if (getDistributionError(leftBorderH, beforeLeftBorderH) > 5) {
-				return true;
-			}
-		}
-
-		return false;
-	}
+	bool hasVerticalBorder(BitMapInfo& bitMapInfo, int lbX, int lbY, int height, int errorRange);
 };
 
 ButtonClassifier::ButtonClassifier(int rtWidth, int rtHeight) {
@@ -75,6 +47,38 @@ ButtonClassifier::ButtonClassifier(int rtWidth, int rtHeight) {
 
 bool ButtonClassifier::isButton(BitMapInfo& bitMapInfo, ButtonDefinition bDef) {
 	return hasBorders(bitMapInfo, bDef);
+}
+
+bool ButtonClassifier::hasHorizontalBorder(BitMapInfo& bitMapInfo, int lbX, int lbY, int width, int errorRange) {
+
+	int startY = lbY - errorRange / 2;
+	for (int i = 0; i < errorRange; ++i) {
+		map<int, double> hA;
+		initHDistribution(bitMapInfo, lbX, startY + i, width, 1, hA);
+		map<int, double> hB;
+		initHDistribution(bitMapInfo, lbX, startY + i - 1, width, 1, hB);
+		if (getDistributionError(hA, hB) > 5) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool ButtonClassifier::hasVerticalBorder(BitMapInfo& bitMapInfo, int lbX, int lbY, int height, int errorRange) {
+
+	int startX = lbX - errorRange / 2;
+	for (int i = 0; i < errorRange; ++i) {
+		map<int, double> leftBorderH;
+		initHDistribution(bitMapInfo, startX + i, lbY, 1, height, leftBorderH);
+		map<int, double> beforeLeftBorderH;
+		initHDistribution(bitMapInfo, startX + i - 1, lbY, 1, height, beforeLeftBorderH);
+		if (getDistributionError(leftBorderH, beforeLeftBorderH) > 5) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool ButtonClassifier::hasBorders(BitMapInfo& bitMapInfo, ButtonDefinition bDef) {
