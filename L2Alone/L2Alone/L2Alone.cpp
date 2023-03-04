@@ -22,6 +22,7 @@
 #include "L2PvpModeHandler.h"
 #include "AutologinStrategy.h"
 #include "C5AutologinStrategy.h"
+#include "C2AutoLoginStrategy.h"
 
 using namespace std;
 
@@ -145,7 +146,12 @@ int autoLoginL2(string login, string password, L2AloneConfig& config) {
 
 		unique_ptr<AutologinStrategy> pAutoLoginStrategy;
 		if (config.version == C5) {
+			logger.log("Do autologin for C5");
 			pAutoLoginStrategy = unique_ptr<AutologinStrategy>(new C5AutologinStrategy());
+		}
+		else if (config.version == C2) {
+			logger.log("Do autologin for C2");
+			pAutoLoginStrategy = unique_ptr<AutologinStrategy>(new C2AutologinStrategy());
 		}
 
 		pAutoLoginStrategy->doAutologin((HWND)d.hWindow, login, password);

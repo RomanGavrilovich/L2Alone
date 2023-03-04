@@ -1,6 +1,18 @@
 TODO:
 
 1. Adapt for C2
-2. Improve vision, check cases when we don't capture screen and figure out what to don
+2. Improve vision, check cases when we don't capture screen and figure out what to do
 3. Add feature flags
 4. Improve loading speed
+
+
+
+==
+Main window
+609, 443, 64x19
+694, 443, 64x19
+
+1228, 620, 99x19
+1228, 644, 99x19
+1228, 644, 99x19
+1228, 692, 99x19

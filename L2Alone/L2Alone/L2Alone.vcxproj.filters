@@ -22,6 +22,9 @@
     <Filter Include="Header Files\Events">
       <UniqueIdentifier>{8dde292d-8eaf-4943-a0ff-2848933cd59c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Vision">
+      <UniqueIdentifier>{3d21c3aa-d3cb-4408-a790-94b6922e603e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="L2Alone.cpp">
@@ -30,9 +33,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="config_utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vision.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
@@ -70,6 +70,27 @@
     </ClInclude>
     <ClInclude Include="C5AutologinStrategy.h">
       <Filter>Header Files\Autologin</Filter>
+    </ClInclude>
+    <ClInclude Include="C2AutoLoginStrategy.h">
+      <Filter>Header Files\Autologin</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowDefinition.h">
+      <Filter>Header Files\Vision</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowsClassifier.h">
+      <Filter>Header Files\Vision</Filter>
+    </ClInclude>
+    <ClInclude Include="VisionUtils.h">
+      <Filter>Header Files\Vision</Filter>
+    </ClInclude>
+    <ClInclude Include="ButtonClassifier.h">
+      <Filter>Header Files\Vision</Filter>
+    </ClInclude>
+    <ClInclude Include="SingleWindowClassifier.h">
+      <Filter>Header Files\Vision</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowsDefinitions.h">
+      <Filter>Header Files\Vision</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

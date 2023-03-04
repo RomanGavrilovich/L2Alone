@@ -139,6 +139,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AutologinStrategy.h" />
+    <ClInclude Include="ButtonClassifier.h" />
+    <ClInclude Include="C2AutoLoginStrategy.h" />
     <ClInclude Include="C5AutologinStrategy.h" />
     <ClInclude Include="config_utils.h" />
     <ClInclude Include="L2FocusEventHandler.h" />
@@ -147,11 +149,15 @@
     <ClInclude Include="L2EventService.h" />
     <ClInclude Include="L2KeyboardEventHandler.h" />
     <ClInclude Include="L2Events.h" />
+    <ClInclude Include="SingleWindowClassifier.h" />
+    <ClInclude Include="VisionUtils.h" />
+    <ClInclude Include="WindowsClassifier.h" />
+    <ClInclude Include="WindowDefinition.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="resource1.h" />
     <ClInclude Include="Utils.h" />
-    <ClInclude Include="vision.h" />
+    <ClInclude Include="WindowsDefinitions.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="L2Alone.rc" />

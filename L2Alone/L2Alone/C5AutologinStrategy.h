@@ -25,31 +25,56 @@
 #include <psapi.h>
 
 #include "AutologinStrategy.h"
+#include "WindowsClassifier.h"
+#include "WindowsDefinitions.h"
+
 #include "logger.h"
-#include "vision.h"
 
 using namespace std;
 
 class C5AutologinStrategy : public AutologinStrategy {
 
 public:
-	virtual void doAutologin(HWND hWindow, string& login, string& password) override;
+	C5AutologinStrategy();
+	~C5AutologinStrategy();
+
+	void doAutologin(HWND hWindow, string& login, string& password) override;
 
 private:
+
+	WindowsClassifier* wClassifier;
+
 	void handleAccountIsUsing(HWND hWindow);
 
 	bool postConfirmationSequence(HWND hWindow);
 
-	bool captureL2Window(HWND hWindow, L2Window w);
-
 	L2Window captureAuthResultWindows(HWND hWindow);
 
-	L2Window captureL2Windows(HWND hWindow, std::vector<L2Window> windows);
+	static void initWindowsDefinitions(map<L2Window, WindowDefinition>& dest);
 };
+
+C5AutologinStrategy::C5AutologinStrategy() {
+
+	map<L2Window, WindowDefinition> winDefs;
+	initWindowsDefinitions(winDefs);
+
+	wClassifier = new WindowsClassifier(winDefs);
+}
+
+C5AutologinStrategy::~C5AutologinStrategy() {
+	delete wClassifier;
+}
 
 void C5AutologinStrategy::doAutologin(HWND hWindow, string& login, string& password) {
 
-	initializeWindowClassifier(hWindow, false);
+	map<L2Window, WindowDefinition> winDefs;
+	initWindowsDefinitions(winDefs);
+
+	unique_ptr<WindowsClassifier> wClassifier(new WindowsClassifier(winDefs));
+
+	if (wClassifier->waitForWindow(hWindow, L2Window::WELCOME) != L2Window::WELCOME) {
+		throw exception("Can't detect welcome window");
+	}
 
 	postCredentials(hWindow, login, password);
 	logger.log("Credentials posted");
@@ -68,7 +93,7 @@ void C5AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passw
 		logger.log("Account already in use. Try again");
 		handleAccountIsUsing(hWindow);
 	}
-	else if (w == INVALID_CREDENTIALS) {
+	else if (w == INCORRECT_PASSWORD) {
 		logger.log("Invalid credentials entered. Exit");
 		return;
 	}
@@ -102,7 +127,7 @@ bool C5AutologinStrategy::postConfirmationSequence(HWND hWindow) {
 		Sleep(100);
 
 		string s = "";
-		auto w = CaptureWindow(hWindow, s);
+		auto w = wClassifier->waitForWindow(hWindow);
 		if (w == UNKNOWN) {
 			unknownCounter++;
 			if (unknownCounter == 5) {
@@ -115,50 +140,58 @@ bool C5AutologinStrategy::postConfirmationSequence(HWND hWindow) {
 	return false;
 }
 
-bool C5AutologinStrategy::captureL2Window(HWND hWindow, L2Window w) {
-	std::vector<L2Window> v;
-	v.push_back(w);
-	return captureL2Windows(hWindow, v) == w;
-}
-
 L2Window C5AutologinStrategy::captureAuthResultWindows(HWND hWindow) {
 	std::vector<L2Window> windows;
 	windows.push_back(L2Window::AGREEMENT);
-	windows.push_back(L2Window::INVALID_CREDENTIALS);
+	windows.push_back(L2Window::INCORRECT_PASSWORD);
 	windows.push_back(L2Window::ACCOUNT_IN_USE);
-	return captureL2Windows(hWindow, windows);
+	return wClassifier->waitForWindows(hWindow, windows);
 }
 
-L2Window C5AutologinStrategy::captureL2Windows(HWND hWindow, std::vector<L2Window> windows) {
+void C5AutologinStrategy::initWindowsDefinitions(map<L2Window, WindowDefinition>& dest) {
 
-	stringstream ss;
-	for (int i = 0; i < windows.size(); ++i) {
-		ss << getL2WindowName(windows[i]) << "_";
-	}
-	logger.log("Start window capturing: ", ss.str());
+	int refScreenWidth = 1360;
+	int refScreenHeight = 768;
 
-	string s = ss.str().c_str();
-	for (int i = 0; i < 30; ++i) { // 3 sec
-		logger.log("Capture window");
-		try {
-			L2Window w = CaptureWindow(hWindow, s);
-			logger.log("Capture window result: ", w);
-			if (find(windows.begin(), windows.end(), w) != windows.end()) {
-				return w;
-			}
-			else {
-				if (w != UNKNOWN) {
-					logger.log("Find unexpected window: ", getL2WindowName(w));
-				}
-			}
+	// Log-in screen
+	vector<ButtonDefinition> welcomeBtnDefs;
+	welcomeBtnDefs.push_back(ButtonDefinition{ 583, 402, 94, 21 });
+	welcomeBtnDefs.push_back(ButtonDefinition{ 683, 402, 94, 21 });
 
-			logger.log("Didn't capture window");
-			Sleep(100);
-		}
-		catch (exception e) {
-			logger.log("Capturing failed with exception: ", e.what());
-		}
-	}
+	auto welcomeDef = WindowDefinition{ refScreenWidth, refScreenHeight, welcomeBtnDefs, 0, 0 };
+	dest[L2Window::WELCOME] = welcomeDef;
 
-	return UNKNOWN;
+	auto accountInUseDef = WindowDefinition{ refScreenWidth, refScreenHeight, welcomeBtnDefs, 200, 300 };
+	dest[L2Window::ACCOUNT_IN_USE] = accountInUseDef;
+
+	auto incorrectPasswordDef = WindowDefinition{ refScreenWidth, refScreenHeight, welcomeBtnDefs, 400, 500 };
+	dest[L2Window::INCORRECT_PASSWORD] = incorrectPasswordDef;
+
+	// Agreement screen
+	vector<ButtonDefinition> agreementBtnDefs;
+	agreementBtnDefs.push_back(ButtonDefinition{ 603, 568, 74, 21 });
+	agreementBtnDefs.push_back(ButtonDefinition{ 683, 568, 74, 21 });
+
+	auto agreementDef = WindowDefinition{ refScreenWidth, refScreenHeight, agreementBtnDefs, 0, 0 };
+	dest[L2Window::AGREEMENT] = agreementDef;
+
+
+	// Servers screen
+	vector<ButtonDefinition> serverBtnDefs;
+	serverBtnDefs.push_back(ButtonDefinition{ 563, 410, 74, 21 });
+	serverBtnDefs.push_back(ButtonDefinition{ 643, 410, 74, 21 });
+	serverBtnDefs.push_back(ButtonDefinition{ 724, 410, 74, 21 });
+
+	auto serversDef = WindowDefinition{ refScreenWidth, refScreenHeight, serverBtnDefs, 0, 0 };
+	dest[L2Window::SERVERS] = serversDef;
+
+	// Chars screen
+	vector<ButtonDefinition> charsBtnDefs;
+	charsBtnDefs.push_back(ButtonDefinition{ 623, 668, 114, 29, RefAnchor::CenterBottom });
+	charsBtnDefs.push_back(ButtonDefinition{ 1219, 589, 94, 21, RefAnchor::BottomRight });
+	charsBtnDefs.push_back(ButtonDefinition{ 1219, 613, 94, 21, RefAnchor::BottomRight });
+	charsBtnDefs.push_back(ButtonDefinition{ 1219, 663, 94, 21, RefAnchor::BottomRight });
+
+	auto charsDef = WindowDefinition{ refScreenWidth, refScreenHeight, charsBtnDefs, 0, 0 };
+	dest[L2Window::CHARACTERS] = charsDef;
 }
