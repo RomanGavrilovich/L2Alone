@@ -26,7 +26,7 @@ void testWelcomeWindowClassification() {
 
 	auto result = classifier->isWindow(bmp);
 
-	cout << "Result" << result;
+	cout << "Result: " << result;
 }
 
 int main(int argc, char* argv[])

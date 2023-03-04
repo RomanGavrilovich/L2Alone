@@ -1,12 +1,16 @@
 #pragma once
 
+#include <map>
+
 #include "VisionUtils.h"
+#include "WindowDefinition.h"
 
 using namespace std;
 
 class ButtonClassifier {
 
 public:
+
 
 	ButtonClassifier(int rtWidth, int rtHeight) {
 		this->rtWidth = rtWidth;
@@ -170,6 +174,7 @@ private:
 			}
 			currentH = pair.first;
 		}
+		dest[dH] = seqVal;
 	}
 
 	double getDistributionError(map<int, double>& first, map<int, double>& second) {
