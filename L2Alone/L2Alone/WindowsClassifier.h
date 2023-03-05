@@ -77,7 +77,7 @@ L2Window WindowsClassifier::captureWindow(HWND hWnd, vector<L2Window>& windows) 
 		}
 	}
 
-	// TODO: Remove
+#ifndef L2A_RELEASE
 	if (w == UNKNOWN) {
 		prepareDirectory("CapturesFailure");
 		stringstream ss;
@@ -89,6 +89,7 @@ L2Window WindowsClassifier::captureWindow(HWND hWnd, vector<L2Window>& windows) 
 
 		writeBmpToFile(ss.str().c_str(), bitMapInfo);
 	}
+#endif // !L2A_RELEASE
 
 	delete[] bitMapInfo.data;
 

@@ -247,42 +247,47 @@ string getL2WindowName(L2Window window) {
 	return "UNDEFINED";
 }
 
+bool hasTextVertical(BitMapInfo& bitMapInfo, int x) {
+
+	int offset = 20;
+	int height = 10;
+
+	for (int i = offset; i < offset + height; ++i) {
+		if (isTextPixel(bitMapInfo, x, i)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 int getSystemMessageLength(BitMapInfo& bitMapInfo) {
 
-	int targetH = 300;
-	int targetV = 86;
-	int frameH = 50;
-
-	int textStartIndex = -1;
-	for (int i = 0; i < bitMapInfo.width; ++i) {
-		for (int j = 0; j < frameH; ++j) {
-			if (isTextPixel(bitMapInfo, i, j)) {
-				textStartIndex = i;
-				break;
-			}
+	int centerX = bitMapInfo.width / 2;
+	int maxNoTextPixelCount = 10;
+	
+	int noTextPixelCount = 0;
+	int startPixelX = -1;
+	for (int i = centerX; i >= 0; --i) {
+		
+		if (hasTextVertical(bitMapInfo, i)) {
+			startPixelX = i;
+			noTextPixelCount = 0;
+		}
+		else {
+			noTextPixelCount++;
 		}
 
-		if (textStartIndex > 0) {
+		if (noTextPixelCount == maxNoTextPixelCount) {
+			noTextPixelCount = 0;
 			break;
 		}
 	}
-
-	int textEndIndex = -1;
-	for (int i = bitMapInfo.width - 1; i >= 0; --i) {
-		for (int j = 0; j < frameH; ++j) {
-			if (isTextPixel(bitMapInfo, i, j)) {
-				textEndIndex = i;
-				break;
-			}
-		}
-
-		if (textEndIndex > 0) {
-			break;
-		}
+	if (startPixelX == -1) {
+		return 0;
 	}
 
-	int length = textEndIndex - textStartIndex;
-	return length;
+	return (centerX - startPixelX) * 2;
 }
 
 Point toLbViaCenterOffset(int rtWidth, int rtHeight, int lbWidth, int lbHeight, int rtX, int rtY) {

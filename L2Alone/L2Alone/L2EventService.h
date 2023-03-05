@@ -17,7 +17,6 @@ UINT L2WM_KEY_LL_HOOK = RegisterWindowMessageA("L2Alone_KeyLowLevelHook");
 class L2EventService {
 public:
 
-	L2EventService();
 	void start();
 	void stop();
 	shared_ptr<promise<L2WindowCreatedEvent>> waitForL2Window(DWORD processId);
@@ -355,7 +354,3 @@ bool L2EventService::publishKeyboard(KBDLLHOOKSTRUCT* kbdll, bool keyDown) {
 	}
 	return propagate;
 }
-
-L2EventService::L2EventService() {
-}
-

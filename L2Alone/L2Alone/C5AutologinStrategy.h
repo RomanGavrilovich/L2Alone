@@ -40,6 +40,8 @@ public:
 
 	void doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot) override;
 
+	void doConfirmationFlow(HWND hWindow, L2CharSlot slot);
+
 private:
 
 	WindowsClassifier* wClassifier;
@@ -61,6 +63,29 @@ C5AutologinStrategy::~C5AutologinStrategy() {
 	delete wClassifier;
 }
 
+void C5AutologinStrategy::doConfirmationFlow(HWND hWindow, L2CharSlot slot) {
+	logger.log("Agreement window detected");
+
+	Sleep(100);
+	postControlMessage(hWindow, VK_RETURN);
+	if (wClassifier->waitForWindow(hWindow, L2Window::SERVERS, 3000) != L2Window::SERVERS) {
+		throw exception("Can't detect servers window");
+	}
+
+	logger.log("Post agreement");
+	Sleep(100);
+	postControlMessage(hWindow, VK_RETURN);
+	if (wClassifier->waitForWindow(hWindow, L2Window::CHARACTERS, 3000) != L2Window::CHARACTERS) {
+		throw exception("Can't detect characters window");
+	}
+
+	for (int i = 0; i < 10; ++i) {
+		Sleep(100);
+		postControlMessage(hWindow, VK_RETURN);
+	}
+	logger.log("Auto login flow completed");
+}
+
 void C5AutologinStrategy::doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot) {
 
 	if (wClassifier->waitForWindow(hWindow, L2Window::WELCOME, 10000) != L2Window::WELCOME) {
@@ -74,26 +99,7 @@ void C5AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passw
 	L2Window w = captureAuthResultWindows(hWindow);
 	logger.log("Captured auth result: ", getL2WindowName(w));
 	if (w == AGREEMENT) {
-		logger.log("Agreement window detected");
-
-		Sleep(100);
-		postControlMessage(hWindow, VK_RETURN);
-		if (wClassifier->waitForWindow(hWindow, L2Window::SERVERS, 3000) != L2Window::SERVERS) {
-			throw exception("Can't detect servers window");
-		}
-
-		logger.log("Post agreement");
-		Sleep(100);
-		postControlMessage(hWindow, VK_RETURN);
-		if (wClassifier->waitForWindow(hWindow, L2Window::CHARACTERS, 3000) != L2Window::CHARACTERS) {
-			throw exception("Can't detect characters window");
-		}
-
-		for (int i = 0; i < 10; ++i) {
-			Sleep(100);
-			postControlMessage(hWindow, VK_RETURN);
-		}
-		logger.log("Auto login flow completed");
+		doConfirmationFlow(hWindow, slot); 
 	}
 	else if (w == ACCOUNT_IN_USE) {
 		logger.log("Account already in use. Try again");
@@ -108,6 +114,15 @@ void C5AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passw
 void C5AutologinStrategy::handleAccountIsUsing(HWND hWindow) {
 
 	logger.log("Account is using");
+
+	Sleep(100);
+	postControlMessage(hWindow, VK_RETURN);
+
+	L2Window w = wClassifier->waitForWindow(hWindow, AGREEMENT, 5000);
+	if (w != AGREEMENT) {
+		throw exception("Can't find agreement screen");
+	}
+	doConfirmationFlow(hWindow, L2CharSlot::ACTIVE);
 }
 
 L2Window C5AutologinStrategy::captureAuthResultWindows(HWND hWindow) {

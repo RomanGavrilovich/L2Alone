@@ -159,11 +159,11 @@ void C2AutologinStrategy::selectCharacter(HWND hWindow, L2CharSlot slot) {
 	SetForegroundWindow(hWindow);
 	Sleep(100);
 
-	postClick(hWindow, 124, 44);
+	doClick(hWindow, 124, 44);
 	Sleep(100);
 
-	postClick(hWindow, 124, 58 + charDropdownOffset);
+	doClick(hWindow, 124, 58 + charDropdownOffset);
 	Sleep(100);
 
-	postClick(hWindow, targetX, targetY);
+	doClick(hWindow, targetX, targetY);
 }

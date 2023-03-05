@@ -1,8 +1,9 @@
 #pragma once
 
+#include <Windows.h>
+
 #include "L2KeyboardEventHandler.h"
 #include "config_utils.h"
-#include <Windows.h>
 
 class L2QuitKeyHandler : public L2KeyboardEventHandler {
 public:
@@ -36,11 +37,21 @@ public:
 
 		if (kbdll->vkCode == VK_ESCAPE) {
 			DWORD currentTick = GetTickCount64();
-			if (currentTick - lastEscapeTick < 500) {
+			if (currentTick - lastEscapeTick < 100) {
+				escapeCount++;
+			}
+			else {
+				escapeCount = 0;
+			}
+
+			if (escapeCount == 1) {
 				HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, l2ProcessId);
 				TerminateProcess(hProcess, 0);
 				CloseHandle(hProcess);
 			}
+		}
+		else {
+			escapeCount = 0;
 		}
 
 		return true;
@@ -49,7 +60,7 @@ public:
 	bool onKeyUp(KBDLLHOOKSTRUCT* kbdll) override {
 		
 		if (kbdll->vkCode == VK_ESCAPE) {
-			lastEscapeTick = GetTickCount();
+			lastEscapeTick = GetTickCount64();
 		}
 
 		return true;
@@ -57,6 +68,7 @@ public:
 
 private:
 	DWORD lastEscapeTick = INT_MAX;
+	int escapeCount = 0;
 	DWORD l2ProcessId;
 	vector<L2AccountHotKey> *accountHotKeys;
 };

@@ -52,9 +52,7 @@ bool ButtonClassifier::isButton(BitMapInfo& bitMapInfo, ButtonDefinition bDef) {
 	bool r = hasBorders(bitMapInfo, bDef);
 
 #ifdef TEST
-	if (!r) {
-		drawDebugBorders(bitMapInfo, bDef);
-	}
+	drawDebugBorders(bitMapInfo, bDef);
 #endif // TEST
 
 	return r;
@@ -68,7 +66,8 @@ bool ButtonClassifier::hasHorizontalBorder(BitMapInfo& bitMapInfo, int lbX, int 
 		initHDistribution(bitMapInfo, lbX, startY + i, width, 1, hA);
 		map<int, double> hB;
 		initHDistribution(bitMapInfo, lbX, startY + i - 1, width, 1, hB);
-		if (getDistributionError(hA, hB) > 5) {
+
+		if ((hA.size() < 5 || hB.size() < 5) && getDistributionError(hA, hB) > 5) {
 			return true;
 		}
 	}

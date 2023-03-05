@@ -76,7 +76,7 @@ void convertToGlobalClientRect(HWND hWindow, int x, int y, int& globalX, int& gl
 	globalY = screenPoint.y;
 }
 
-void send_low_level_mouse_move(HWND hWindow, DWORD x, DWORD y, int e) {
+void sendLowLevelMouseEvent(HWND hWindow, DWORD x, DWORD y, int e) {
 
 	int globalX;
 	int globalY;
@@ -95,17 +95,11 @@ void send_low_level_mouse_move(HWND hWindow, DWORD x, DWORD y, int e) {
 
 void postClick(HWND hWindow, int x, int y) {
 
-	send_low_level_mouse_move(hWindow, x, y, MOUSEEVENTF_MOVE);
+	sendLowLevelMouseEvent(hWindow, x, y, MOUSEEVENTF_MOVE);
 	Sleep(100);
 
-	send_low_level_mouse_move(hWindow, x, y, MOUSEEVENTF_LEFTDOWN);
+	sendLowLevelMouseEvent(hWindow, x, y, MOUSEEVENTF_LEFTDOWN);
 	Sleep(100);
 
-	send_low_level_mouse_move(hWindow, x, y, MOUSEEVENTF_LEFTUP);
-}
-
-void postClickNoMove(HWND hWindow, int x, int y) {
-	send_low_level_mouse_move(hWindow, x, y, MOUSEEVENTF_LEFTDOWN);
-	Sleep(100);
-	send_low_level_mouse_move(hWindow, x, y, MOUSEEVENTF_LEFTUP);
+	sendLowLevelMouseEvent(hWindow, x, y, MOUSEEVENTF_LEFTUP);
 }

@@ -51,9 +51,13 @@ void testC2WelcomeWindow();
 void testC2AgreementScreen();
 void testC2InUseSreen();
 
+
+// C5 tests
+void testC5();
+
 int main(int argc, char* argv[])
 {
-	testC2();
+	testC5();
 
 	//testServerClassification();
 	//testWelcomeWindowClassification();
@@ -132,5 +136,97 @@ void testC2InUseSreen() {
 	}
 }
 
+bool testClassifier(L2Window window, string testFile, string testName, string caseName) {
+
+	map<L2Window, WindowDefinition> dest;
+	WindowsDefinitions::initC5WindowsDefinitions(dest);
+
+	auto def = dest[window];
+	SingleWindowClassifier* classifier = createWinClass(def);
+
+	auto bmp = readBmpFile(testFile.c_str());
+
+	auto result = classifier->isWindow(bmp);
+
+	prepareDirectory("TestCaptures");
+	prepareDirectory("TestCaptures/" + testName);
+
+	stringstream ss;
+	ss << "TestCaptures/" << testName << "/" << caseName << ".bmp";
+	writeBmpToFile(ss.str().c_str(), bmp);
+
+	delete classifier;
+	return result;
+}
+
+void assertFalse(bool value) {
+	if (value) {
+		throw exception("Assert failed");
+	}
+}
+
+void assertTrue(bool value) {
+	if (!value) {
+		throw exception("Assert failure");
+	}
+}
+
+// C5
+void testC5WindowClassifier(L2Window window) {
+
+	stringstream ssName;
+	ssName << "testC5_" << getL2WindowName(window);
+	string testName = ssName.str().c_str();
+
+	bool isWelcome = testClassifier(window, "TestResources/Vision/C5/welcome.bmp", testName, "welcome");
+	if (window == L2Window::WELCOME) {
+		assertTrue(isWelcome);
+	}
+	else {
+		assertFalse(isWelcome);
+	}
+
+	bool isPassword = testClassifier(window, "TestResources/Vision/C5/password.bmp", testName, "password");
+	if (window == L2Window::INCORRECT_PASSWORD) {
+		assertTrue(isPassword);
+	}
+	else {
+		assertFalse(isPassword);
+	}
+
+	bool isUse = testClassifier(window, "TestResources/Vision/C5/use.bmp", testName, "use");
+	if (window == L2Window::ACCOUNT_IN_USE) {
+		assertTrue(isUse);
+	}
+	else {
+		assertFalse(isUse);
+	}
+
+	bool isAgreement = testClassifier(window, "TestResources/Vision/C5/agreement.bmp", testName, "agreement");
+	if (window == L2Window::AGREEMENT) {
+		assertTrue(isAgreement);
+	}
+	else {
+		assertFalse(isAgreement);
+	}
+
+	bool isServers = testClassifier(window, "TestResources/Vision/C5/servers.bmp", testName, "servers");
+	if (window == L2Window::SERVERS) {
+		assertTrue(isServers);
+	}
+	else {
+		assertFalse(isServers);
+	}
+}
+
+void testC5() {
+
+	//testC5WindowClassifier(L2Window::WELCOME);
+	testC5WindowClassifier(L2Window::INCORRECT_PASSWORD);
+	testC5WindowClassifier(L2Window::ACCOUNT_IN_USE);
+	testC5WindowClassifier(L2Window::AGREEMENT);
+	testC5WindowClassifier(L2Window::SERVERS);
+	testC5WindowClassifier(L2Window::CHARACTERS);
+}
 
 #endif // TEST
