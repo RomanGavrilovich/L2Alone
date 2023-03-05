@@ -13,6 +13,7 @@ using namespace std;
 
 UINT L2WM_WIN_HOOK = RegisterWindowMessageA("L2Alone_WinHook");
 UINT L2WM_KEY_LL_HOOK = RegisterWindowMessageA("L2Alone_KeyLowLevelHook");
+UINT L2WM_MOUSE_LL_HOOK = RegisterWindowMessageA("L2Alone_MouseLowLevelHook");
 
 class L2EventService {
 public:
@@ -24,12 +25,16 @@ public:
 	void publishEventObjCreate(HWND hWnd, DWORD dwEventThread);
 	void publishForegroundWindowChanged(HWND hWnd, DWORD dwEventThread);
 	bool publishKeyboard(KBDLLHOOKSTRUCT* kbdll, bool keyDown);
+	bool publishMouse(WPARAM wParam, MSLLHOOKSTRUCT* msll);
 
 	void setKeyboardHandler(HWND hWindow, shared_ptr<L2KeyboardEventHandler> handler);
 	void removeKeyboardHandler(HWND hWindow, shared_ptr<L2KeyboardEventHandler> handler);
 
 	void setFocusHandler(HWND hWindow, shared_ptr<L2FocusEventHandler> handler);
 	void removeFocusHandler(HWND hWindow, shared_ptr<L2FocusEventHandler> handler);
+
+	void lockForEvents(vector<L2EventLockData> &enabledEvents);
+	void releaseLockForEvents();
 
 private:
 	map<DWORD, shared_ptr<promise<L2WindowCreatedEvent>>> waitL2WindowPromises;
@@ -40,11 +45,14 @@ private:
 	thread* tEventLoop;
 
 	HWND activeHwnd;
+
+	vector<L2EventLockData> eventLockData;
 };
 
 int l2EventServiceEventLoop();
 void CALLBACK l2EventServiceEventObjCreateHandler(HWINEVENTHOOK hEventHook, DWORD dwEvent, HWND hWnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime);
 LRESULT CALLBACK l2EventServiceLowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK l2EventServiceLowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam);
 void CALLBACK L2EventServiceForegroundCheckHook(HWINEVENTHOOK hHook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime);
 
 // Impl
@@ -91,6 +99,22 @@ LRESULT CALLBACK l2EventServiceLowLevelKeyboardProc(int nCode, WPARAM wParam, LP
 	}
 }
 
+LRESULT CALLBACK l2EventServiceLowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
+
+	bool propagate = true;
+
+	if (nCode >= 0) {
+		propagate = eventService.publishMouse(wParam, reinterpret_cast<MSLLHOOKSTRUCT*>(lParam));
+	}
+
+	if (propagate) {
+		return CallNextHookEx(NULL, nCode, wParam, lParam);
+	}
+	else {
+		return 1;
+	}
+}
+
 void L2EventService::start() {
 
 	logger.log("Start event service");
@@ -122,8 +146,10 @@ int l2EventServiceEventLoop() {
 		0,
 		0,
 		WINEVENT_OUTOFCONTEXT);
+
 	HWINEVENTHOOK hEventObjectCreate = NULL;
 	HHOOK hKeyLowLevelHook = NULL;
+	HHOOK hMouseLowLevelHook = NULL;
 
 	MSG msg;
 	BOOL bRet;
@@ -149,7 +175,7 @@ int l2EventServiceEventLoop() {
 		else if (msg.message == L2WM_KEY_LL_HOOK) {
 			if (msg.wParam) {
 				if (hKeyLowLevelHook == NULL) {
-					logger.log("Set Keyboard Low level Hook");
+					logger.log("Set Keyboard Low level hook");
 					hKeyLowLevelHook = SetWindowsHookEx(WH_KEYBOARD_LL, l2EventServiceLowLevelKeyboardProc, nullptr, 0);
 				}
 				else {
@@ -164,6 +190,26 @@ int l2EventServiceEventLoop() {
 				}
 				else {
 					logger.warn("Low level keybard hook is not set yet");
+				}
+			}
+		}
+		else if (msg.message = L2WM_MOUSE_LL_HOOK) {
+			if (msg.wParam) {
+				if (hMouseLowLevelHook == NULL) {
+					logger.log("Set Mouse low level hook");
+					hMouseLowLevelHook = SetWindowsHookEx(WH_MOUSE_LL, l2EventServiceLowLevelMouseProc, nullptr, 0);
+				}
+				else {
+					logger.log("Mouse low level hook already set");
+				}
+			}
+			else {
+				if (hMouseLowLevelHook) {
+					logger.log("Unhook mouse low level hook");
+					UnhookWindowsHookEx(hMouseLowLevelHook);
+				}
+				else {
+					logger.warn("Low level mouse hook is not set yet");
 				}
 			}
 		}
@@ -336,6 +382,11 @@ void L2EventService::removeFocusHandler(HWND hWindow, shared_ptr<L2FocusEventHan
 
 bool L2EventService::publishKeyboard(KBDLLHOOKSTRUCT* kbdll, bool keyDown) {
 
+	// We now lock only for mouse events, so can skip it
+	if (eventLockData.size() > 0) {
+		return false;
+	}
+
 	bool propagate = true;
 	if (windowKeyHandlers.count(activeHwnd) > 0) {
 		auto& handlers = windowKeyHandlers[activeHwnd];
@@ -353,4 +404,37 @@ bool L2EventService::publishKeyboard(KBDLLHOOKSTRUCT* kbdll, bool keyDown) {
 		}
 	}
 	return propagate;
+}
+
+bool L2EventService::publishMouse(WPARAM wParam, MSLLHOOKSTRUCT* msll) {
+
+	if (eventLockData.size() == 0) {
+		return true;
+	}
+
+	logger.log("Event lock data size: ", eventLockData.size());
+	if (eventLockData.size() > 0) {
+		logger.log("Check ", (HWND)wParam, " x: ", msll->pt.x, " y: ", msll->pt.y);
+		for (auto& d : eventLockData) {
+			if (wParam == d.mouseEventType && abs(msll->pt.x - d.x) < 2 && abs(msll->pt.y - d.y) < 2) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+void L2EventService::lockForEvents(vector<L2EventLockData>& enabledEvents) {
+	if (eventLockData.size() > 0) {
+		throw exception("Lock for events already activated");
+	}
+
+	PostThreadMessage(tEventLoopNativeId, L2WM_MOUSE_LL_HOOK, 1, 0);
+	eventLockData.insert(eventLockData.end(), enabledEvents.begin(), enabledEvents.end());
+}
+
+void L2EventService::releaseLockForEvents() {
+	this->eventLockData.clear();
+	PostThreadMessage(tEventLoopNativeId, L2WM_MOUSE_LL_HOOK, 0, 0);
 }

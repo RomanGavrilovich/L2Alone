@@ -14,6 +14,7 @@
 #include "WindowDefinition.h"
 #include "WindowsDefinitions.h"
 #include "Logger.h"
+#include "L2EventService.h"
 
 using namespace std;
 
@@ -73,7 +74,6 @@ void C2AutologinStrategy::doConfirmationFlow(HWND hWindow, L2CharSlot slot) {
 	if (slot == L2CharSlot::ACTIVE) {
 		slot = L2CharSlot::SLOT_1;
 	}
-
 	selectCharacter(hWindow, slot);
 
 	logger.log("Auto login flow completed");
@@ -153,17 +153,57 @@ void C2AutologinStrategy::selectCharacter(HWND hWindow, L2CharSlot slot) {
 	int offsetX = refScreenWidth - refX;
 	int offsetY = refScreenHeight - refY;
 
-	int targetX = wWidth - offsetX;
-	int targetY = wHeight - offsetY;
+	int targetX, targetY;
+	convertToGlobalClientRect(hWindow, wWidth - offsetX, wHeight - offsetY, targetX, targetY);
 
-	SetForegroundWindow(hWindow);
-	Sleep(100);
+	logger.log("Target x: ", targetX, " target y: ", targetY);
 
-	doClick(hWindow, 124, 44);
-	Sleep(100);
+	int dropdownClickX, dropdownClickY;
+	convertToGlobalClientRect(hWindow, 124, 44, dropdownClickX, dropdownClickY);
 
-	doClick(hWindow, 124, 58 + charDropdownOffset);
-	Sleep(100);
+	int charSlotClickX, charSlotClickY;
+	convertToGlobalClientRect(hWindow, 124, 58 + charDropdownOffset, charSlotClickX, charSlotClickY);
 
-	doClick(hWindow, targetX, targetY);
+	vector<L2EventLockData> v;
+	v.push_back(L2EventLockData{WM_MOUSEMOVE, dropdownClickX, dropdownClickY});
+	v.push_back(L2EventLockData{WM_LBUTTONDOWN, dropdownClickX, dropdownClickY });
+	v.push_back(L2EventLockData{WM_LBUTTONUP, dropdownClickX, dropdownClickY });
+
+	v.push_back(L2EventLockData{ WM_MOUSEMOVE, charSlotClickX, charSlotClickY });
+	v.push_back(L2EventLockData{ WM_LBUTTONDOWN, charSlotClickX, charSlotClickY });
+	v.push_back(L2EventLockData{ WM_LBUTTONUP, charSlotClickX, charSlotClickY });
+
+	v.push_back(L2EventLockData{ WM_MOUSEMOVE, targetX, targetY });
+	v.push_back(L2EventLockData{ WM_LBUTTONDOWN, targetX, targetY });
+	v.push_back(L2EventLockData{ WM_LBUTTONUP, targetX, targetY });
+
+	eventService.lockForEvents(v);
+	try {
+		SetForegroundWindow(hWindow);
+
+		Sleep(100);
+
+		POINT p;
+		GetCursorPos(&p);
+
+		Sleep(50);
+
+		doClick(hWindow, dropdownClickX, dropdownClickY);
+		Sleep(50);
+
+		doClick(hWindow, charSlotClickX, charSlotClickY);
+		Sleep(50);
+
+		doClick(hWindow, targetX, targetY);
+
+		Sleep(50);
+		SetCursorPos(p.x, p.y);
+	}
+	catch (exception e) {
+		logger.error(e.what());
+		eventService.releaseLockForEvents();
+		throw e;
+	}
+
+	eventService.releaseLockForEvents();
 }

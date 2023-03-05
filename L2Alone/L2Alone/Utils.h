@@ -54,7 +54,6 @@ void postCredentials(HWND hWindow, string& login, string& password) {
 	postControlMessage(hWindow, VK_RETURN);
 }
 
-
 void convertToGlobalClientRect(HWND hWindow, int x, int y, int& globalX, int& globalY) {
 
 	POINT clientPoint = { x, y };
@@ -76,30 +75,25 @@ void convertToGlobalClientRect(HWND hWindow, int x, int y, int& globalX, int& gl
 	globalY = screenPoint.y;
 }
 
-void sendLowLevelMouseEvent(HWND hWindow, DWORD x, DWORD y, int e) {
-
-	int globalX;
-	int globalY;
-
-	convertToGlobalClientRect(hWindow, x, y, globalX, globalY);
+void sendLowLevelMouseEvent(HWND hWindow, DWORD globalX, DWORD globalY, int e) {
 
 	INPUT input = { 0 };
 	input.type = INPUT_MOUSE;
-	input.mi.dx = (globalX + 5) * (65535 / GetSystemMetrics(SM_CXSCREEN));
-	input.mi.dy = (globalY + 5) * (65535 / GetSystemMetrics(SM_CYSCREEN));
+	input.mi.dx = globalX * (65535.0 / GetSystemMetrics(SM_CXSCREEN));
+	input.mi.dy = globalY * (65535.0 / GetSystemMetrics(SM_CYSCREEN));
 	input.mi.mouseData = 0;
 	input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | e;
 	input.mi.time = 0;
 	SendInput(1, &input, sizeof(INPUT));
 }
 
-void postClick(HWND hWindow, int x, int y) {
+void doClick(HWND hWindow, int globalX, int globalY) {
 
-	sendLowLevelMouseEvent(hWindow, x, y, MOUSEEVENTF_MOVE);
-	Sleep(100);
+	sendLowLevelMouseEvent(hWindow, globalX, globalY, MOUSEEVENTF_MOVE);
+	Sleep(50);
 
-	sendLowLevelMouseEvent(hWindow, x, y, MOUSEEVENTF_LEFTDOWN);
-	Sleep(100);
+	sendLowLevelMouseEvent(hWindow, globalX, globalY, MOUSEEVENTF_LEFTDOWN);
+	Sleep(50);
 
-	sendLowLevelMouseEvent(hWindow, x, y, MOUSEEVENTF_LEFTUP);
+	sendLowLevelMouseEvent(hWindow, globalX, globalY, MOUSEEVENTF_LEFTUP);
 }
