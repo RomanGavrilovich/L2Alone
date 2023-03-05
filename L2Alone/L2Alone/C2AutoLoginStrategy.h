@@ -25,17 +25,19 @@ public:
 
 	~C2AutologinStrategy();
 
-	void doAutologin(HWND hWindow, string& login, string& password) override;
+	void doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot) override;
 
-	void selectCharacter(HWND hWindow);
+	void selectCharacter(HWND hWindow, L2CharSlot slot);
 
 private:
 
 	WindowsClassifier* wClassifier;
 
-	void handleAccountIsUsing(HWND hWindow);
+	void handleAccountIsUsing(HWND hWindow, L2CharSlot slot);
 
 	L2Window captureAuthResultWindows(HWND hWindow);
+
+	void doConfirmationFlow(HWND hWindow, L2CharSlot slot);
 };
 
 C2AutologinStrategy::C2AutologinStrategy() {
@@ -50,7 +52,34 @@ C2AutologinStrategy::~C2AutologinStrategy() {
 	delete wClassifier;
 }
 
-void C2AutologinStrategy::doAutologin(HWND hWindow, string& login, string& password) {
+void C2AutologinStrategy::doConfirmationFlow(HWND hWindow, L2CharSlot slot) {
+
+	Sleep(100);
+	postControlMessage(hWindow, VK_RETURN);
+
+	if (wClassifier->waitForWindow(hWindow, L2Window::SERVERS, 3000) != L2Window::SERVERS) {
+		throw exception("Can't detect servers window");
+	}
+
+	logger.log("Post agreement");
+	Sleep(100);
+	postControlMessage(hWindow, VK_RETURN);
+
+	if (wClassifier->waitForWindow(hWindow, L2Window::CHARACTERS, 3000) != L2Window::CHARACTERS) {
+		throw exception("Can't detect characters window");
+	}
+
+	logger.log("Select character");
+	if (slot == L2CharSlot::ACTIVE) {
+		slot = L2CharSlot::SLOT_1;
+	}
+
+	selectCharacter(hWindow, slot);
+
+	logger.log("Auto login flow completed");
+}
+
+void C2AutologinStrategy::doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot) {
 
 	if (wClassifier->waitForWindow(hWindow, L2Window::WELCOME, 10000) != L2Window::WELCOME) {
 		throw exception("Can't detect welcome window");
@@ -66,38 +95,33 @@ void C2AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passw
 	if (w == AGREEMENT) {
 		logger.log("Agreement window detected");
 
-		Sleep(100);
-		postControlMessage(hWindow, VK_RETURN);
-
-		if (wClassifier->waitForWindow(hWindow, L2Window::SERVERS, 3000) != L2Window::SERVERS) {
-			throw exception("Can't detect servers window");
-		}
-
-		logger.log("Post agreement");
-		Sleep(100);
-		postControlMessage(hWindow, VK_RETURN);
-
-		if (wClassifier->waitForWindow(hWindow, L2Window::CHARACTERS, 3000) != L2Window::CHARACTERS) {
-			throw exception("Can't detect characters window");
-		}
-
-		logger.log("Select character");
-		selectCharacter(hWindow);
-
-		logger.log("Auto login flow completed");
+		doConfirmationFlow(hWindow, slot);
 	}
 	else if (w == ACCOUNT_IN_USE) {
 		logger.log("Account already in use. Try again");
-		handleAccountIsUsing(hWindow);
+		handleAccountIsUsing(hWindow, slot);
 	}
 	else if (w == INCORRECT_PASSWORD) {
 		logger.log("Invalid credentials entered. Exit");
-		return;
+	}
+	else {
+		throw exception("Can't understand window state. Expected confirmation screen, account in using or incorrect password");
 	}
 }
 
-void C2AutologinStrategy::handleAccountIsUsing(HWND hWindow) {
+void C2AutologinStrategy::handleAccountIsUsing(HWND hWindow, L2CharSlot slot) {
+	
 	logger.log("Account is using");
+	
+	postControlMessage(hWindow, VK_TAB);
+	Sleep(100);
+	postControlMessage(hWindow, VK_RETURN);
+
+	L2Window w = wClassifier->waitForWindow(hWindow, AGREEMENT, 5000);
+	if (w != AGREEMENT) {
+		throw exception("Can't find agreement screen");
+	}
+	doConfirmationFlow(hWindow, slot);
 }
 
 L2Window C2AutologinStrategy::captureAuthResultWindows(HWND hWindow) {
@@ -105,14 +129,17 @@ L2Window C2AutologinStrategy::captureAuthResultWindows(HWND hWindow) {
 	windows.push_back(L2Window::AGREEMENT);
 	windows.push_back(L2Window::INCORRECT_PASSWORD);
 	windows.push_back(L2Window::ACCOUNT_IN_USE);
-	
+
 	return wClassifier->waitForWindows(hWindow, windows, 5000);
 }
 
-void C2AutologinStrategy::selectCharacter(HWND hWindow) {
+void C2AutologinStrategy::selectCharacter(HWND hWindow, L2CharSlot slot) {
 
 	RECT r;
 	GetClientRect(hWindow, &r);
+
+	int dropdownItemHeight = 12;
+	int charDropdownOffset = (slot - 1) * 12;
 
 	int refScreenWidth = 1360;
 	int refScreenHeight = 768;
@@ -132,18 +159,11 @@ void C2AutologinStrategy::selectCharacter(HWND hWindow) {
 	SetForegroundWindow(hWindow);
 	Sleep(100);
 
-	for (int i = 0; i < 5; ++i) {
-		postClick(hWindow, 124, 44);
-		Sleep(100);
+	postClick(hWindow, 124, 44);
+	Sleep(100);
 
-		postClick(hWindow, 124, 58);
-		Sleep(100);
+	postClick(hWindow, 124, 58 + charDropdownOffset);
+	Sleep(100);
 
-		postClick(hWindow, targetX, targetY);
-	
-		auto w = wClassifier->waitForWindow(hWindow, 500);
-		if (w == UNKNOWN) {
-			return;
-		}
-	}
+	postClick(hWindow, targetX, targetY);
 }

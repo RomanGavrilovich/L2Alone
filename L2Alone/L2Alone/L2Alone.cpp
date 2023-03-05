@@ -37,7 +37,7 @@ struct FindL2WindowParams {
 #define L2_ALONE_LOGS_DIR "logs"
 
 string getLogFilePath(string absFilePath);
-int autoLoginL2(string login, string password, L2AloneConfig& config);
+int autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& config);
 
 void showMessage(string message);
 bool isRunnedFromExe(string process);
@@ -48,18 +48,38 @@ int main(int argc, char* argv[])
 	try {
 
 #ifdef L2A_RELEASE
-			HWND hWnd = GetConsoleWindow();
-			ShowWindow(hWnd, SW_HIDE);
+		HWND hWnd = GetConsoleWindow();
+		ShowWindow(hWnd, SW_HIDE);
 #endif // L2A_RELEASE
+
+		L2CharSlot slot = L2CharSlot::ACTIVE;
 
 		if (argc < 2) {
 			showMessage("Login is not provided");
-			return 0;
+			return 1;
 		}
 
 		if (argc < 3) {
 			showMessage("Password is not provided");
-			return 0;
+			return 1;
+		}
+
+		if (argc > 3) {
+			try {
+				int slotValue = stoi(argv[3]);
+				if (1 <= slotValue && slotValue <= 7) {
+					slot = (L2CharSlot)slotValue;
+				}
+				else {
+					throw exception("Incorrect char slot value");
+				}
+			}
+			catch (exception e) {
+				stringstream ss;
+				ss << "Incorrect char slot index: " << argv[3] << ". Expected index in range [1,7]";
+				showMessage(ss.str());
+				return 1;
+			}
 		}
 
 		L2AloneConfig config = loadL2AloneConfig();
@@ -76,10 +96,10 @@ int main(int argc, char* argv[])
 		string account = argv[1];
 		string password = argv[2];
 
-		int nextAutoLoginIndex = autoLoginL2(account, password, config);
+		int nextAutoLoginIndex = autoLoginL2(account, password, slot, config);
 		while (nextAutoLoginIndex >= 0) {
 			L2AccountHotKey nextConfig = config.accountHotKeys[nextAutoLoginIndex];
-			nextAutoLoginIndex = autoLoginL2(nextConfig.login, nextConfig.password, config);
+			nextAutoLoginIndex = autoLoginL2(nextConfig.login, nextConfig.password, L2CharSlot::ACTIVE, config);
 		}
 
 		return 0;
@@ -94,11 +114,11 @@ int main(int argc, char* argv[])
 	}
 }
 
- void showMessage(string message) {
+void showMessage(string message) {
 	MessageBoxA(NULL, message.c_str(), APP_NAME, MB_OK);
 }
 
-int autoLoginL2(string login, string password, L2AloneConfig& config) {
+int autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& config) {
 
 	STARTUPINFOA si;
 	PROCESS_INFORMATION pi;
@@ -106,20 +126,20 @@ int autoLoginL2(string login, string password, L2AloneConfig& config) {
 	si.cb = sizeof(si);
 	ZeroMemory(&pi, sizeof(pi));
 
-
-	LPCSTR lpCurrentDirectory = "D:\\L2C2\\system";
+	string pathToExe = config.pathToL2;
+	string folder = pathToExe.substr(0, pathToExe.length() - 6);
 
 	logger.log("Create L2 process from file: ", config.pathToL2);
 
 	auto r = CreateProcessA(
-		config.pathToL2.c_str(),   // the path
-		NULL,        // Command line
+		pathToExe.c_str(),   // the path
+		NULL,           // Command line
 		NULL,           // Process handle not inheritable
 		NULL,           // Thread handle not inheritable
 		FALSE,          // Set handle inheritance to FALSE
 		0,              // No creation flags
 		NULL,           // Use parent's environment block
-		lpCurrentDirectory,           // Use parent's starting directory 
+		folder.c_str(), // Use parent's starting directory 
 		&si,            // Pointer to STARTUPINFO structure
 		&pi             // Pointer to PROCESS_INFORMATION structure (removed extra parentheses)
 	);
@@ -158,7 +178,7 @@ int autoLoginL2(string login, string password, L2AloneConfig& config) {
 			pAutoLoginStrategy = unique_ptr<AutologinStrategy>(new C2AutologinStrategy());
 		}
 
-		pAutoLoginStrategy->doAutologin((HWND)d.hWindow, login, password);
+		pAutoLoginStrategy->doAutologin((HWND)d.hWindow, login, password, slot);
 
 		WaitForSingleObject(pi.hProcess, INFINITE);
 

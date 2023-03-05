@@ -148,6 +148,7 @@ L2Window WindowsClassifier::waitForWindow(HWND hWnd, int timeoutMs) {
 	v.push_back(L2Window::WELCOME);
 	v.push_back(L2Window::AGREEMENT);
 	v.push_back(L2Window::INCORRECT_PASSWORD);
+	v.push_back(L2Window::ACCOUNT_IN_USE);
 	v.push_back(L2Window::SERVERS);
 	v.push_back(L2Window::CHARACTERS);
 

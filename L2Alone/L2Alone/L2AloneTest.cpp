@@ -49,6 +49,7 @@ void testServerClassification() {
 void testC2();
 void testC2WelcomeWindow();
 void testC2AgreementScreen();
+void testC2InUseSreen();
 
 int main(int argc, char* argv[])
 {
@@ -60,7 +61,9 @@ int main(int argc, char* argv[])
 
 void testC2() {
 
-	testC2WelcomeWindow();
+	testC2InUseSreen();
+
+	//testC2WelcomeWindow();
 	//testC2AgreementScreen();
 }
 
@@ -100,6 +103,28 @@ void testC2AgreementScreen() {
 	if (!result) {
 		prepareDirectory("TestFailure");
 		writeBmpToFile("TestFailure/testC2AgreementWindow.bmp", bmp);
+	}
+
+	if (!result) {
+		throw exception("Test failed");
+	}
+}
+
+void testC2InUseSreen() {
+
+	map<L2Window, WindowDefinition> dest;
+	WindowsDefinitions::initC2WindowsDefinitions(dest);
+
+	auto def = dest[L2Window::ACCOUNT_IN_USE];
+	SingleWindowClassifier* classifier = createWinClass(def);
+
+	auto bmp = readBmpFile("TestResources/Vision/C2/use.bmp");
+
+	auto result = classifier->isWindow(bmp);
+
+	if (!result) {
+		prepareDirectory("TestFailure");
+		writeBmpToFile("TestFailure/testC2InUseWindow.bmp", bmp);
 	}
 
 	if (!result) {

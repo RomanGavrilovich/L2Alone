@@ -38,7 +38,7 @@ public:
 	C5AutologinStrategy();
 	~C5AutologinStrategy();
 
-	void doAutologin(HWND hWindow, string& login, string& password) override;
+	void doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot) override;
 
 private:
 
@@ -61,7 +61,7 @@ C5AutologinStrategy::~C5AutologinStrategy() {
 	delete wClassifier;
 }
 
-void C5AutologinStrategy::doAutologin(HWND hWindow, string& login, string& password) {
+void C5AutologinStrategy::doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot) {
 
 	if (wClassifier->waitForWindow(hWindow, L2Window::WELCOME, 10000) != L2Window::WELCOME) {
 		throw exception("Can't detect welcome window");
@@ -88,18 +88,6 @@ void C5AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passw
 		if (wClassifier->waitForWindow(hWindow, L2Window::CHARACTERS, 3000) != L2Window::CHARACTERS) {
 			throw exception("Can't detect characters window");
 		}
-
-		int targetX = 1259;
-		int targetY = 675;
-
-		for (int i = 0; i < 100; ++i) {
-			Sleep(100);
-			logger.log("CLICK");
-			postClick(hWindow, targetX, targetY);
-			return;
-		}
-
-		return;
 
 		for (int i = 0; i < 10; ++i) {
 			Sleep(100);

@@ -48,12 +48,11 @@ void getPixelHsv(BitMapInfo& info, int x, int y, int& h, int& s, int& v) {
 bool isTextPixel(BitMapInfo& info, int x, int y) {
 
 	int expectedH = 300;
-	int expectedV = 86;
 
 	int h, s, v;
 	getPixelHsv(info, x, y, h, s, v);
 
-	if (h == expectedH && abs(expectedV - v) < 5) {
+	if (h == expectedH) {
 		return true;
 	}
 
