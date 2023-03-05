@@ -33,6 +33,9 @@ public:
 	void setFocusHandler(HWND hWindow, shared_ptr<L2FocusEventHandler> handler);
 	void removeFocusHandler(HWND hWindow, shared_ptr<L2FocusEventHandler> handler);
 
+	bool waitMutex();
+	void releaseMutex();
+
 	void lockForEvents(vector<L2EventLockData> &enabledEvents);
 	void releaseLockForEvents();
 
@@ -46,6 +49,7 @@ private:
 
 	HWND activeHwnd;
 
+	HANDLE hEventLockMutex;
 	vector<L2EventLockData> eventLockData;
 };
 
@@ -336,20 +340,20 @@ void L2EventService::setKeyboardHandler(HWND hWindow, shared_ptr<L2KeyboardEvent
 
 void L2EventService::removeKeyboardHandler(HWND hWindow, shared_ptr<L2KeyboardEventHandler> handler) {
 
-	if (windowKeyHandlers.count(hWindow) == 0) {
-		logger.warn("There is no key handlers for window ", hWindow);
-	}
+if (windowKeyHandlers.count(hWindow) == 0) {
+	logger.warn("There is no key handlers for window ", hWindow);
+}
 
-	auto& handlers = windowKeyHandlers[hWindow];
-	auto pErase = handlers.erase(remove_if(
-		handlers.begin(),
-		handlers.end(),
-		[handler](shared_ptr<L2KeyboardEventHandler> ptr) {return ptr.get() == handler.get();})
-	);
+auto& handlers = windowKeyHandlers[hWindow];
+auto pErase = handlers.erase(remove_if(
+	handlers.begin(),
+	handlers.end(),
+	[handler](shared_ptr<L2KeyboardEventHandler> ptr) {return ptr.get() == handler.get();})
+);
 
-	if (handlers.size() == 0) {
-		windowKeyHandlers.erase(hWindow);
-	}
+if (handlers.size() == 0) {
+	windowKeyHandlers.erase(hWindow);
+}
 }
 
 void L2EventService::setFocusHandler(HWND hWindow, shared_ptr<L2FocusEventHandler> handler) {
@@ -427,9 +431,57 @@ bool L2EventService::publishMouse(WPARAM wParam, MSLLHOOKSTRUCT* msll) {
 	return false;
 }
 
+bool L2EventService::waitMutex()
+{
+	for (int i = 0; i < 3; ++i) {
+		hEventLockMutex = OpenMutexA(SYNCHRONIZE, FALSE, "L2Alone_L2EventServiceMutex");
+		if (hEventLockMutex == NULL) {
+			logger.error("Failed to open mutex, try to create mutex for L2EventService");
+
+			hEventLockMutex = CreateMutexA(NULL, FALSE, "L2Alone_L2EventServiceMutex");
+			if (hEventLockMutex == NULL) {
+				logger.error("Failed to create mutex. Try again");
+				continue;
+			}
+		}
+
+		break;
+	}
+
+	if (hEventLockMutex == NULL) {
+		logger.error("Mutex for L2EventService neither created nor opened");
+		return false;
+	}
+
+	logger.log("Wait for L2EventService mutex");
+	if (WaitForSingleObject(hEventLockMutex, INFINITE) != WAIT_OBJECT_0) {
+		logger.error("Failed to acquire mutex");
+		CloseHandle(hEventLockMutex);
+		hEventLockMutex = NULL;
+
+		return false;
+	}
+
+	logger.log("Mutex acquired");
+	return true;
+}
+
+void L2EventService::releaseMutex()
+{
+	if (hEventLockMutex != NULL) {
+		ReleaseMutex(hEventLockMutex);
+		CloseHandle(hEventLockMutex);
+	}
+}
+
 void L2EventService::lockForEvents(vector<L2EventLockData>& enabledEvents) {
+
 	if (eventLockData.size() > 0) {
 		throw exception("Lock for events already activated");
+	}
+
+	if (!waitMutex()) {
+		logger.warn("Can't acquire mutex. Skip lock of events");
 	}
 
 	PostThreadMessage(tEventLoopNativeId, L2WM_MOUSE_LL_HOOK, 1, 0);
@@ -439,4 +491,5 @@ void L2EventService::lockForEvents(vector<L2EventLockData>& enabledEvents) {
 void L2EventService::releaseLockForEvents() {
 	this->eventLockData.clear();
 	PostThreadMessage(tEventLoopNativeId, L2WM_MOUSE_LL_HOOK, 0, 0);
+	releaseMutex();
 }

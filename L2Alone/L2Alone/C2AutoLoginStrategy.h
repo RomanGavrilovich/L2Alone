@@ -72,9 +72,14 @@ void C2AutologinStrategy::doConfirmationFlow(HWND hWindow, L2CharSlot slot) {
 	if (slot == L2CharSlot::ACTIVE) {
 		slot = L2CharSlot::SLOT_1;
 	}
-	int refX = 1278;
-	int refY = 600;
-	selectCharacter(hWindow, slot, refX, refY);
+	SelectCharacterDefinition def;
+	def.dropdownItemHeight = 12;
+	def.dropDownX = 185;
+	def.dropDownY = 43;
+	def.startX = 1280;
+	def.startY = 600;
+	def.actionTimeout = 50;
+	selectCharacter(hWindow, slot, def);
 
 	logger.log("Auto login flow completed");
 }

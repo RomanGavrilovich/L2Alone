@@ -87,14 +87,14 @@ void sendLowLevelMouseEvent(HWND hWindow, DWORD globalX, DWORD globalY, int e) {
 	SendInput(1, &input, sizeof(INPUT));
 }
 
-void doClick(HWND hWindow, int globalX, int globalY) {
+void doClick(HWND hWindow, int globalX, int globalY, int timeout) {
 
 	sendLowLevelMouseEvent(hWindow, globalX, globalY, MOUSEEVENTF_MOVE);
-	Sleep(500);
+	Sleep(timeout);
 
 	sendLowLevelMouseEvent(hWindow, globalX, globalY, MOUSEEVENTF_LEFTDOWN);
-	Sleep(500);
+	Sleep(timeout);
 
 	sendLowLevelMouseEvent(hWindow, globalX, globalY, MOUSEEVENTF_LEFTUP);
-	Sleep(500);
+	Sleep(timeout);
 }

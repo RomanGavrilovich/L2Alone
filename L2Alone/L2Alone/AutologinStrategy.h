@@ -7,6 +7,15 @@
 
 using namespace std;
 
+struct SelectCharacterDefinition {
+	int dropDownX;
+	int dropDownY;
+	int dropdownItemHeight;
+	int startX;
+	int startY;
+	int actionTimeout;
+};
+
 class AutologinStrategy {
 
 public:
@@ -14,13 +23,13 @@ public:
 
 protected:
 
-	void selectCharacter(HWND hWindow, L2CharSlot slot, int refX, int refY) {
+	void selectCharacter(HWND hWindow, L2CharSlot slot, SelectCharacterDefinition &def) {
 
 		RECT r;
 		GetClientRect(hWindow, &r);
 
-		int dropdownItemHeight = 12;
-		int charDropdownOffset = (slot - 1) * 12;
+		int dropdownItemHeight = def.dropdownItemHeight;
+		int charDropdownOffset = slot * dropdownItemHeight;
 
 		int refScreenWidth = 1360;
 		int refScreenHeight = 768;
@@ -28,19 +37,17 @@ protected:
 		int wWidth = r.right - r.left;
 		int wHeight = r.bottom - r.top;
 
-		int offsetX = refScreenWidth - refX;
-		int offsetY = refScreenHeight - refY;
+		int offsetX = refScreenWidth - def.startX;
+		int offsetY = refScreenHeight - def.startY;
 
 		int targetX, targetY;
 		convertToGlobalClientRect(hWindow, wWidth - offsetX, wHeight - offsetY, targetX, targetY);
 
-		logger.log("Target x: ", targetX, " target y: ", targetY);
-
 		int dropdownClickX, dropdownClickY;
-		convertToGlobalClientRect(hWindow, 198, 48, dropdownClickX, dropdownClickY);
+		convertToGlobalClientRect(hWindow, def.dropDownX, def.dropDownY, dropdownClickX, dropdownClickY);
 
 		int charSlotClickX, charSlotClickY;
-		convertToGlobalClientRect(hWindow, 124, 58 + charDropdownOffset, charSlotClickX, charSlotClickY);
+		convertToGlobalClientRect(hWindow, def.dropDownX, def.dropDownY + charDropdownOffset, charSlotClickX, charSlotClickY);
 
 		vector<L2EventLockData> v;
 		v.push_back(L2EventLockData{ WM_MOUSEMOVE, dropdownClickX, dropdownClickY });
@@ -55,28 +62,22 @@ protected:
 		v.push_back(L2EventLockData{ WM_LBUTTONDOWN, targetX, targetY });
 		v.push_back(L2EventLockData{ WM_LBUTTONUP, targetX, targetY });
 
-		int actionTimeout = 2000;
+		POINT p;
+		GetCursorPos(&p);
+
 		eventService.lockForEvents(v);
 		try {
 			SetForegroundWindow(hWindow);
+			SetFocus(hWindow);
 
-			Sleep(actionTimeout);
+			doClick(hWindow, dropdownClickX, dropdownClickY, def.actionTimeout);
+			doClick(hWindow, dropdownClickX, dropdownClickY, def.actionTimeout);
+			Sleep(def.actionTimeout);
 
-			POINT p;
-			GetCursorPos(&p);
+			doClick(hWindow, charSlotClickX, charSlotClickY, def.actionTimeout);
+			Sleep(def.actionTimeout);
 
-			doClick(hWindow, dropdownClickX, dropdownClickY);
-			Sleep(actionTimeout);
-
-			doClick(hWindow, dropdownClickX, dropdownClickY);
-
-			//doClick(hWindow, charSlotClickX, charSlotClickY);
-			///Sleep(actionTimeout);
-
-			//doClick(hWindow, targetX, targetY);
-
-			//Sleep(actionTimeout);
-			//SetCursorPos(p.x, p.y);
+			doClick(hWindow, targetX, targetY, def.actionTimeout);
 		}
 		catch (exception e) {
 			logger.error(e.what());
@@ -85,5 +86,7 @@ protected:
 		}
 
 		eventService.releaseLockForEvents();
+		Sleep(def.actionTimeout);
+		SetCursorPos(p.x, p.y);
 	}
 };

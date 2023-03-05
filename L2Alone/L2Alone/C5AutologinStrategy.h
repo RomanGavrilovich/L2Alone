@@ -86,7 +86,15 @@ void C5AutologinStrategy::doConfirmationFlow(HWND hWindow, L2CharSlot slot) {
 		}
 	}
 	else {
-		selectCharacter(hWindow, slot, 680, 682);
+		SelectCharacterDefinition def;
+		def.startX = 680;
+		def.startY = 682;
+		def.dropDownX = 198;
+		def.dropDownY = 48;
+		def.dropdownItemHeight = 17;
+		def.actionTimeout = 10;
+
+		selectCharacter(hWindow, slot, def);
 	}
 
 	logger.log("Auto login flow completed");
