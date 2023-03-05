@@ -79,10 +79,16 @@ void C5AutologinStrategy::doConfirmationFlow(HWND hWindow, L2CharSlot slot) {
 		throw exception("Can't detect characters window");
 	}
 
-	for (int i = 0; i < 10; ++i) {
-		Sleep(100);
-		postControlMessage(hWindow, VK_RETURN);
+	if (slot == ACTIVE) {
+		for (int i = 0; i < 10; ++i) {
+			Sleep(100);
+			postControlMessage(hWindow, VK_RETURN);
+		}
 	}
+	else {
+		selectCharacter(hWindow, slot, 680, 682);
+	}
+
 	logger.log("Auto login flow completed");
 }
 

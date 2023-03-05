@@ -408,6 +408,8 @@ bool L2EventService::publishKeyboard(KBDLLHOOKSTRUCT* kbdll, bool keyDown) {
 
 bool L2EventService::publishMouse(WPARAM wParam, MSLLHOOKSTRUCT* msll) {
 
+	return true;
+
 	if (eventLockData.size() == 0) {
 		return true;
 	}
