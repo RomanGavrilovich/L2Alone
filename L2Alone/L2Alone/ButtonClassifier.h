@@ -38,6 +38,8 @@ private:
 	bool hasHorizontalBorder(BitMapInfo& bitMapInfo, int lbX, int lbY, int width, int errorRange);
 
 	bool hasVerticalBorder(BitMapInfo& bitMapInfo, int lbX, int lbY, int height, int errorRange);
+
+	void drawDebugBorders(BitMapInfo& bitMapInfo, ButtonDefinition bDef);
 };
 
 ButtonClassifier::ButtonClassifier(int rtWidth, int rtHeight) {
@@ -46,7 +48,16 @@ ButtonClassifier::ButtonClassifier(int rtWidth, int rtHeight) {
 }
 
 bool ButtonClassifier::isButton(BitMapInfo& bitMapInfo, ButtonDefinition bDef) {
-	return hasBorders(bitMapInfo, bDef);
+
+	bool r = hasBorders(bitMapInfo, bDef);
+
+#ifdef TEST
+	if (!r) {
+		drawDebugBorders(bitMapInfo, bDef);
+	}
+#endif // TEST
+
+	return r;
 }
 
 bool ButtonClassifier::hasHorizontalBorder(BitMapInfo& bitMapInfo, int lbX, int lbY, int width, int errorRange) {
@@ -88,6 +99,10 @@ bool ButtonClassifier::hasBorders(BitMapInfo& bitMapInfo, ButtonDefinition bDef)
 	Point targetLb = toLbPoint(bitMapInfo, bDef);
 	int lbX = targetLb.x;
 	int lbY = targetLb.y - bDef.height;
+
+	if (lbX <= 0 || lbY <= 0) {
+		throw exception("Window is too small, please make it bigger");
+	}
 
 	// Bottom border
 	if (!hasHorizontalBorder(bitMapInfo, lbX, lbY, bDef.width, pixelRange)) {
@@ -248,4 +263,12 @@ double ButtonClassifier::getDistributionError(map<int, double>& first, map<int, 
 	}
 
 	return sum;
+}
+
+void ButtonClassifier::drawDebugBorders(BitMapInfo& bitMapInfo, ButtonDefinition bDef) {
+	Point targetLb = toLbPoint(bitMapInfo, bDef);
+	int lbX = targetLb.x;
+	int lbY = targetLb.y - bDef.height;
+
+	drawRect(lbX, lbY, bDef.width, bDef.height, bitMapInfo);
 }

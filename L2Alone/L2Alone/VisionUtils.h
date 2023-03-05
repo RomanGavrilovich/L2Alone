@@ -285,3 +285,44 @@ int getSystemMessageLength(BitMapInfo& bitMapInfo) {
 	int length = textEndIndex - textStartIndex;
 	return length;
 }
+
+Point toLbViaCenterOffset(int rtWidth, int rtHeight, int lbWidth, int lbHeight, int rtX, int rtY) {
+
+	int rtCenterX = rtWidth / 2;
+	int rtCenterY = rtHeight / 2;
+	int rtOffsetX = rtX - rtCenterX;
+	int rtOffsetY = rtY - rtCenterY;
+
+	int lbCenterX = lbWidth / 2;
+	int lbCenterY = lbHeight / 2;
+
+	Point p;
+	p.x = lbCenterX + rtOffsetX;
+	p.y = lbCenterY - rtOffsetY;
+
+	return p;
+}
+
+
+Point toLbViaCenterBottomOffset(int rtWidth, int rtHeight, int lbWidth, int lbHeight, int rtX, int rtY) {
+
+	int rtCenterX = rtWidth / 2;
+	int rtCenterY = rtHeight / 2;
+	int rtOffsetX = rtX - rtCenterX;
+
+	int lbCenterX = lbWidth / 2;
+
+	Point p;
+	p.x = lbCenterX + rtOffsetX;
+	p.y = rtHeight - rtY;
+
+	return p;
+}
+
+Point toLbViaRightBottomOffset(int rtWidth, int rtHeight, int lbWidth, int lbHeight, int rtX, int rtY) {
+
+	Point p;
+	p.x = lbWidth - (rtWidth - rtX);
+	p.y = rtHeight - rtY;
+	return p;
+}

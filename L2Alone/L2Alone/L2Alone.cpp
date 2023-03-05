@@ -106,6 +106,9 @@ int autoLoginL2(string login, string password, L2AloneConfig& config) {
 	si.cb = sizeof(si);
 	ZeroMemory(&pi, sizeof(pi));
 
+
+	LPCSTR lpCurrentDirectory = "D:\\L2C2\\system";
+
 	logger.log("Create L2 process from file: ", config.pathToL2);
 
 	auto r = CreateProcessA(
@@ -116,7 +119,7 @@ int autoLoginL2(string login, string password, L2AloneConfig& config) {
 		FALSE,          // Set handle inheritance to FALSE
 		0,              // No creation flags
 		NULL,           // Use parent's environment block
-		NULL,           // Use parent's starting directory 
+		lpCurrentDirectory,           // Use parent's starting directory 
 		&si,            // Pointer to STARTUPINFO structure
 		&pi             // Pointer to PROCESS_INFORMATION structure (removed extra parentheses)
 	);
@@ -176,6 +179,7 @@ int autoLoginL2(string login, string password, L2AloneConfig& config) {
 	}
 	catch (exception e) {
 		logger.log("Auto login failure: ", e.what());
+		showMessage(e.what());
 		TerminateProcess(pi.hProcess, 0);
 	}
 

@@ -57,20 +57,16 @@ void postCredentials(HWND hWindow, string& login, string& password) {
 
 void convertToGlobalClientRect(HWND hWindow, int x, int y, int& globalX, int& globalY) {
 
-	// Define the client coordinates to be converted
 	POINT clientPoint = { x, y };
 
-	// Get the screen coordinates of the entire window
 	RECT windowRect;
 	GetWindowRect(hWindow, &windowRect);
 
-	// Get the screen coordinates of the top-left corner of the client area
 	POINT topLeft;
 	topLeft.x = windowRect.left;
 	topLeft.y = windowRect.top;
 	ClientToScreen(hWindow, &topLeft);
 
-	// Convert the client coordinates to screen coordinates and adjust for the header
 	POINT screenPoint;
 	screenPoint.x = clientPoint.x + (topLeft.x - windowRect.left);
 	screenPoint.y = clientPoint.y + (topLeft.y - windowRect.top);
@@ -99,15 +95,17 @@ void send_low_level_mouse_move(HWND hWindow, DWORD x, DWORD y, int e) {
 
 void postClick(HWND hWindow, int x, int y) {
 
-	SetForegroundWindow(hWindow);
-	for (int i = 0; i < 5; ++i) {
-		Sleep(50);
-		send_low_level_mouse_move(hWindow, x, y, MOUSEEVENTF_MOVE);
-		Sleep(50);
-		send_low_level_mouse_move(hWindow, x, y, MOUSEEVENTF_LEFTDOWN);
-		Sleep(50);
-		send_low_level_mouse_move(hWindow, x, y, MOUSEEVENTF_LEFTUP);
-	}
+	send_low_level_mouse_move(hWindow, x, y, MOUSEEVENTF_MOVE);
+	Sleep(100);
 
-	//send_low_level_mouse_move(x, y, MOUSEEVENTF_LEFTUP);
+	send_low_level_mouse_move(hWindow, x, y, MOUSEEVENTF_LEFTDOWN);
+	Sleep(100);
+
+	send_low_level_mouse_move(hWindow, x, y, MOUSEEVENTF_LEFTUP);
+}
+
+void postClickNoMove(HWND hWindow, int x, int y) {
+	send_low_level_mouse_move(hWindow, x, y, MOUSEEVENTF_LEFTDOWN);
+	Sleep(100);
+	send_low_level_mouse_move(hWindow, x, y, MOUSEEVENTF_LEFTUP);
 }

@@ -10,6 +10,7 @@
 #include "WindowDefinition.h"
 #include "ButtonClassifier.h"
 #include "VisionUtils.h"
+#include "Utils.h"
 
 using namespace std;
 
@@ -48,6 +49,8 @@ int k = 0;
 
 L2Window WindowsClassifier::captureWindow(HWND hWnd, vector<L2Window>& windows) {
 
+	BitMapInfo bitMapInfo;
+
 	HDC hWindowDC = GetDC(hWnd);
 	HDC hMemDC = CreateCompatibleDC(hWindowDC);
 	RECT rcClient;
@@ -57,7 +60,13 @@ L2Window WindowsClassifier::captureWindow(HWND hWnd, vector<L2Window>& windows) 
 
 	BitBlt(hMemDC, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, hWindowDC, 0, 0, SRCCOPY);
 
-	BitMapInfo bitMapInfo = createBitMapInfo(hBitmap);
+	try {
+		bitMapInfo = createBitMapInfo(hBitmap);
+	}
+	catch (exception e) {
+		logger.error(e.what());
+		return L2Window::UNKNOWN;
+	}
 
 	L2Window w = L2Window::UNKNOWN;
 
@@ -119,6 +128,7 @@ L2Window WindowsClassifier::waitForWindows(HWND hWnd, vector<L2Window>& windows,
 		}
 		catch (exception e) {
 			logger.error("Capturing failed with exception: ", e.what());
+			throw e;
 		}
 	}
 
