@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
 		int nextAutoLoginIndex = autoLoginL2(account, password, slot, config);
 		while (nextAutoLoginIndex >= 0) {
 			L2AccountHotKey nextConfig = config.accountHotKeys[nextAutoLoginIndex];
-			nextAutoLoginIndex = autoLoginL2(nextConfig.login, nextConfig.password, L2CharSlot::ACTIVE, config);
+			nextAutoLoginIndex = autoLoginL2(nextConfig.login, nextConfig.password, nextConfig.slot, config);
 		}
 
 		return 0;

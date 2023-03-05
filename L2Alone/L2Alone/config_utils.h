@@ -6,6 +6,7 @@
 
 #include "logger.h"
 #include "Utils.h"
+#include "WindowDefinition.h"
 
 #define L2_ALONE_CONFIG_FILE_NAME "L2Alone.config"
 
@@ -25,6 +26,7 @@ struct L2AccountHotKey {
 	int fKey;
 	string login;
 	string password;
+	L2CharSlot slot;
 };
 
 struct L2AloneConfig {
@@ -67,6 +69,10 @@ L2AloneConfig loadL2AloneConfig() {
 	for (string s : params) {
 		string k, v;
 		if (splitParam(s, k, v)) {
+			if (startWith(k, "//")) {
+				continue;
+			}
+
 			logger.log("Parameter received '", k, "' '", v, "'");
 
 			if (k == L2_FILE_CONFIG_KEY) {
@@ -164,17 +170,40 @@ bool parseAccountFKey(string s, int &fKey) {
 	return false;
 }
 
-bool splitHotKeyAccountValue(string s, string& login, string& password) {
+void splitHotKeyAccountValue(string s, string& login, string& password, L2CharSlot &slot) {
 	auto index = s.find(",");
 	if (index > 0) {
 
 		login = trim(s.substr(0, index));
-		password = trim(s.substr(index + 1));
 
-		return true;
+		int secondIndex = s.find(",", index + 1);
+		if (secondIndex != -1) {
+			password = trim(s.substr(index + 1, secondIndex - index - 1));
+			auto slotString = trim(s.substr(secondIndex + 1));
+			int slotIndex;
+			try {
+				slotIndex = stoi(slotString);
+			}
+			catch (exception e) {
+				stringstream ss;
+				ss << "Can't parse character slot '" << slotString << "'. It must be number in range [1,7]";
+				throw exception(ss.str().c_str());
+			}
+
+			if (0 < slotIndex && slotIndex < 8) {
+				slot = (L2CharSlot)slotIndex;
+			}
+			else {
+				stringstream ss;
+				ss << "Character slot must be in range [1,7], but received " << slotIndex;
+				throw exception(ss.str().c_str());
+			}
+		}
+		else {
+			password = trim(s.substr(index + 1));
+			slot = L2CharSlot::ACTIVE;
+		}
 	}
-
-	return false;
 }
 
 L2AccountHotKey getAccountHotKey(string& hotKeyConfigKey, string hotKeyConfigValue) {
@@ -194,7 +223,8 @@ L2AccountHotKey getAccountHotKey(string& hotKeyConfigKey, string hotKeyConfigVal
 	}
 
 	string login, password;
-	splitHotKeyAccountValue(hotKeyConfigValue, login, password);
+	L2CharSlot slot;
+	splitHotKeyAccountValue(hotKeyConfigValue, login, password, slot);
 
-	return L2AccountHotKey{ fKey, login, password };
+	return L2AccountHotKey{ fKey, login, password, slot };
 }
