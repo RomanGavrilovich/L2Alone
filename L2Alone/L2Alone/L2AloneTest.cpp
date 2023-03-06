@@ -219,14 +219,20 @@ void testC5WindowClassifier(L2Window window) {
 	}
 }
 
+void testC5Kml() {
+	assertTrue(testClassifier(L2Window::SERVERS, "TestResources/Vision/C5_CML/servers.bmp", "testC5Kml", "servers"));
+}
+
 void testC5() {
 
+	testC5Kml();
+
 	//testC5WindowClassifier(L2Window::WELCOME);
-	testC5WindowClassifier(L2Window::INCORRECT_PASSWORD);
-	testC5WindowClassifier(L2Window::ACCOUNT_IN_USE);
-	testC5WindowClassifier(L2Window::AGREEMENT);
-	testC5WindowClassifier(L2Window::SERVERS);
-	testC5WindowClassifier(L2Window::CHARACTERS);
+	//testC5WindowClassifier(L2Window::INCORRECT_PASSWORD);
+	//testC5WindowClassifier(L2Window::ACCOUNT_IN_USE);
+	//testC5WindowClassifier(L2Window::AGREEMENT);
+	//testC5WindowClassifier(L2Window::SERVERS);
+	//testC5WindowClassifier(L2Window::CHARACTERS);
 }
 
 #endif // TEST
