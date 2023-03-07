@@ -192,7 +192,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AutologinStrategy.h" />
-    <ClInclude Include="ButtonClassifier.h" />
+    <ClInclude Include="ButtonCapturer.h" />
     <ClInclude Include="C2AutoLoginStrategy.h" />
     <ClInclude Include="C5AutologinStrategy.h" />
     <ClInclude Include="config_utils.h" />

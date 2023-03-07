@@ -331,3 +331,37 @@ Point toLbViaRightBottomOffset(int rtWidth, int rtHeight, int lbWidth, int lbHei
 	p.y = rtHeight - rtY;
 	return p;
 }
+
+double getDistributionError(map<int, double>& first, map<int, double>& second) {
+
+	auto fp = first.begin();
+	auto sp = second.begin();
+
+	double sum = 0;
+
+	while (fp != first.end() || sp != second.end()) {
+
+		if (fp == first.end()) {
+			sum += sp->second;
+			++sp;
+		}
+		else if (sp == second.end()) {
+			sum += fp->second;
+			++fp;
+		}
+		else if (abs(fp->first - sp->first) < 4) {
+			sum += abs(fp->second - fp->second);
+			++fp;
+			++sp;
+		}
+		else if (fp->first > sp->first) {
+			++sp;
+		}
+		else {
+			sum += fp->second;
+			++fp;
+		}
+	}
+
+	return sum;
+}

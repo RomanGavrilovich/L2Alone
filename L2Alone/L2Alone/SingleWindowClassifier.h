@@ -4,7 +4,7 @@
 
 #include "WindowDefinition.h"
 #include "VisionUtils.h"
-#include "ButtonClassifier.h"
+#include "ButtonCapturer.h"
 #include "WindowClassifier.h"
 
 class SingleWindowClassifier : public WindowClassifier {
@@ -18,7 +18,7 @@ public:
 	bool isWindow(BitMapInfo& bmi) override;
 
 private:
-	ButtonClassifier* btnClassifier;
+	ButtonCapturer* btnCaptor;
 	vector<ButtonDefinition> bDefs;
 	int textMinSize;
 	int textMaxSize;
@@ -26,14 +26,14 @@ private:
 
 SingleWindowClassifier::SingleWindowClassifier(int wWidth, int wHeight, vector<ButtonDefinition> buttonDefinitions, int textMinSize, int textMaxSize) {
 
-	this->btnClassifier = new ButtonClassifier(wWidth, wHeight);
+	this->btnCaptor = new ButtonCapturer(wWidth, wHeight);
 	this->bDefs = buttonDefinitions;
 	this->textMaxSize = textMaxSize;
 	this->textMinSize = textMinSize;
 }
 
 SingleWindowClassifier::~SingleWindowClassifier() {
-	delete btnClassifier;
+	delete btnCaptor;
 }
 
 bool SingleWindowClassifier::isWindow(BitMapInfo& bmi) {
@@ -41,9 +41,17 @@ bool SingleWindowClassifier::isWindow(BitMapInfo& bmi) {
 		throw exception("There is no buttons to search");
 	}
 
-	for (auto it = bDefs.begin(); it != bDefs.end(); ++it) {
+	auto pFirstBtn = bDefs.begin();
+	
+	map<int, double> thDistr;
+	btnCaptor->captureButton(bmi, *pFirstBtn, thDistr);
+		
+	for (auto it = ++pFirstBtn; it != bDefs.end(); ++it) {
 
-		if (!btnClassifier->isButton(bmi, *it)) {
+		map<int, double> chDistr;
+		btnCaptor->captureButton(bmi, *it, chDistr);
+
+		if (getDistributionError(thDistr, chDistr) > 5) {
 			return false;
 		}
 	}

@@ -9,7 +9,7 @@
 #include "SingleWindowClassifier.h"
 #include "LoadingWindowClassifier.h"
 #include "WindowDefinition.h"
-#include "ButtonClassifier.h"
+#include "ButtonCapturer.h"
 #include "VisionUtils.h"
 #include "Utils.h"
 
