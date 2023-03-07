@@ -46,7 +46,7 @@ private:
 
 	WindowsClassifier* wClassifier;
 
-	void handleAccountIsUsing(HWND hWindow);
+	void handleAccountIsUsing(HWND hWindow, L2CharSlot slot);
 
 	L2Window captureAuthResultWindows(HWND hWindow);
 };
@@ -121,7 +121,7 @@ void C5AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passw
 	}
 	else if (w == ACCOUNT_IN_USE) {
 		logger.log("Account already in use. Try again");
-		handleAccountIsUsing(hWindow);
+		handleAccountIsUsing(hWindow, slot);
 	}
 	else if (w == INCORRECT_PASSWORD) {
 		logger.log("Invalid credentials entered. Exit");
@@ -129,7 +129,7 @@ void C5AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passw
 	}
 }
 
-void C5AutologinStrategy::handleAccountIsUsing(HWND hWindow) {
+void C5AutologinStrategy::handleAccountIsUsing(HWND hWindow, L2CharSlot slot) {
 
 	logger.log("Account is using");
 
@@ -140,7 +140,7 @@ void C5AutologinStrategy::handleAccountIsUsing(HWND hWindow) {
 	if (w != AGREEMENT) {
 		throw exception("Can't find agreement screen");
 	}
-	doConfirmationFlow(hWindow, L2CharSlot::ACTIVE);
+	doConfirmationFlow(hWindow, slot);
 }
 
 L2Window C5AutologinStrategy::captureAuthResultWindows(HWND hWindow) {
