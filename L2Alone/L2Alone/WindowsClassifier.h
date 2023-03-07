@@ -7,6 +7,7 @@
 
 #include "Logger.h"
 #include "SingleWindowClassifier.h"
+#include "LoadingWindowClassifier.h"
 #include "WindowDefinition.h"
 #include "ButtonClassifier.h"
 #include "VisionUtils.h"
@@ -24,16 +25,17 @@ public:
 	L2Window waitForWindow(HWND hWnd, L2Window window, int timeoutMs);
 	L2Window waitForWindow(HWND hWnd, int timeoutMs);
 
-	inline SingleWindowClassifier* createSingleWindowClassifier(WindowDefinition& def);
+	inline WindowClassifier* createSingleWindowClassifier(WindowDefinition& def);
 	
 private:
 
-	map<L2Window, SingleWindowClassifier*> classifiers;
+	map<L2Window, WindowClassifier*> classifiers;
 
 	L2Window captureWindow(HWND hWnd, vector<L2Window>& windows);
 };
 
 WindowsClassifier::WindowsClassifier(map<L2Window, WindowDefinition> &wDefs) {
+	classifiers[L2Window::LOADING] = new LoadingWindowClassifier();
 	for (auto& kv : wDefs) {
 		classifiers[kv.first] = createSingleWindowClassifier(kv.second);
 	}
@@ -157,6 +159,6 @@ L2Window WindowsClassifier::waitForWindow(HWND hWnd, int timeoutMs) {
 }
 
 
-inline SingleWindowClassifier* WindowsClassifier::createSingleWindowClassifier(WindowDefinition& def) {
+inline WindowClassifier* WindowsClassifier::createSingleWindowClassifier(WindowDefinition& def) {
 	return new SingleWindowClassifier(def.width, def.height, def.bDefs, def.textMinSize, def.textMaxSize);
 }

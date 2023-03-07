@@ -238,6 +238,7 @@ void writeBmpToFile(const char* filename, BitMapInfo& bitMapInfo) {
 
 string getL2WindowName(L2Window window) {
 	if (window == UNKNOWN) return "UNKNOWN";
+	if (window == LOADING) return "LOADING";
 	if (window == WELCOME) return "WELCOME";
 	if (window == AGREEMENT) return "AGREEMENT";
 	if (window == ACCOUNT_IN_USE) return "ACCOUNT_IN_USE";

@@ -92,7 +92,7 @@ void C5AutologinStrategy::doConfirmationFlow(HWND hWindow, L2CharSlot slot) {
 		def.dropDownX = 198;
 		def.dropDownY = 48;
 		def.dropdownItemHeight = 17;
-		def.actionTimeout = 10;
+		def.actionTimeout = 50;
 
 		selectCharacter(hWindow, slot, def);
 	}
@@ -102,7 +102,11 @@ void C5AutologinStrategy::doConfirmationFlow(HWND hWindow, L2CharSlot slot) {
 
 void C5AutologinStrategy::doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot) {
 
-	if (wClassifier->waitForWindow(hWindow, L2Window::WELCOME, 10000) != L2Window::WELCOME) {
+	if (wClassifier->waitForWindow(hWindow, L2Window::LOADING, 10000) != L2Window::LOADING) {
+		throw exception("Can't detect loading screen");
+	}
+
+	if (wClassifier->waitForWindow(hWindow, L2Window::WELCOME, 3000) != L2Window::WELCOME) {
 		throw exception("Can't detect welcome window");
 	}
 

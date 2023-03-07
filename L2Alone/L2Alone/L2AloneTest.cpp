@@ -9,6 +9,7 @@
 #include "SingleWindowClassifier.h"
 #include "VisionTestUtils.h"
 #include "WindowsDefinitions.h"
+#include "LoadingWindowClassifier.h"
 #include "Utils.h"
 
 using namespace std;
@@ -136,13 +137,10 @@ void testC2InUseSreen() {
 	}
 }
 
-bool testClassifier(L2Window window, string testFile, string testName, string caseName) {
+bool testClassifier(L2Window window, string testFile, string testName, string caseName, WindowClassifier* classifier) {
 
 	map<L2Window, WindowDefinition> dest;
 	WindowsDefinitions::initC5WindowsDefinitions(dest);
-
-	auto def = dest[window];
-	SingleWindowClassifier* classifier = createWinClass(def);
 
 	auto bmp = readBmpFile(testFile.c_str());
 
@@ -157,6 +155,17 @@ bool testClassifier(L2Window window, string testFile, string testName, string ca
 
 	delete classifier;
 	return result;
+}
+
+bool testClassifier(L2Window window, string testFile, string testName, string caseName) {
+
+	map<L2Window, WindowDefinition> dest;
+	WindowsDefinitions::initC5WindowsDefinitions(dest);
+
+	auto def = dest[window];
+	SingleWindowClassifier* classifier = createWinClass(def);
+
+	return testClassifier(window, testFile, testName, caseName, classifier);
 }
 
 void assertFalse(bool value) {
@@ -223,16 +232,20 @@ void testC5Kml() {
 	assertTrue(testClassifier(L2Window::SERVERS, "TestResources/Vision/C5_CML/servers.bmp", "testC5Kml", "servers"));
 }
 
+void testLoadingClassifier() {
+	assertTrue(testClassifier(L2Window::SERVERS, "TestResources/Vision/C5_CML/loading.bmp", "testC5Kml", "loading", new LoadingWindowClassifier()));
+}
+
 void testC5() {
 
-	testC5Kml();
+	testLoadingClassifier();
 
-	//testC5WindowClassifier(L2Window::WELCOME);
+	//testC5Kml();
+
 	//testC5WindowClassifier(L2Window::INCORRECT_PASSWORD);
 	//testC5WindowClassifier(L2Window::ACCOUNT_IN_USE);
 	//testC5WindowClassifier(L2Window::AGREEMENT);
 	//testC5WindowClassifier(L2Window::SERVERS);
-	//testC5WindowClassifier(L2Window::CHARACTERS);
 }
 
 #endif // TEST

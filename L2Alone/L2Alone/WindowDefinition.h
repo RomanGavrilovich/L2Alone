@@ -17,6 +17,7 @@ enum L2CharSlot {
 
 enum L2Window {
 	UNKNOWN,
+	LOADING,
 	WELCOME,
 	AGREEMENT,
 	ACCOUNT_IN_USE,

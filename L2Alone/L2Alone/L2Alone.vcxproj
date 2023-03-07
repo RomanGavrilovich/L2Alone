@@ -202,9 +202,11 @@
     <ClInclude Include="L2EventService.h" />
     <ClInclude Include="L2KeyboardEventHandler.h" />
     <ClInclude Include="L2Events.h" />
+    <ClInclude Include="LoadingWindowClassifier.h" />
     <ClInclude Include="SingleWindowClassifier.h" />
     <ClInclude Include="VisionTestUtils.h" />
     <ClInclude Include="VisionUtils.h" />
+    <ClInclude Include="WindowClassifier.h" />
     <ClInclude Include="WindowsClassifier.h" />
     <ClInclude Include="WindowDefinition.h" />
     <ClInclude Include="Logger.h" />

@@ -5,8 +5,9 @@
 #include "WindowDefinition.h"
 #include "VisionUtils.h"
 #include "ButtonClassifier.h"
+#include "WindowClassifier.h"
 
-class SingleWindowClassifier {
+class SingleWindowClassifier : public WindowClassifier {
 
 public:
 
@@ -14,7 +15,7 @@ public:
 
 	~SingleWindowClassifier();
 
-	bool isWindow(BitMapInfo& bmi);
+	bool isWindow(BitMapInfo& bmi) override;
 
 private:
 	ButtonClassifier* btnClassifier;
