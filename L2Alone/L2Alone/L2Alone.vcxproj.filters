@@ -95,22 +95,22 @@
     <ClInclude Include="VisionUtils.h">
       <Filter>Header Files\Vision</Filter>
     </ClInclude>
-    <ClInclude Include="SingleWindowClassifier.h">
-      <Filter>Header Files\Vision</Filter>
-    </ClInclude>
     <ClInclude Include="WindowsDefinitions.h">
       <Filter>Header Files\Vision</Filter>
     </ClInclude>
     <ClInclude Include="VisionTestUtils.h">
       <Filter>Header Files\Test</Filter>
     </ClInclude>
-    <ClInclude Include="ButtonCapturer.h">
+    <ClInclude Include="ButtonHueDistributionCapturer.h">
       <Filter>Header Files\Vision</Filter>
     </ClInclude>
-    <ClInclude Include="WindowClassifier.h">
+    <ClInclude Include="CachedVisionInitializer.h">
       <Filter>Header Files\Vision</Filter>
     </ClInclude>
-    <ClInclude Include="LoadingWindowClassifier.h">
+    <ClInclude Include="InMemoryVisionCache.h">
+      <Filter>Header Files\Vision</Filter>
+    </ClInclude>
+    <ClInclude Include="RuntimeVisionInitializer.h">
       <Filter>Header Files\Vision</Filter>
     </ClInclude>
   </ItemGroup>

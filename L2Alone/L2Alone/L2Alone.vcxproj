@@ -192,21 +192,21 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AutologinStrategy.h" />
-    <ClInclude Include="ButtonCapturer.h" />
+    <ClInclude Include="ButtonHueDistributionCapturer.h" />
     <ClInclude Include="C2AutoLoginStrategy.h" />
     <ClInclude Include="C5AutologinStrategy.h" />
+    <ClInclude Include="CachedVisionInitializer.h" />
     <ClInclude Include="config_utils.h" />
+    <ClInclude Include="InMemoryVisionCache.h" />
     <ClInclude Include="L2FocusEventHandler.h" />
     <ClInclude Include="L2PvpModeHandler.h" />
     <ClInclude Include="L2QuitKeyHandler.h" />
     <ClInclude Include="L2EventService.h" />
     <ClInclude Include="L2KeyboardEventHandler.h" />
     <ClInclude Include="L2Events.h" />
-    <ClInclude Include="LoadingWindowClassifier.h" />
-    <ClInclude Include="SingleWindowClassifier.h" />
+    <ClInclude Include="RuntimeVisionInitializer.h" />
     <ClInclude Include="VisionTestUtils.h" />
     <ClInclude Include="VisionUtils.h" />
-    <ClInclude Include="WindowClassifier.h" />
     <ClInclude Include="WindowsClassifier.h" />
     <ClInclude Include="WindowDefinition.h" />
     <ClInclude Include="Logger.h" />

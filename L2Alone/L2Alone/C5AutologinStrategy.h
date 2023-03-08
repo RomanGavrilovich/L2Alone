@@ -27,6 +27,10 @@
 #include "AutologinStrategy.h"
 #include "WindowsClassifier.h"
 #include "WindowsDefinitions.h"
+#include "ButtonHueDistributionCapturer.h"
+#include "CachedVisionInitializer.h"
+#include "InMemoryVisionCache.h"
+#include "RuntimeVisionInitializer.h"
 
 #include "logger.h"
 
@@ -45,7 +49,11 @@ public:
 private:
 
 	WindowsClassifier* wClassifier;
-
+	HueDistributionCapturer* capturer;
+	VisionInitializer* vInitializer;
+	InMemoryVisionCache* inMemoryVisionCache;
+	RuntimeVisionInitializer* runtimeVisionInitializer;
+	
 	void handleAccountIsUsing(HWND hWindow, L2CharSlot slot);
 
 	L2Window captureAuthResultWindows(HWND hWindow);
@@ -56,6 +64,11 @@ C5AutologinStrategy::C5AutologinStrategy() {
 	VisionDefinition vDef;
 	WindowsDefinitions::initC5WindowsDefinitions(vDef);
 
+	auto bDef = vDef.wDefs[L2Window::WELCOME].bDefs[0];
+	capturer = new ButtonHueDistributionCapturer(vDef.wWidth, vDef.wHeight, bDef);
+	inMemoryVisionCache = new InMemoryVisionCache();
+	runtimeVisionInitializer = new RuntimeVisionInitializer(capturer);
+	vInitializer = new CachedVisionInitializer(inMemoryVisionCache, runtimeVisionInitializer);
 	wClassifier = new WindowsClassifier(vDef);
 }
 
@@ -92,7 +105,9 @@ void C5AutologinStrategy::doConfirmationFlow(HWND hWindow, L2CharSlot slot) {
 		def.dropDownX = 198;
 		def.dropDownY = 48;
 		def.dropdownItemHeight = 17;
-		def.actionTimeout = 50;
+
+		//TODO: Make it customizable
+		def.actionTimeout = 10;
 
 		selectCharacter(hWindow, slot, def);
 	}
@@ -101,6 +116,9 @@ void C5AutologinStrategy::doConfirmationFlow(HWND hWindow, L2CharSlot slot) {
 }
 
 void C5AutologinStrategy::doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot) {
+
+	auto vParams = vInitializer->init(hWindow, 10000);
+	wClassifier->init(vParams);
 
 	if (wClassifier->waitForWindow(hWindow, L2Window::WELCOME, 3000) != L2Window::WELCOME) {
 		throw exception("Can't detect welcome window");

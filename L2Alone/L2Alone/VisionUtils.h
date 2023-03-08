@@ -5,6 +5,16 @@
 
 using namespace std;
 
+struct VisionParams {
+	map<int, double> hRef;
+};
+
+class VisionInitializer {
+
+public:
+	virtual VisionParams init(HWND hWindow, int timeoutMs) = 0;
+};
+
 struct BitMapInfo {
 
 	BYTE* data;
@@ -24,6 +34,11 @@ struct HSV {
 	int h;
 	int s;
 	int v;
+};
+
+class HueDistributionCapturer {
+public:
+	virtual void capture(BitMapInfo& bmi, map<int, double>& dest) = 0;
 };
 
 BitMapInfo createBitMapInfo(HBITMAP hBitmap);
@@ -393,4 +408,64 @@ bool captureDcBmp(HWND hWnd, BitMapInfo& bitMapInfo) {
 	DeleteObject(hBitmap);
 
 	return success;
+}
+
+void collapse(map<int, double>& source, map<int, double>& dest) {
+
+	int currentH = source.begin()->first;
+	double seqVal = 0;
+
+	double dVal = 0;
+	int dH = currentH;
+
+	for (auto& pair : source) {
+
+		if (pair.first - currentH <= 3) {
+			seqVal += pair.second;
+
+			if (pair.second > dVal) {
+				dH = pair.first;
+				dVal = pair.second;
+			}
+		}
+		else {
+			dest[dH] = seqVal;
+			seqVal = pair.second;
+			dH = pair.first;
+			dVal = pair.second;
+		}
+		currentH = pair.first;
+	}
+	dest[dH] = seqVal;
+}
+
+void initHDistribution(BitMapInfo& bitMapInfo, int x, int y, int width, int height, map<int, double>& dest) {
+
+	map<int, double> tmp;
+
+	int total = width * height;
+	for (int iy = y; iy < y + height; iy++) {
+		for (int ix = x; ix < x + width; ix++) {
+			int h, s, v;
+			getPixelHsv(bitMapInfo, ix, iy, h, s, v);
+
+			tmp[h] += 100.0 / total;
+		}
+	}
+
+	collapse(tmp, dest);
+}
+
+bool isLoadingWindow(BitMapInfo& bmi) {
+	for (int i = 0; i < bmi.width; ++i) {
+		for (int j = 0; j < bmi.height; ++j) {
+			int r, g, b;
+			getPixelRgb(bmi, i, j, r, g, b);
+			if (r != 0 || g != 0 || b != 0) {
+				return false;
+			}
+		}
+	}
+
+	return true;
 }

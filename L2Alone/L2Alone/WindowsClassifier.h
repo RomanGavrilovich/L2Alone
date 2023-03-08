@@ -6,10 +6,8 @@
 #include <chrono>
 
 #include "Logger.h"
-#include "SingleWindowClassifier.h"
-#include "LoadingWindowClassifier.h"
 #include "WindowDefinition.h"
-#include "ButtonCapturer.h"
+#include "ButtonHueDistributionCapturer.h"
 #include "VisionUtils.h"
 #include "Utils.h"
 
@@ -18,49 +16,62 @@ using namespace std;
 class WindowsClassifier {
 
 public:
-	WindowsClassifier(VisionDefinition &vDef);
+	WindowsClassifier(VisionDefinition& vDef);
 	~WindowsClassifier();
+
+	void init(VisionParams& params);
 
 	L2Window waitForWindows(HWND hWnd, vector<L2Window>& windows, int timeousMs);
 	L2Window waitForWindow(HWND hWnd, L2Window window, int timeoutMs);
 	L2Window waitForWindow(HWND hWnd, int timeoutMs);
 
-	inline SingleWindowClassifier* createSingleWindowClassifier(WindowDefinition& def);
-	
 private:
 
-	// This is because we have a case, when we receive black screen, then screen of desktop, then black screen again
-	const int LOAD_SCREEN_TARGET_COUNT = 2;
-	int loadScreenCapturesCount = 0;
-
-	bool initialized = false;
-	bool loadingScreenDetected = false;
-
-	ButtonCapturer* btnCapturer;
-
-	map<L2Window, WindowClassifier*> classifiers;
+	VisionParams vParams;
+	VisionDefinition vDef;
 
 	L2Window captureWindow(HWND hWnd, vector<L2Window>& windows);
+
+	bool isWindow(BitMapInfo& bmi, L2Window window);
 };
 
 WindowsClassifier::WindowsClassifier(VisionDefinition& vDef) {
+	this->vDef = vDef;
+}
 
-	btnCapturer = new ButtonCapturer(vDef.wWidth, vDef.wHeight, vDef.wDefs[L2Window::WELCOME].bDefs[0]);
-
-	classifiers[L2Window::LOADING] = new LoadingWindowClassifier();
-
-	for (auto& kv : vDef.wDefs) {
-		classifiers[kv.first] = createSingleWindowClassifier(kv.second);
-	}
+void WindowsClassifier::init(VisionParams &vParams) {
+	this->vParams = vParams;
 }
 
 WindowsClassifier::~WindowsClassifier() {
-	for (auto& kv : classifiers) {
-		delete kv.second;
-	}
 }
 
 int k = 0;
+
+bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
+
+	auto wDef = vDef.wDefs[window];
+
+	for (auto& bDef : wDef.bDefs) {
+		ButtonHueDistributionCapturer capturer(vDef.wWidth, vDef.wHeight, bDef);
+
+		map<int, double> hDistr;
+		capturer.capture(bmi, hDistr);
+
+		if (getDistributionError(vParams.hRef, hDistr) > 5) {
+			return false;
+		}
+	}
+
+	if (wDef.textMaxSize > 0 && wDef.textMinSize > 0) {
+		auto length = getSystemMessageLength(bmi);
+		if (!(wDef.textMinSize <= length && length <= wDef.textMaxSize)) {
+			return false;
+		}
+	}
+
+	return true;
+}
 
 L2Window WindowsClassifier::captureWindow(HWND hWnd, vector<L2Window>& windows) {
 
@@ -72,56 +83,26 @@ L2Window WindowsClassifier::captureWindow(HWND hWnd, vector<L2Window>& windows) 
 
 	L2Window w = L2Window::UNKNOWN;
 
-	prepareDirectory("RefCapture");
-	if (!loadingScreenDetected) {
-		if (classifiers[L2Window::LOADING]->isWindow(bitMapInfo)) {
-
-			loadScreenCapturesCount++;
-			if (loadScreenCapturesCount == LOAD_SCREEN_TARGET_COUNT) {
-				loadingScreenDetected = true;
-			}
-
-			stringstream ss;
-			ss << "RefCapture/loading_" << loadScreenCapturesCount << ".bmp";
-			writeBmpToFile(ss.str().c_str(), bitMapInfo);
-			
-			return L2Window::LOADING;
-		}
-		else {
-			loadScreenCapturesCount = 0;
+	for (auto& i : windows) {
+		if (isWindow(bitMapInfo, i)) {
+			w = i;
+			break;
 		}
 	}
-	else if (!initialized) {
-		if (!classifiers[L2Window::LOADING]->isWindow(bitMapInfo)) {
-			writeBmpToFile("RefCapture/capture.bmp", bitMapInfo);
-
-			btnCapturer->captureReferenceButton(bitMapInfo);
-			initialized = true;
-		}
-	}
-
-	if (initialized) {
-		for (auto& i : windows) {
-			if (classifiers[i]->isWindow(bitMapInfo)) {
-				w = i;
-				break;
-			}
-		}
 
 #ifndef L2A_RELEASE
-		if (w == UNKNOWN) {
-			prepareDirectory("CapturesFailure");
-			stringstream ss;
-			ss << "CapturesFailure/" << k++;
-			for (auto& w : windows) {
-				ss << getL2WindowName(w) << ".";
-			}
-			ss << "bmp";
-
-			writeBmpToFile(ss.str().c_str(), bitMapInfo);
+	if (w == UNKNOWN) {
+		prepareDirectory("CapturesFailure");
+		stringstream ss;
+		ss << "CapturesFailure/" << k++;
+		for (auto& w : windows) {
+			ss << getL2WindowName(w) << ".";
 		}
-#endif // !L2A_RELEASE
+		ss << "bmp";
+
+		writeBmpToFile(ss.str().c_str(), bitMapInfo);
 	}
+#endif // !L2A_RELEASE
 
 	delete[] bitMapInfo.data;
 
@@ -137,7 +118,7 @@ L2Window WindowsClassifier::waitForWindows(HWND hWnd, vector<L2Window>& windows,
 	logger.log("Start window capturing: ", ss.str(), " with ", timeoutMs, " ms timeout");
 
 	int startTick = GetTickCount64();
-	while(GetTickCount64() - startTick < timeoutMs) {
+	while (GetTickCount64() - startTick < timeoutMs) {
 		logger.log("Capture window");
 		try {
 			L2Window w = captureWindow(hWnd, windows);
@@ -181,9 +162,4 @@ L2Window WindowsClassifier::waitForWindow(HWND hWnd, int timeoutMs) {
 	v.push_back(L2Window::CHARACTERS);
 
 	return waitForWindows(hWnd, v, timeoutMs);
-}
-
-
-inline SingleWindowClassifier* WindowsClassifier::createSingleWindowClassifier(WindowDefinition& def) {
-	return new SingleWindowClassifier(this->btnCapturer, def.bDefs, def.textMinSize, def.textMaxSize);
 }
