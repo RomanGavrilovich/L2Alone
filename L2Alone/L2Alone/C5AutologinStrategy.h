@@ -53,10 +53,10 @@ private:
 
 C5AutologinStrategy::C5AutologinStrategy() {
 
-	map<L2Window, WindowDefinition> winDefs;
-	WindowsDefinitions::initC5WindowsDefinitions(winDefs);
+	VisionDefinition vDef;
+	WindowsDefinitions::initC5WindowsDefinitions(vDef);
 
-	wClassifier = new WindowsClassifier(winDefs);
+	wClassifier = new WindowsClassifier(vDef);
 }
 
 C5AutologinStrategy::~C5AutologinStrategy() {
@@ -101,6 +101,9 @@ void C5AutologinStrategy::doConfirmationFlow(HWND hWindow, L2CharSlot slot) {
 }
 
 void C5AutologinStrategy::doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot) {
+
+	// This is because we receive black screen, then screen of desktop, then black screen
+	Sleep(100);
 
 	if (wClassifier->waitForWindow(hWindow, L2Window::LOADING, 10000) != L2Window::LOADING) {
 		throw exception("Can't detect loading screen");

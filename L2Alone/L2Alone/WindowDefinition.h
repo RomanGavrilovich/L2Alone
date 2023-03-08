@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <map>
 
 using namespace std;
 
@@ -41,9 +42,13 @@ struct ButtonDefinition {
 };
 
 struct WindowDefinition {
-	int width = 0;
-	int height = 0;
 	vector<ButtonDefinition> bDefs;
 	int textMinSize = 0;
 	int textMaxSize = 0;
+};
+
+struct VisionDefinition {
+	int wWidth;
+	int wHeight;
+	map<L2Window, WindowDefinition> wDefs;
 };

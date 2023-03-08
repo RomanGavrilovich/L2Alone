@@ -18,25 +18,34 @@ using namespace std;
 class WindowsClassifier {
 
 public:
-	WindowsClassifier(map<L2Window, WindowDefinition> &wDefs);
+	WindowsClassifier(VisionDefinition &vDef);
 	~WindowsClassifier();
 
 	L2Window waitForWindows(HWND hWnd, vector<L2Window>& windows, int timeousMs);
 	L2Window waitForWindow(HWND hWnd, L2Window window, int timeoutMs);
 	L2Window waitForWindow(HWND hWnd, int timeoutMs);
 
-	inline WindowClassifier* createSingleWindowClassifier(WindowDefinition& def);
+	inline SingleWindowClassifier* createSingleWindowClassifier(WindowDefinition& def);
 	
 private:
+
+	bool initialized = false;
+	bool loadingScreenDetected = false;
+
+	ButtonCapturer* btnCapturer;
 
 	map<L2Window, WindowClassifier*> classifiers;
 
 	L2Window captureWindow(HWND hWnd, vector<L2Window>& windows);
 };
 
-WindowsClassifier::WindowsClassifier(map<L2Window, WindowDefinition> &wDefs) {
+WindowsClassifier::WindowsClassifier(VisionDefinition& vDef) {
+
+	btnCapturer = new ButtonCapturer(vDef.wWidth, vDef.wHeight, vDef.wDefs[L2Window::WELCOME].bDefs[0]);
+
 	classifiers[L2Window::LOADING] = new LoadingWindowClassifier();
-	for (auto& kv : wDefs) {
+
+	for (auto& kv : vDef.wDefs) {
 		classifiers[kv.first] = createSingleWindowClassifier(kv.second);
 	}
 }
@@ -72,26 +81,46 @@ L2Window WindowsClassifier::captureWindow(HWND hWnd, vector<L2Window>& windows) 
 
 	L2Window w = L2Window::UNKNOWN;
 
-	for (auto& i : windows) {
-		if (classifiers[i]->isWindow(bitMapInfo)) {
-			w = i;
-			break;
+	prepareDirectory("RefCapture");
+	if (!loadingScreenDetected) {
+		if (classifiers[L2Window::LOADING]->isWindow(bitMapInfo)) {
+			loadingScreenDetected = true;
+			writeBmpToFile("RefCapture/loading.bmp", bitMapInfo);
+			
+			return L2Window::LOADING;
 		}
 	}
+	else if (!initialized) {
+		if (!classifiers[L2Window::LOADING]->isWindow(bitMapInfo)) {
+			writeBmpToFile("RefCapture/capture.bmp", bitMapInfo);
+
+			btnCapturer->captureReferenceButton(bitMapInfo);
+			initialized = true;
+		}
+	}
+
+	if (initialized) {
+		for (auto& i : windows) {
+			if (classifiers[i]->isWindow(bitMapInfo)) {
+				w = i;
+				break;
+			}
+		}
 
 #ifndef L2A_RELEASE
-	if (w == UNKNOWN) {
-		prepareDirectory("CapturesFailure");
-		stringstream ss;
-		ss << "CapturesFailure/" << k++;
-		for (auto& w : windows) {
-			ss << getL2WindowName(w) << ".";
-		}
-		ss << "bmp";
+		if (w == UNKNOWN) {
+			prepareDirectory("CapturesFailure");
+			stringstream ss;
+			ss << "CapturesFailure/" << k++;
+			for (auto& w : windows) {
+				ss << getL2WindowName(w) << ".";
+			}
+			ss << "bmp";
 
-		writeBmpToFile(ss.str().c_str(), bitMapInfo);
-	}
+			writeBmpToFile(ss.str().c_str(), bitMapInfo);
+		}
 #endif // !L2A_RELEASE
+	}
 
 	delete[] bitMapInfo.data;
 
@@ -159,6 +188,6 @@ L2Window WindowsClassifier::waitForWindow(HWND hWnd, int timeoutMs) {
 }
 
 
-inline WindowClassifier* WindowsClassifier::createSingleWindowClassifier(WindowDefinition& def) {
-	return new SingleWindowClassifier(def.width, def.height, def.bDefs, def.textMinSize, def.textMaxSize);
+inline SingleWindowClassifier* WindowsClassifier::createSingleWindowClassifier(WindowDefinition& def) {
+	return new SingleWindowClassifier(this->btnCapturer, def.bDefs, def.textMinSize, def.textMaxSize);
 }

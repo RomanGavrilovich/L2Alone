@@ -95,9 +95,6 @@
     <ClInclude Include="VisionUtils.h">
       <Filter>Header Files\Vision</Filter>
     </ClInclude>
-    <ClInclude Include="ButtonClassifier.h">
-      <Filter>Header Files\Vision</Filter>
-    </ClInclude>
     <ClInclude Include="SingleWindowClassifier.h">
       <Filter>Header Files\Vision</Filter>
     </ClInclude>
@@ -106,6 +103,15 @@
     </ClInclude>
     <ClInclude Include="VisionTestUtils.h">
       <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="ButtonCapturer.h">
+      <Filter>Header Files\Vision</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowClassifier.h">
+      <Filter>Header Files\Vision</Filter>
+    </ClInclude>
+    <ClInclude Include="LoadingWindowClassifier.h">
+      <Filter>Header Files\Vision</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -11,15 +11,18 @@ class ButtonCapturer {
 
 public:
 
-	ButtonCapturer(int rtWidth, int rtHeight);
+	ButtonCapturer(int rtWidth, int rtHeight, ButtonDefinition refDef);
 
-	void captureButton(BitMapInfo& bitMapInfo, ButtonDefinition bDef, map<int, double> &hDistr);
+	void captureReferenceButton(BitMapInfo& bitMapInfo);
 
-	bool hasBorders(BitMapInfo& bitMapInfo, ButtonDefinition bDef);
+	bool isButton(BitMapInfo& bitMapInfo, ButtonDefinition bDef);
 
 private:
 	int rtWidth;
 	int rtHeight;
+	ButtonDefinition refDef;
+
+	map<int, double> hTargetDistr;
 
 	Point toLbViaCenterOffset(int lbWidth, int lbHeight, int rtX, int rtY);
 
@@ -33,22 +36,35 @@ private:
 
 	void collapse(map<int, double>& source, map<int, double>& dest);
 
-	bool hasHorizontalBorder(BitMapInfo& bitMapInfo, int lbX, int lbY, int width, int errorRange);
-
-	bool hasVerticalBorder(BitMapInfo& bitMapInfo, int lbX, int lbY, int height, int errorRange);
-
 	void drawDebugBorders(BitMapInfo& bitMapInfo, ButtonDefinition bDef);
+
+	void captureButton(BitMapInfo& bitMapInfo, ButtonDefinition bDef, map<int, double>& hDistr);
 };
 
-ButtonCapturer::ButtonCapturer(int rtWidth, int rtHeight) {
+ButtonCapturer::ButtonCapturer(int rtWidth, int rtHeight, ButtonDefinition refDef) {
 	this->rtWidth = rtWidth;
 	this->rtHeight = rtHeight;
+	this->refDef = refDef;
+}
+
+bool ButtonCapturer::isButton(BitMapInfo& bitMapInfo, ButtonDefinition bDef) {
+	map<int, double> bhDistr;
+	captureButton(bitMapInfo, bDef, bhDistr);
+
+	return getDistributionError(bhDistr, hTargetDistr) < 5;
+}
+
+void ButtonCapturer::captureReferenceButton(BitMapInfo& bitMapInfo) {
+	captureButton(bitMapInfo, refDef, hTargetDistr);
 }
 
 void ButtonCapturer::captureButton(BitMapInfo& bitMapInfo, ButtonDefinition bDef, map<int, double> &hDistr) {
 
-	Point p = toLbPoint(bitMapInfo, bDef);
-	initHDistribution(bitMapInfo, p.x, p.y, bDef.width, bDef.height, hDistr);
+	Point targetLb = toLbPoint(bitMapInfo, bDef);
+	int lbX = targetLb.x;
+	int lbY = targetLb.y - bDef.height;
+
+	initHDistribution(bitMapInfo, lbX, lbY, bDef.width, bDef.height, hDistr);
 
 #ifdef TEST
 	drawDebugBorders(bitMapInfo, bDef);

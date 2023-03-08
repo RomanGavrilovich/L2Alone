@@ -41,10 +41,10 @@ private:
 
 C2AutologinStrategy::C2AutologinStrategy() {
 
-	map<L2Window, WindowDefinition> winDefs;
-	WindowsDefinitions::initC2WindowsDefinitions(winDefs);
+	VisionDefinition vDef;
+	WindowsDefinitions::initC2WindowsDefinitions(vDef);
 
-	wClassifier = new WindowsClassifier(winDefs);
+	wClassifier = new WindowsClassifier(vDef);
 }
 
 C2AutologinStrategy::~C2AutologinStrategy() {
