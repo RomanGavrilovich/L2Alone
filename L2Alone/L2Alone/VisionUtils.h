@@ -365,3 +365,32 @@ double getDistributionError(map<int, double>& first, map<int, double>& second) {
 
 	return sum;
 }
+
+bool captureDcBmp(HWND hWnd, BitMapInfo& bitMapInfo) {
+
+	bool success = false;
+
+	HDC hWindowDC = GetDC(hWnd);
+	HDC hMemDC = CreateCompatibleDC(hWindowDC);
+	RECT rcClient;
+	GetClientRect(hWnd, &rcClient);
+	HBITMAP hBitmap = CreateCompatibleBitmap(hWindowDC, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top);
+	HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
+
+	BitBlt(hMemDC, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, hWindowDC, 0, 0, SRCCOPY);
+
+	try {
+		bitMapInfo = createBitMapInfo(hBitmap);
+		success = true;
+	}
+	catch (exception e) {
+		logger.error(e.what());
+	}
+
+	SelectObject(hMemDC, hOldBitmap);
+	DeleteDC(hMemDC);
+	ReleaseDC(hWnd, hWindowDC);
+	DeleteObject(hBitmap);
+
+	return success;
+}

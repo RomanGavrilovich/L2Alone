@@ -29,6 +29,10 @@ public:
 	
 private:
 
+	// This is because we have a case, when we receive black screen, then screen of desktop, then black screen again
+	const int LOAD_SCREEN_TARGET_COUNT = 2;
+	int loadScreenCapturesCount = 0;
+
 	bool initialized = false;
 	bool loadingScreenDetected = false;
 
@@ -62,20 +66,7 @@ L2Window WindowsClassifier::captureWindow(HWND hWnd, vector<L2Window>& windows) 
 
 	BitMapInfo bitMapInfo;
 
-	HDC hWindowDC = GetDC(hWnd);
-	HDC hMemDC = CreateCompatibleDC(hWindowDC);
-	RECT rcClient;
-	GetClientRect(hWnd, &rcClient);
-	HBITMAP hBitmap = CreateCompatibleBitmap(hWindowDC, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top);
-	HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
-
-	BitBlt(hMemDC, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, hWindowDC, 0, 0, SRCCOPY);
-
-	try {
-		bitMapInfo = createBitMapInfo(hBitmap);
-	}
-	catch (exception e) {
-		logger.error(e.what());
+	if (!captureDcBmp(hWnd, bitMapInfo)) {
 		return L2Window::UNKNOWN;
 	}
 
@@ -84,10 +75,20 @@ L2Window WindowsClassifier::captureWindow(HWND hWnd, vector<L2Window>& windows) 
 	prepareDirectory("RefCapture");
 	if (!loadingScreenDetected) {
 		if (classifiers[L2Window::LOADING]->isWindow(bitMapInfo)) {
-			loadingScreenDetected = true;
-			writeBmpToFile("RefCapture/loading.bmp", bitMapInfo);
+
+			loadScreenCapturesCount++;
+			if (loadScreenCapturesCount == LOAD_SCREEN_TARGET_COUNT) {
+				loadingScreenDetected = true;
+			}
+
+			stringstream ss;
+			ss << "RefCapture/loading_" << loadScreenCapturesCount << ".bmp";
+			writeBmpToFile(ss.str().c_str(), bitMapInfo);
 			
 			return L2Window::LOADING;
+		}
+		else {
+			loadScreenCapturesCount = 0;
 		}
 	}
 	else if (!initialized) {
@@ -123,11 +124,6 @@ L2Window WindowsClassifier::captureWindow(HWND hWnd, vector<L2Window>& windows) 
 	}
 
 	delete[] bitMapInfo.data;
-
-	SelectObject(hMemDC, hOldBitmap);
-	DeleteDC(hMemDC);
-	ReleaseDC(hWnd, hWindowDC);
-	DeleteObject(hBitmap);
 
 	return w;
 }
