@@ -32,13 +32,21 @@ VisionParams RuntimeVisionInitializer::init(HWND hWindow, int timeoutMs) {
 
 	long startTime = GetTickCount64();
 
+	int k = 0;
+
+	prepareDirectory("RefCapture");
 	while (GetTickCount64() - startTime < timeoutMs) {
 		if (captureDcBmp(hWindow, bitMapInfo)) {
 			if (!loadingScreenDetected) {
 				if (isLoadingWindow(bitMapInfo)) {
+					logger.log("Loading screen detected");
+
 					loadingScreenDetected = true;
-					writeBmpToFile("RefCapture/loading.bmp", bitMapInfo);
 				}
+
+				stringstream ss;
+				ss << "RefCapture/loading_" << k++ << ".bmp";
+				writeBmpToFile(ss.str().c_str(), bitMapInfo);
 			}
 			else if (!initialized) {
 				if (!isLoadingWindow(bitMapInfo)) {
