@@ -11,6 +11,12 @@ static class WindowsDefinitions {
 
 public:
 
+	static VisionDefinition createC5VisionDefinition() {
+		VisionDefinition vDef;
+		initC5WindowsDefinitions(vDef);
+		return vDef;
+	}
+
 	static void initC5WindowsDefinitions(VisionDefinition &dest) {
 
 		int refScreenWidth = 1360;
@@ -58,6 +64,12 @@ public:
 
 		auto charsDef = WindowDefinition{ charsBtnDefs, 0, 0 };
 		dest.wDefs[L2Window::CHARACTERS] = charsDef;
+	}
+
+	static VisionDefinition createC2VisionDefinition() {
+		VisionDefinition vDef;
+		initC2WindowsDefinitions(vDef);
+		return vDef;
 	}
 
 	static void initC2WindowsDefinitions(VisionDefinition& dest) {

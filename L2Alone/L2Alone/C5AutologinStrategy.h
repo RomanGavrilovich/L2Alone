@@ -6,13 +6,14 @@
 
 class C5AutologinStrategy : public AutologinStrategy {
 
+public:
+	C5AutologinStrategy();
 protected:
-	void initVisionDefinition(VisionDefinition& def) override;
 	void initSelectCharDefinition(SelectCharacterDefinition& def) override;
 };
 
-void C5AutologinStrategy::initVisionDefinition(VisionDefinition& def) {
-	WindowsDefinitions::initC5WindowsDefinitions(def);
+C5AutologinStrategy::C5AutologinStrategy() : AutologinStrategy(WindowsDefinitions::createC5VisionDefinition()) {
+
 }
 
 void C5AutologinStrategy::initSelectCharDefinition(SelectCharacterDefinition& def) {

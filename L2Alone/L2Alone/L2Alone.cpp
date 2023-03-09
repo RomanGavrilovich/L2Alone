@@ -37,7 +37,7 @@ struct FindL2WindowParams {
 #define L2_ALONE_LOGS_DIR "logs"
 
 string getLogFilePath(string absFilePath);
-int autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& config);
+int autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& config, AutologinStrategy* s);
 
 void showMessage(string message);
 bool isRunnedFromExe(string process);
@@ -96,10 +96,21 @@ int main(int argc, char* argv[])
 		string account = argv[1];
 		string password = argv[2];
 
-		int nextAutoLoginIndex = autoLoginL2(account, password, slot, config);
+		AutologinStrategy *autologinStrategy;
+		if (config.version == C2) {
+			autologinStrategy = new C2AutologinStrategy();
+		}
+		else if (config.version == C5) {
+			autologinStrategy = new C5AutologinStrategy();
+		}
+		else {
+			throw exception("Unsupported L2 version");
+		}
+
+		int nextAutoLoginIndex = autoLoginL2(account, password, slot, config, autologinStrategy);
 		while (nextAutoLoginIndex >= 0) {
 			L2AccountHotKey nextConfig = config.accountHotKeys[nextAutoLoginIndex];
-			nextAutoLoginIndex = autoLoginL2(nextConfig.login, nextConfig.password, nextConfig.slot, config);
+			nextAutoLoginIndex = autoLoginL2(nextConfig.login, nextConfig.password, nextConfig.slot, config, autologinStrategy);
 		}
 
 		return 0;
@@ -118,7 +129,7 @@ void showMessage(string message) {
 	MessageBoxA(NULL, message.c_str(), APP_NAME, MB_OK);
 }
 
-int autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& config) {
+int autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& config, AutologinStrategy *autologinStrategy) {
 
 	STARTUPINFOA si;
 	PROCESS_INFORMATION pi;
@@ -168,17 +179,7 @@ int autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& c
 		eventService.setKeyboardHandler(d.hWindow, pvpHandler);
 		eventService.setFocusHandler(d.hWindow, pvpHandler);
 
-		unique_ptr<AutologinStrategy> pAutoLoginStrategy;
-		if (config.version == C5) {
-			logger.log("Do autologin for C5");
-			pAutoLoginStrategy = unique_ptr<AutologinStrategy>(new C5AutologinStrategy());
-		}
-		else if (config.version == C2) {
-			logger.log("Do autologin for C2");
-			pAutoLoginStrategy = unique_ptr<AutologinStrategy>(new C2AutologinStrategy());
-		}
-
-		pAutoLoginStrategy->doAutologin((HWND)d.hWindow, login, password, slot);
+		autologinStrategy->doAutologin((HWND)d.hWindow, login, password, slot);
 
 		WaitForSingleObject(pi.hProcess, INFINITE);
 

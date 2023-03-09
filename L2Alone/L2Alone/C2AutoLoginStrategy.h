@@ -9,15 +9,14 @@
 class C2AutologinStrategy : public AutologinStrategy {
 
 public:
+	C2AutologinStrategy();
 
 protected:
-	void initVisionDefinition(VisionDefinition& def) override;
 	void initSelectCharDefinition(SelectCharacterDefinition& def) override;
 	void onAccountInUse(HWND hWindow) override;
 };
 
-void C2AutologinStrategy::initVisionDefinition(VisionDefinition& def) {
-	WindowsDefinitions::initC2WindowsDefinitions(def);
+C2AutologinStrategy::C2AutologinStrategy() : AutologinStrategy(WindowsDefinitions::createC2VisionDefinition()) {
 }
 
 void C2AutologinStrategy::initSelectCharDefinition(SelectCharacterDefinition& def) {

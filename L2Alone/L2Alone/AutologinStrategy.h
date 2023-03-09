@@ -52,15 +52,16 @@ class AutologinStrategy {
 
 public:
 
+	AutologinStrategy(VisionDefinition vDef);
+
 	void doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot);
 
 protected:
 
-	virtual void initVisionDefinition(VisionDefinition& def) = 0;
 	virtual void initSelectCharDefinition(SelectCharacterDefinition& def) = 0;
 	virtual void onAccountInUse(HWND hWindow);
 
-	void selectCharacter(HWND hWindow, L2CharSlot slot, SelectCharacterDefinition& def);
+	void selectCharacter(HWND hWindow, SelectCharacterDefinition& def);
 	L2Window captureAuthResultWindows(HWND hWindow);
 
 private:
@@ -70,45 +71,93 @@ private:
 	InMemoryVisionCache* inMemoryVisionCache;
 	RuntimeVisionInitializer* runtimeVisionInitializer;
 
-	void doConfirmationFlow(HWND hWindow, L2CharSlot slot);
-	void handleAccountIsUsing(HWND hWindow, L2CharSlot slot);
+	void doConfirmationFlow(HWND hWindow, SelectCharacterDefinition &selectCharDef);
+	void handleAccountIsUsing(HWND hWindow, SelectCharacterDefinition &selectCharDef);
+
+	virtual bool fastFlowSupported(L2CharSlot slot);
+	L2Window doFastAutoLogin(HWND hWindow);
+	bool stopFastLogin(L2Window w);
 };
 
-void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot) {
-
-	VisionDefinition vDef;
-	initVisionDefinition(vDef);
-
+AutologinStrategy::AutologinStrategy(VisionDefinition vDef) {
 	auto bDef = vDef.wDefs[L2Window::WELCOME].bDefs[0];
 	capturer = new ButtonHueDistributionCapturer(vDef.wWidth, vDef.wHeight, bDef);
 	inMemoryVisionCache = new InMemoryVisionCache();
 	runtimeVisionInitializer = new RuntimeVisionInitializer(capturer);
 	vInitializer = new CachedVisionInitializer(inMemoryVisionCache, runtimeVisionInitializer);
 	wClassifier = new WindowsClassifier(vDef);
+}
 
-	auto vParams = vInitializer->init(hWindow, 10000);
-	wClassifier->init(vParams);
+bool AutologinStrategy::fastFlowSupported(L2CharSlot slot) {
+	return slot == ACTIVE;
+}
 
-	if (wClassifier->waitForWindow(hWindow, L2Window::WELCOME, 3000) != L2Window::WELCOME) {
-		throw exception("Can't detect welcome window");
+bool AutologinStrategy::stopFastLogin(L2Window w) {
+	return false;
+}
+
+L2Window AutologinStrategy::doFastAutoLogin(HWND hWindow) {
+	for (int i = 0; i < 10; ++i) {
+		for (int j = 0; j < 10; ++j) {
+			Sleep(100);
+			postControlMessage(hWindow, VK_RETURN);
+		}
+
+		auto w = wClassifier->waitForWindow(hWindow, 100);
+		if (w == L2Window::ACCOUNT_IN_USE || w == L2Window::INCORRECT_PASSWORD || w == L2Window::UNKNOWN || stopFastLogin(w)) {
+			return w;
+		}
 	}
+}
 
-	postCredentials(hWindow, login, password);
-	logger.log("Credentials posted");
-	Sleep(100); // give some time to process credentials post
+void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot) {
 
-	L2Window w = captureAuthResultWindows(hWindow);
-	logger.log("Captured auth result: ", getL2WindowName(w));
-	if (w == AGREEMENT) {
-		doConfirmationFlow(hWindow, slot);
+	auto vp = vInitializer->init(hWindow, 10000);
+	wClassifier->init(vp);
+
+	SelectCharacterDefinition charDef;
+	charDef.slot = slot;
+	initSelectCharDefinition(charDef);
+
+	// for C5 we go until wee see INVALID_CREDENTIALS, ACCOUNT_IN_USE, UNKNOWN
+	// for C2 we go until we see INVALID_CREDENTIALS, ACCOUNT_IN_USE, CHARACTERS
+	if (fastFlowSupported(slot)) {
+		postCredentials(hWindow, login, password);
+		
+		L2Window w = doFastAutoLogin(hWindow);
+		if (w == ACCOUNT_IN_USE) {
+			handleAccountIsUsing(hWindow, charDef);
+		}
+		else if (w == INCORRECT_PASSWORD) {
+			throw exception("Invalid credentials entered");
+		}
+		else if (w == CHARACTERS) {
+			doConfirmationFlow(hWindow, charDef);
+		}
+		else if (w == UNKNOWN) {
+			logger.log("Unknown window found. Complete autologin flow");
+		}
 	}
-	else if (w == ACCOUNT_IN_USE) {
-		logger.log("Account already in use. Try again");
-		handleAccountIsUsing(hWindow, slot);
-	}
-	else if (w == INCORRECT_PASSWORD) {
-		logger.log("Invalid credentials entered. Exit");
-		return;
+	else {
+		if (wClassifier->waitForWindow(hWindow, L2Window::WELCOME, 3000) != L2Window::WELCOME) {
+			throw exception("Can't detect welcome window");
+		}
+
+		postCredentials(hWindow, login, password);
+		Sleep(100); // give some time to process credentials post
+
+		L2Window w = captureAuthResultWindows(hWindow);
+		logger.log("Captured auth result: ", getL2WindowName(w));
+		if (w == AGREEMENT) {
+			doConfirmationFlow(hWindow, charDef);
+		}
+		else if (w == ACCOUNT_IN_USE) {
+			logger.log("Account already in use. Try again");
+			handleAccountIsUsing(hWindow, charDef);
+		}
+		else if (w == INCORRECT_PASSWORD) {
+			throw exception("Invalid credentials entered. Exit");
+		}
 	}
 }
 
@@ -116,7 +165,7 @@ void AutologinStrategy::onAccountInUse(HWND hWindow) {
 	// Do nothing
 }
 
-void AutologinStrategy::handleAccountIsUsing(HWND hWindow, L2CharSlot slot) {
+void AutologinStrategy::handleAccountIsUsing(HWND hWindow, SelectCharacterDefinition& charDef) {
 
 	logger.log("Account is using");
 	onAccountInUse(hWindow);
@@ -128,10 +177,10 @@ void AutologinStrategy::handleAccountIsUsing(HWND hWindow, L2CharSlot slot) {
 	if (w != AGREEMENT) {
 		throw exception("Can't find agreement screen");
 	}
-	doConfirmationFlow(hWindow, slot);
+	doConfirmationFlow(hWindow, charDef);
 }
 
-void AutologinStrategy::doConfirmationFlow(HWND hWindow, L2CharSlot slot) {
+void AutologinStrategy::doConfirmationFlow(HWND hWindow, SelectCharacterDefinition& selectCharDef) {
 	logger.log("Agreement window detected");
 
 	Sleep(100);
@@ -147,32 +196,27 @@ void AutologinStrategy::doConfirmationFlow(HWND hWindow, L2CharSlot slot) {
 		throw exception("Can't detect characters window");
 	}
 
-	if (slot == ACTIVE) {
+	if (selectCharDef.slot == ACTIVE) {
 		for (int i = 0; i < 10; ++i) {
 			Sleep(100);
 			postControlMessage(hWindow, VK_RETURN);
 		}
 	}
 	else {
-		SelectCharacterDefinition def;
-		def.slot = slot;
-
-		initSelectCharDefinition(def);
-
-		selectCharacter(hWindow, slot, def);
+		selectCharacter(hWindow, selectCharDef);
 	}
 
 	logger.log("Auto login flow completed");
 }
 
 
-void AutologinStrategy::selectCharacter(HWND hWindow, L2CharSlot slot, SelectCharacterDefinition& def) {
+void AutologinStrategy::selectCharacter(HWND hWindow, SelectCharacterDefinition& def) {
 
 	RECT r;
 	GetClientRect(hWindow, &r);
 
 	int dropdownItemHeight = def.dropdownItemHeight;
-	int charDropdownOffset = slot * dropdownItemHeight;
+	int charDropdownOffset = def.slot * dropdownItemHeight;
 
 	int refScreenWidth = 1360;
 	int refScreenHeight = 768;

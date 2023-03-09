@@ -52,6 +52,7 @@ void postCredentials(HWND hWindow, string& login, string& password) {
 	postControlMessage(hWindow, VK_TAB);
 	postText(hWindow, password);
 	postControlMessage(hWindow, VK_RETURN);
+	logger.log("Credentials posted");
 }
 
 void convertToGlobalClientRect(HWND hWindow, int x, int y, int& globalX, int& globalY) {

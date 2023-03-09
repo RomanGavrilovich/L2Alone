@@ -20,6 +20,8 @@ public:
 private:
 	VisionCache* pCache;
 	VisionInitializer* pTarget;
+
+	void waitForLoadingScreen(HWND hWindow, int timeoutMs);
 };
 
 CachedVisionInitializer::CachedVisionInitializer(VisionCache* pCache, VisionInitializer *pTarget) {
@@ -28,13 +30,36 @@ CachedVisionInitializer::CachedVisionInitializer(VisionCache* pCache, VisionInit
 }
 
 VisionParams CachedVisionInitializer::init(HWND hWindow, int timeoutMs) {
+
 	VisionParams vp;
 	if (pCache->get(vp)) {
-		return vp;
+		waitForLoadingScreen(hWindow, timeoutMs);
+		vp;
+
+	}
+	else {
+		vp = pTarget->init(hWindow, timeoutMs);
+		pCache->set(vp);
 	}
 
-	vp = pTarget->init(hWindow, timeoutMs);
-	pCache->set(vp);
-
 	return vp;
+}
+
+void CachedVisionInitializer::waitForLoadingScreen(HWND hWindow, int timeoutMs) {
+
+	BitMapInfo bitMapInfo;
+
+	long startTime = GetTickCount64();
+	while (GetTickCount64() - startTime < timeoutMs) {
+		if (captureDcBmp(hWindow, bitMapInfo)) {
+			if (isLoadingWindow(bitMapInfo)) {
+				logger.log("Loading screen detected");
+				return;
+			}
+		}
+
+		Sleep(100);
+	}
+
+	throw exception("Can't detect loading screen");
 }
