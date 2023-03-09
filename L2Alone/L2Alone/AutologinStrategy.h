@@ -112,6 +112,10 @@ L2Window AutologinStrategy::doFastAutoLogin(HWND hWindow) {
 
 void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot) {
 
+	// Workaround to avoid capturing defect
+	// Since we can receive following flow: black window -> loading image with partially transparent background -> black window -> welcome screen
+	Sleep(100);
+
 	auto vp = vInitializer->init(hWindow, 10000);
 	wClassifier->init(vp);
 
