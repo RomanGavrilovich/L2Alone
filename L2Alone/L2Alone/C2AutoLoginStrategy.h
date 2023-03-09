@@ -5,6 +5,7 @@
 #include "AutologinStrategy.h"
 #include "WindowDefinition.h"
 #include "WindowsDefinitions.h"
+#include "VisionUtils.h"
 
 class C2AutologinStrategy : public AutologinStrategy {
 
@@ -40,6 +41,7 @@ void C2AutologinStrategy::initSelectCharDefinition(SelectCharacterDefinition& de
 	def.dropDownY = 43;
 	def.startX = 1280;
 	def.startY = 600;
+	def.startAnchor = RefAnchor::BottomRight;
 	def.actionTimeout = 25;
 }
 

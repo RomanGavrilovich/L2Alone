@@ -45,6 +45,7 @@ struct SelectCharacterDefinition {
 	int dropdownItemHeight;
 	int startX;
 	int startY;
+	RefAnchor startAnchor;
 	int actionTimeout;
 	L2CharSlot slot;
 };
@@ -240,11 +241,10 @@ void AutologinStrategy::selectCharacter(HWND hWindow, SelectCharacterDefinition&
 	int wWidth = r.right - r.left;
 	int wHeight = r.bottom - r.top;
 
-	int offsetX = refScreenWidth - def.startX;
-	int offsetY = refScreenHeight - def.startY;
+	auto p = convertRtPoint(refScreenWidth, refScreenHeight, wWidth, wHeight, def.startX, def.startY, def.startAnchor);
 
 	int targetX, targetY;
-	convertToGlobalClientRect(hWindow, wWidth - offsetX, wHeight - offsetY, targetX, targetY);
+	convertToGlobalClientRect(hWindow, p.x, p.y, targetX, targetY);
 
 	int dropdownClickX, dropdownClickY;
 	convertToGlobalClientRect(hWindow, def.dropDownX, def.dropDownY, dropdownClickX, dropdownClickY);
@@ -265,8 +265,8 @@ void AutologinStrategy::selectCharacter(HWND hWindow, SelectCharacterDefinition&
 	v.push_back(L2EventLockData{ WM_LBUTTONDOWN, targetX, targetY });
 	v.push_back(L2EventLockData{ WM_LBUTTONUP, targetX, targetY });
 
-	POINT p;
-	GetCursorPos(&p);
+	POINT cursorPointer;
+	GetCursorPos(&cursorPointer);
 
 	eventService.lockForEvents(v);
 	try {
@@ -290,7 +290,7 @@ void AutologinStrategy::selectCharacter(HWND hWindow, SelectCharacterDefinition&
 
 	eventService.releaseLockForEvents();
 	Sleep(def.actionTimeout);
-	SetCursorPos(p.x, p.y);
+	SetCursorPos(cursorPointer.x, cursorPointer.y);
 }
 
 L2Window AutologinStrategy::captureAuthResultWindows(HWND hWindow) {

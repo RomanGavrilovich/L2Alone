@@ -323,6 +323,31 @@ Point toLbViaCenterOffset(int rtWidth, int rtHeight, int lbWidth, int lbHeight, 
 	return p;
 }
 
+Point convertRtPoint(int srcWidth, int srcHeight, int destWidth, int destHeight, int x, int y, RefAnchor anchor) {
+	Point p;
+	if (anchor == RefAnchor::CenterBottom) {
+		int shw = srcWidth / 2;
+		int sxOffset = x - shw;
+		int syOffset = srcHeight - y;
+
+		int dhw = destWidth / 2;
+		p.x = dhw + sxOffset;
+		p.y = destHeight - syOffset;
+	}
+	else if (anchor == RefAnchor::BottomRight) {
+		int sxOffset = srcWidth - x;
+		int syOffset = srcHeight - y;
+
+		p.x = destWidth - sxOffset;
+		p.y = destHeight - syOffset;
+	}
+	else {
+		throw exception("Unsupported reference anchor");
+	}
+
+	return p;
+}
+
 
 Point toLbViaCenterBottomOffset(int rtWidth, int rtHeight, int lbWidth, int lbHeight, int rtX, int rtY) {
 

@@ -19,6 +19,7 @@ C5AutologinStrategy::C5AutologinStrategy(L2AloneConfig& config) : AutologinStrat
 void C5AutologinStrategy::initSelectCharDefinition(SelectCharacterDefinition& def) {
 	def.startX = 680;
 	def.startY = 682;
+	def.startAnchor = RefAnchor::CenterBottom;
 	def.dropDownX = 198;
 	def.dropDownY = 48;
 	def.dropdownItemHeight = 17;
