@@ -122,7 +122,7 @@ L2Window WindowsClassifier::waitForWindows(HWND hWnd, vector<L2Window>& windows,
 		logger.log("Capture window");
 		try {
 			L2Window w = captureWindow(hWnd, windows);
-			logger.log("Capture window result: ", w);
+			logger.log("Capture window result: ", getL2WindowName(w));
 			if (find(windows.begin(), windows.end(), w) != windows.end()) {
 				return w;
 			}
@@ -154,7 +154,6 @@ L2Window WindowsClassifier::waitForWindow(HWND hWnd, L2Window window, int timeou
 L2Window WindowsClassifier::waitForWindow(HWND hWnd, int timeoutMs) {
 	vector<L2Window> v;
 
-	v.push_back(L2Window::WELCOME);
 	v.push_back(L2Window::AGREEMENT);
 	v.push_back(L2Window::INCORRECT_PASSWORD);
 	v.push_back(L2Window::ACCOUNT_IN_USE);

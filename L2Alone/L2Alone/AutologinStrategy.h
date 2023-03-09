@@ -64,6 +64,10 @@ protected:
 	void selectCharacter(HWND hWindow, SelectCharacterDefinition& def);
 	L2Window captureAuthResultWindows(HWND hWindow);
 
+protected:
+	virtual bool fastFlowSupported(L2CharSlot slot);
+	virtual bool stopFastLogin(L2Window w);
+
 private:
 	WindowsClassifier* wClassifier;
 	HueDistributionCapturer* capturer;
@@ -73,10 +77,8 @@ private:
 
 	void doConfirmationFlow(HWND hWindow, SelectCharacterDefinition &selectCharDef);
 	void handleAccountIsUsing(HWND hWindow, SelectCharacterDefinition &selectCharDef);
-
-	virtual bool fastFlowSupported(L2CharSlot slot);
+	
 	L2Window doFastAutoLogin(HWND hWindow);
-	bool stopFastLogin(L2Window w);
 };
 
 AutologinStrategy::AutologinStrategy(VisionDefinition vDef) {
@@ -98,7 +100,7 @@ bool AutologinStrategy::stopFastLogin(L2Window w) {
 
 L2Window AutologinStrategy::doFastAutoLogin(HWND hWindow) {
 	for (int i = 0; i < 10; ++i) {
-		for (int j = 0; j < 10; ++j) {
+		for (int j = 0; j < 3; ++j) {
 			Sleep(100);
 			postControlMessage(hWindow, VK_RETURN);
 		}
@@ -130,13 +132,14 @@ void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passwor
 		
 		L2Window w = doFastAutoLogin(hWindow);
 		if (w == ACCOUNT_IN_USE) {
+			logger.log("Account in use");
 			handleAccountIsUsing(hWindow, charDef);
 		}
 		else if (w == INCORRECT_PASSWORD) {
 			throw exception("Invalid credentials entered");
 		}
 		else if (w == CHARACTERS) {
-			doConfirmationFlow(hWindow, charDef);
+			selectCharacter(hWindow, charDef);
 		}
 		else if (w == UNKNOWN) {
 			logger.log("Unknown window found. Complete autologin flow");

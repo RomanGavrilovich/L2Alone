@@ -14,9 +14,21 @@ public:
 protected:
 	void initSelectCharDefinition(SelectCharacterDefinition& def) override;
 	void onAccountInUse(HWND hWindow) override;
+
+	bool fastFlowSupported(L2CharSlot slot);
+	bool stopFastLogin(L2Window w);
 };
 
 C2AutologinStrategy::C2AutologinStrategy() : AutologinStrategy(WindowsDefinitions::createC2VisionDefinition()) {
+
+}
+
+bool C2AutologinStrategy::fastFlowSupported(L2CharSlot slot) {
+	return true;
+}
+
+bool C2AutologinStrategy::stopFastLogin(L2Window w) {
+	return w == CHARACTERS;
 }
 
 void C2AutologinStrategy::initSelectCharDefinition(SelectCharacterDefinition& def) {
@@ -28,7 +40,7 @@ void C2AutologinStrategy::initSelectCharDefinition(SelectCharacterDefinition& de
 	def.dropDownY = 43;
 	def.startX = 1280;
 	def.startY = 600;
-	def.actionTimeout = 50;
+	def.actionTimeout = 25;
 }
 
 void C2AutologinStrategy::onAccountInUse(HWND hWindow) {
