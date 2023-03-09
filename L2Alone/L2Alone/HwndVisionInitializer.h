@@ -1,28 +1,36 @@
 #pragma once
 
 #include "VisionUtils.h"
+#include "Utils.h"
 #include "Logger.h"
 
-class RuntimeVisionInitializer : public VisionInitializer {
+class HwndVisionInitializer : public VisionInitializer {
 
 public:
 
-	RuntimeVisionInitializer(HueDistributionCapturer* capturer);
+	HwndVisionInitializer(HueDistributionCapturer* capturer);
 
-	VisionParams init(HWND hWindow, int timeoutMs) override;
+	VisionParams init(VisionProvider& provider, int timeoutMs) override;
+
+	void setHwnd(HWND hwnd);
 
 private:
 	bool initialized = false;
 	bool loadingScreenDetected = false;
 
 	HueDistributionCapturer* capturer;
+	HWND hWindow;
 };
 
-RuntimeVisionInitializer::RuntimeVisionInitializer(HueDistributionCapturer* capturer) {
+void HwndVisionInitializer::setHwnd(HWND hWnd) {
+	this->hWindow = hWnd;
+}
+
+HwndVisionInitializer::HwndVisionInitializer(HueDistributionCapturer* capturer) {
 	this->capturer = capturer;
 }
 
-VisionParams RuntimeVisionInitializer::init(HWND hWindow, int timeoutMs) {
+VisionParams HwndVisionInitializer::init(VisionProvider& vp, int timeoutMs) {
 
 	if (initialized) {
 		throw exception("RuntimeVisionInitializer already initialized");

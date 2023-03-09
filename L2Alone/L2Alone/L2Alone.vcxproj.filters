@@ -110,7 +110,22 @@
     <ClInclude Include="InMemoryVisionCache.h">
       <Filter>Header Files\Vision</Filter>
     </ClInclude>
-    <ClInclude Include="RuntimeVisionInitializer.h">
+    <ClInclude Include="HwndVisionInitializer.h">
+      <Filter>Header Files\Vision</Filter>
+    </ClInclude>
+    <ClInclude Include="HwndVisionProvider.h">
+      <Filter>Header Files\Vision</Filter>
+    </ClInclude>
+    <ClInclude Include="BmpVisionProvider.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="BmpVisionInitializer.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="VisionInitializer.h">
+      <Filter>Header Files\Vision</Filter>
+    </ClInclude>
+    <ClInclude Include="VisionProvider.h">
       <Filter>Header Files\Vision</Filter>
     </ClInclude>
   </ItemGroup>

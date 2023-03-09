@@ -9,6 +9,8 @@
 #include "WindowDefinition.h"
 #include "ButtonHueDistributionCapturer.h"
 #include "VisionUtils.h"
+#include "VisionInitializer.h"
+#include "VisionProvider.h"
 #include "Utils.h"
 
 using namespace std;
@@ -21,16 +23,16 @@ public:
 
 	void init(VisionParams& params);
 
-	L2Window waitForWindows(HWND hWnd, vector<L2Window>& windows, int timeousMs);
-	L2Window waitForWindow(HWND hWnd, L2Window window, int timeoutMs);
-	L2Window waitForWindow(HWND hWnd, int timeoutMs);
+	L2Window waitForWindows(VisionProvider& vp, vector<L2Window>& windows, int timeousMs);
+	L2Window waitForWindow(VisionProvider& vp, L2Window window, int timeoutMs);
+	L2Window waitForWindow(VisionProvider& vp, int timeoutMs);
 
 private:
 
 	VisionParams vParams;
 	VisionDefinition vDef;
 
-	L2Window captureWindow(HWND hWnd, vector<L2Window>& windows);
+	L2Window captureWindow(VisionProvider& vp, vector<L2Window>& windows);
 
 	bool isWindow(BitMapInfo& bmi, L2Window window);
 };
@@ -73,11 +75,11 @@ bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
 	return true;
 }
 
-L2Window WindowsClassifier::captureWindow(HWND hWnd, vector<L2Window>& windows) {
+L2Window WindowsClassifier::captureWindow(VisionProvider& vp, vector<L2Window>& windows) {
 
 	BitMapInfo bitMapInfo;
 
-	if (!captureDcBmp(hWnd, bitMapInfo)) {
+	if (!vp.capture(bitMapInfo)) {
 		return L2Window::UNKNOWN;
 	}
 
@@ -109,7 +111,7 @@ L2Window WindowsClassifier::captureWindow(HWND hWnd, vector<L2Window>& windows) 
 	return w;
 }
 
-L2Window WindowsClassifier::waitForWindows(HWND hWnd, vector<L2Window>& windows, int timeoutMs) {
+L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>& windows, int timeoutMs) {
 
 	stringstream ss;
 	for (int i = 0; i < windows.size(); ++i) {
@@ -121,7 +123,7 @@ L2Window WindowsClassifier::waitForWindows(HWND hWnd, vector<L2Window>& windows,
 	while (GetTickCount64() - startTick < timeoutMs) {
 		logger.log("Capture window");
 		try {
-			L2Window w = captureWindow(hWnd, windows);
+			L2Window w = captureWindow(vp, windows);
 			logger.log("Capture window result: ", getL2WindowName(w));
 			if (find(windows.begin(), windows.end(), w) != windows.end()) {
 				return w;
@@ -145,13 +147,13 @@ L2Window WindowsClassifier::waitForWindows(HWND hWnd, vector<L2Window>& windows,
 
 }
 
-L2Window WindowsClassifier::waitForWindow(HWND hWnd, L2Window window, int timeoutMs) {
+L2Window WindowsClassifier::waitForWindow(VisionProvider& vp, L2Window window, int timeoutMs) {
 	vector<L2Window> v;
 	v.push_back(window);
-	return waitForWindows(hWnd, v, timeoutMs);
+	return waitForWindows(vp, v, timeoutMs);
 }
 
-L2Window WindowsClassifier::waitForWindow(HWND hWnd, int timeoutMs) {
+L2Window WindowsClassifier::waitForWindow(VisionProvider& vp, int timeoutMs) {
 	vector<L2Window> v;
 
 	v.push_back(L2Window::AGREEMENT);
@@ -160,5 +162,5 @@ L2Window WindowsClassifier::waitForWindow(HWND hWnd, int timeoutMs) {
 	v.push_back(L2Window::SERVERS);
 	v.push_back(L2Window::CHARACTERS);
 
-	return waitForWindows(hWnd, v, timeoutMs);
+	return waitForWindows(vp, v, timeoutMs);
 }

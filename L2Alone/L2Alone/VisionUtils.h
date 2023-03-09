@@ -3,17 +3,9 @@
 #include <Windows.h>
 #include <fstream>
 
+#include "Logger.h"
+
 using namespace std;
-
-struct VisionParams {
-	map<int, double> hRef;
-};
-
-class VisionInitializer {
-
-public:
-	virtual VisionParams init(HWND hWindow, int timeoutMs) = 0;
-};
 
 struct BitMapInfo {
 

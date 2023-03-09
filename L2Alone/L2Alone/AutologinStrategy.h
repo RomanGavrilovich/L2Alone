@@ -31,11 +31,12 @@
 #include "ButtonHueDistributionCapturer.h"
 #include "CachedVisionInitializer.h"
 #include "InMemoryVisionCache.h"
-#include "RuntimeVisionInitializer.h"
+#include "HwndVisionInitializer.h"
 #include "Logger.h"
 #include "L2Events.h"
 #include "L2EventService.h"
 #include "config_utils.h"
+#include "HwndVisionProvider.h"
 
 using namespace std;
 
@@ -76,7 +77,7 @@ private:
 	HueDistributionCapturer* capturer;
 	VisionInitializer* vInitializer;
 	InMemoryVisionCache* inMemoryVisionCache;
-	RuntimeVisionInitializer* runtimeVisionInitializer;
+	HwndVisionInitializer* runtimeVisionInitializer;
 
 	void doConfirmationFlow(HWND hWindow, SelectCharacterDefinition &selectCharDef);
 	void handleAccountIsUsing(HWND hWindow, SelectCharacterDefinition &selectCharDef);
@@ -90,7 +91,7 @@ AutologinStrategy::AutologinStrategy(VisionDefinition vDef, L2AloneConfig& confi
 	auto bDef = vDef.wDefs[L2Window::WELCOME].bDefs[0];
 	capturer = new ButtonHueDistributionCapturer(vDef.wWidth, vDef.wHeight, bDef);
 	inMemoryVisionCache = new InMemoryVisionCache();
-	runtimeVisionInitializer = new RuntimeVisionInitializer(capturer);
+	runtimeVisionInitializer = new HwndVisionInitializer(capturer);
 	vInitializer = new CachedVisionInitializer(inMemoryVisionCache, runtimeVisionInitializer);
 	wClassifier = new WindowsClassifier(vDef);
 }
@@ -110,7 +111,8 @@ L2Window AutologinStrategy::doFastAutoLogin(HWND hWindow) {
 			postControlMessage(hWindow, VK_RETURN);
 		}
 
-		auto w = wClassifier->waitForWindow(hWindow, 100);
+		HwndVisionProvider provider(hWindow);
+		auto w = wClassifier->waitForWindow(provider, 100);
 		if (w == L2Window::ACCOUNT_IN_USE || w == L2Window::INCORRECT_PASSWORD || w == L2Window::UNKNOWN || stopFastLogin(w)) {
 			return w;
 		}
@@ -156,7 +158,8 @@ void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passwor
 		}
 	}
 	else {
-		if (wClassifier->waitForWindow(hWindow, L2Window::WELCOME, 3000) != L2Window::WELCOME) {
+		HwndVisionProvider provider(hWindow);
+		if (wClassifier->waitForWindow(provider, L2Window::WELCOME, 3000) != L2Window::WELCOME) {
 			throw exception("Can't detect welcome window");
 		}
 
@@ -190,7 +193,8 @@ void AutologinStrategy::handleAccountIsUsing(HWND hWindow, SelectCharacterDefini
 	Sleep(100);
 	postControlMessage(hWindow, VK_RETURN);
 
-	L2Window w = wClassifier->waitForWindow(hWindow, AGREEMENT, 5000);
+	HwndVisionProvider provider(hWindow);
+	L2Window w = wClassifier->waitForWindow(provider, AGREEMENT, 5000);
 	if (w != AGREEMENT) {
 		throw exception("Can't find agreement screen");
 	}
@@ -202,14 +206,15 @@ void AutologinStrategy::doConfirmationFlow(HWND hWindow, SelectCharacterDefiniti
 
 	Sleep(100);
 	postControlMessage(hWindow, VK_RETURN);
-	if (wClassifier->waitForWindow(hWindow, L2Window::SERVERS, 3000) != L2Window::SERVERS) {
+	HwndVisionProvider provider(hWindow);
+	if (wClassifier->waitForWindow(provider, L2Window::SERVERS, 3000) != L2Window::SERVERS) {
 		throw exception("Can't detect servers window");
 	}
 
 	logger.log("Post agreement");
 	Sleep(100);
 	postControlMessage(hWindow, VK_RETURN);
-	if (wClassifier->waitForWindow(hWindow, L2Window::CHARACTERS, 3000) != L2Window::CHARACTERS) {
+	if (wClassifier->waitForWindow(provider, L2Window::CHARACTERS, 3000) != L2Window::CHARACTERS) {
 		throw exception("Can't detect characters window");
 	}
 
@@ -298,5 +303,7 @@ L2Window AutologinStrategy::captureAuthResultWindows(HWND hWindow) {
 	windows.push_back(L2Window::AGREEMENT);
 	windows.push_back(L2Window::INCORRECT_PASSWORD);
 	windows.push_back(L2Window::ACCOUNT_IN_USE);
-	return wClassifier->waitForWindows(hWindow, windows, 5000);
+
+	HwndVisionProvider provider(hWindow);
+	return wClassifier->waitForWindows(provider, windows, 5000);
 }

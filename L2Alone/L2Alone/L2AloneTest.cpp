@@ -6,13 +6,19 @@
 
 #include "WindowDefinition.h"
 #include "WindowsDefinitions.h"
-#include "SingleWindowClassifier.h"
 #include "VisionTestUtils.h"
 #include "WindowsDefinitions.h"
-#include "LoadingWindowClassifier.h"
 #include "Utils.h"
+#include "WindowsClassifier.h"
+#include "VisionUtils.h"
 
 using namespace std;
+
+int main(int argc, char* argv[])
+{
+	VisionDefinition vd = WindowsDefinitions::createC5VisionDefinition();
+	WindowsClassifier classifier(vd);
+}
 
 //bool testWelcomeWindowClassification() {
 //
