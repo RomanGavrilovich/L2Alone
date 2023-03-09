@@ -16,8 +16,9 @@
 #define CAPTURE_LOGS_ENABLED_CONFIG_KEY "CaptureLogsEnabled"
 #define PRELOADING_TIME "PreloadingTime"
 #define MOUSE_INPUT_SPEED "MouseInputSpeed"
+#define VISION_INIT_TIMEOUT "VisionInitTimeoutMs"
 #define ACCOUNT_KEY "Account"
-
+ 
 enum L2Version {
 	NONE,
 	C2,
@@ -39,6 +40,7 @@ struct L2AloneConfig {
 	vector<L2AccountHotKey> accountHotKeys;
 	int mouseInputSpeed = -1;
 	int preloadingTime = -1;
+	int visionInitTimeout = 10000;
 };
 
 using namespace std;
@@ -103,6 +105,9 @@ L2AloneConfig loadL2AloneConfig() {
 			}
 			else if (k == MOUSE_INPUT_SPEED) {
 				config.mouseInputSpeed = stoi(trim(v));
+			}
+			else if (k == VISION_INIT_TIMEOUT) {
+				config.visionInitTimeout = stoi(trim(v));
 			}
 		}
 	}

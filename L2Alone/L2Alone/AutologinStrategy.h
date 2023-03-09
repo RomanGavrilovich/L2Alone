@@ -127,7 +127,7 @@ void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passwor
 	}
 	Sleep(preloadingTime);
 
-	auto vp = vInitializer->init(hWindow, 10000);
+	auto vp = vInitializer->init(hWindow, config.visionInitTimeout);
 	wClassifier->init(vp);
 
 	SelectCharacterDefinition charDef;
