@@ -11,12 +11,17 @@
 #include "Utils.h"
 #include "WindowsClassifier.h"
 #include "VisionUtils.h"
+#include "BmpVisionInitializer.h"
 
 using namespace std;
 
 int main(int argc, char* argv[])
 {
 	VisionDefinition vd = WindowsDefinitions::createC5VisionDefinition();
+
+
+	BmpVisionInitializer initializer();
+
 	WindowsClassifier classifier(vd);
 }
 

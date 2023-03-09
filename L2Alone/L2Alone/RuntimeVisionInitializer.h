@@ -3,16 +3,16 @@
 #include "VisionUtils.h"
 #include "Utils.h"
 #include "Logger.h"
+#include "VisionInitializer.h"
+#include "VisionProvider.h"
 
-class HwndVisionInitializer : public VisionInitializer {
+class RuntimeVisionInitializer : public VisionInitializer {
 
 public:
 
-	HwndVisionInitializer(HueDistributionCapturer* capturer);
+	RuntimeVisionInitializer(HueDistributionCapturer* capturer);
 
 	VisionParams init(VisionProvider& provider, int timeoutMs) override;
-
-	void setHwnd(HWND hwnd);
 
 private:
 	bool initialized = false;
@@ -22,15 +22,11 @@ private:
 	HWND hWindow;
 };
 
-void HwndVisionInitializer::setHwnd(HWND hWnd) {
-	this->hWindow = hWnd;
-}
-
-HwndVisionInitializer::HwndVisionInitializer(HueDistributionCapturer* capturer) {
+RuntimeVisionInitializer::RuntimeVisionInitializer(HueDistributionCapturer* capturer) {
 	this->capturer = capturer;
 }
 
-VisionParams HwndVisionInitializer::init(VisionProvider& vp, int timeoutMs) {
+VisionParams RuntimeVisionInitializer::init(VisionProvider& vp, int timeoutMs) {
 
 	if (initialized) {
 		throw exception("RuntimeVisionInitializer already initialized");

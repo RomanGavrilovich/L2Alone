@@ -31,7 +31,7 @@
 #include "ButtonHueDistributionCapturer.h"
 #include "CachedVisionInitializer.h"
 #include "InMemoryVisionCache.h"
-#include "HwndVisionInitializer.h"
+#include "RuntimeVisionInitializer.h"
 #include "Logger.h"
 #include "L2Events.h"
 #include "L2EventService.h"
@@ -77,7 +77,7 @@ private:
 	HueDistributionCapturer* capturer;
 	VisionInitializer* vInitializer;
 	InMemoryVisionCache* inMemoryVisionCache;
-	HwndVisionInitializer* runtimeVisionInitializer;
+	RuntimeVisionInitializer* runtimeVisionInitializer;
 
 	void doConfirmationFlow(HWND hWindow, SelectCharacterDefinition &selectCharDef);
 	void handleAccountIsUsing(HWND hWindow, SelectCharacterDefinition &selectCharDef);
@@ -91,7 +91,7 @@ AutologinStrategy::AutologinStrategy(VisionDefinition vDef, L2AloneConfig& confi
 	auto bDef = vDef.wDefs[L2Window::WELCOME].bDefs[0];
 	capturer = new ButtonHueDistributionCapturer(vDef.wWidth, vDef.wHeight, bDef);
 	inMemoryVisionCache = new InMemoryVisionCache();
-	runtimeVisionInitializer = new HwndVisionInitializer(capturer);
+	runtimeVisionInitializer = new RuntimeVisionInitializer(capturer);
 	vInitializer = new CachedVisionInitializer(inMemoryVisionCache, runtimeVisionInitializer);
 	wClassifier = new WindowsClassifier(vDef);
 }
@@ -129,7 +129,8 @@ void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passwor
 	}
 	Sleep(preloadingTime);
 
-	auto vp = vInitializer->init(hWindow, config.visionInitTimeout);
+	HwndVisionProvider provider(hWindow);
+	auto vp = vInitializer->init(provider, config.visionInitTimeout);
 	wClassifier->init(vp);
 
 	SelectCharacterDefinition charDef;

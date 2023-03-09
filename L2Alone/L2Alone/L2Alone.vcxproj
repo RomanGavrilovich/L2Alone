@@ -207,7 +207,7 @@
     <ClInclude Include="L2EventService.h" />
     <ClInclude Include="L2KeyboardEventHandler.h" />
     <ClInclude Include="L2Events.h" />
-    <ClInclude Include="HwndVisionInitializer.h" />
+    <ClInclude Include="RuntimeVisionInitializer.h" />
     <ClInclude Include="VisionInitializer.h" />
     <ClInclude Include="VisionProvider.h" />
     <ClInclude Include="VisionTestUtils.h" />
