@@ -281,11 +281,11 @@ int getSystemMessageLength(BitMapInfo& bitMapInfo) {
 
 	int centerX = bitMapInfo.width / 2;
 	int maxNoTextPixelCount = 10;
-	
+
 	int noTextPixelCount = 0;
 	int startPixelX = -1;
 	for (int i = centerX; i >= 0; --i) {
-		
+
 		if (hasTextVertical(bitMapInfo, i)) {
 			startPixelX = i;
 			noTextPixelCount = 0;
@@ -481,12 +481,23 @@ void initHDistribution(BitMapInfo& bitMapInfo, int x, int y, int width, int heig
 	collapse(tmp, dest);
 }
 
+inline bool isBlack(int r, int g, int b) {
+	return r == 0 && g == 0 && b == 0;
+}
+
+inline bool isWhite(int r, int g, int b) {
+	return r == 255 && g == 255 && b == 255;
+}
+
 bool isLoadingWindow(BitMapInfo& bmi) {
+
+	int total = bmi.width * bmi.height;
+
 	for (int i = 0; i < bmi.width; ++i) {
 		for (int j = 0; j < bmi.height; ++j) {
 			int r, g, b;
 			getPixelRgb(bmi, i, j, r, g, b);
-			if (r != 0 || g != 0 || b != 0) {
+			if (!isBlack(r, g, b) && !isWhite(r, g, b)) {
 				return false;
 			}
 		}
