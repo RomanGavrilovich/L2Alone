@@ -14,6 +14,8 @@
 #define L2_VERSION "L2Version"
 #define LOGS_ENABLED_CONFIG_KEY "LogsEnabled"
 #define CAPTURE_LOGS_ENABLED_CONFIG_KEY "CaptureLogsEnabled"
+#define PRELOADING_TIME "PreloadingTime"
+#define MOUSE_INPUT_SPEED "MouseInputSpeed"
 #define ACCOUNT_KEY "Account"
 
 enum L2Version {
@@ -35,12 +37,15 @@ struct L2AloneConfig {
 	bool logsEnabled = false;
 	bool captureLogsEnabled = false;
 	vector<L2AccountHotKey> accountHotKeys;
+	int mouseInputSpeed = -1;
+	int preloadingTime = -1;
 };
 
 using namespace std;
 
 bool splitParam(string s, string& k, string& v);
 bool toBoolean(string s);
+string trim(string s);
 
 L2AccountHotKey getAccountHotKey(string& hotKeyConfigKey, string hotKeyConfigValue);
 L2Version toL2Version(string value);
@@ -92,6 +97,12 @@ L2AloneConfig loadL2AloneConfig() {
 			}
 			else if (k == L2_VERSION) {
 				config.version = toL2Version(v);
+			}
+			else if (k == PRELOADING_TIME) {
+				config.preloadingTime = stoi(trim(v));
+			}
+			else if (k == MOUSE_INPUT_SPEED) {
+				config.mouseInputSpeed = stoi(trim(v));
 			}
 		}
 	}

@@ -9,7 +9,7 @@
 class C2AutologinStrategy : public AutologinStrategy {
 
 public:
-	C2AutologinStrategy();
+	C2AutologinStrategy(L2AloneConfig& config);
 
 protected:
 	void initSelectCharDefinition(SelectCharacterDefinition& def) override;
@@ -19,7 +19,7 @@ protected:
 	bool stopFastLogin(L2Window w);
 };
 
-C2AutologinStrategy::C2AutologinStrategy() : AutologinStrategy(WindowsDefinitions::createC2VisionDefinition()) {
+C2AutologinStrategy::C2AutologinStrategy(L2AloneConfig &config) : AutologinStrategy(WindowsDefinitions::createC2VisionDefinition(), config) {
 
 }
 

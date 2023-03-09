@@ -29,11 +29,13 @@ bool isExitHotKeyCode(int exitCode) {
 }
 
 void prepareDirectory(string absPath) {
+#ifndef L2A_RELEASE
 	if (CreateDirectoryA(absPath.c_str(), NULL) || ERROR_ALREADY_EXISTS == GetLastError()) {
 		return;
 	}
 
 	throw std::exception(("Can't create directory" + absPath).c_str());
+#endif // !L2A_RELEASE
 }
 
 void postText(HWND hWindow, string& s) {

@@ -35,6 +35,7 @@
 #include "Logger.h"
 #include "L2Events.h"
 #include "L2EventService.h"
+#include "config_utils.h"
 
 using namespace std;
 
@@ -52,7 +53,7 @@ class AutologinStrategy {
 
 public:
 
-	AutologinStrategy(VisionDefinition vDef);
+	AutologinStrategy(VisionDefinition vDef, L2AloneConfig& config);
 
 	void doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot);
 
@@ -69,6 +70,7 @@ protected:
 	virtual bool stopFastLogin(L2Window w);
 
 private:
+	L2AloneConfig config;
 	WindowsClassifier* wClassifier;
 	HueDistributionCapturer* capturer;
 	VisionInitializer* vInitializer;
@@ -81,7 +83,9 @@ private:
 	L2Window doFastAutoLogin(HWND hWindow);
 };
 
-AutologinStrategy::AutologinStrategy(VisionDefinition vDef) {
+AutologinStrategy::AutologinStrategy(VisionDefinition vDef, L2AloneConfig& config) {
+	this->config = config;
+
 	auto bDef = vDef.wDefs[L2Window::WELCOME].bDefs[0];
 	capturer = new ButtonHueDistributionCapturer(vDef.wWidth, vDef.wHeight, bDef);
 	inMemoryVisionCache = new InMemoryVisionCache();
@@ -116,7 +120,11 @@ void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passwor
 
 	// Workaround to avoid capturing defect
 	// Since we can receive following flow: black window -> loading image with partially transparent background -> black window -> welcome screen
-	Sleep(100);
+	int preloadingTime = 100;
+	if (config.preloadingTime > 0) {
+		preloadingTime = config.preloadingTime;
+	}
+	Sleep(preloadingTime);
 
 	auto vp = vInitializer->init(hWindow, 10000);
 	wClassifier->init(vp);
@@ -124,9 +132,10 @@ void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passwor
 	SelectCharacterDefinition charDef;
 	charDef.slot = slot;
 	initSelectCharDefinition(charDef);
+	if (config.mouseInputSpeed > 0) {
+		charDef.actionTimeout = config.mouseInputSpeed;
+	}
 
-	// for C5 we go until wee see INVALID_CREDENTIALS, ACCOUNT_IN_USE, UNKNOWN
-	// for C2 we go until we see INVALID_CREDENTIALS, ACCOUNT_IN_USE, CHARACTERS
 	if (fastFlowSupported(slot)) {
 		postCredentials(hWindow, login, password);
 		

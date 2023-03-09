@@ -98,10 +98,10 @@ int main(int argc, char* argv[])
 
 		AutologinStrategy *autologinStrategy;
 		if (config.version == C2) {
-			autologinStrategy = new C2AutologinStrategy();
+			autologinStrategy = new C2AutologinStrategy(config);
 		}
 		else if (config.version == C5) {
-			autologinStrategy = new C5AutologinStrategy();
+			autologinStrategy = new C5AutologinStrategy(config);
 		}
 		else {
 			throw exception("Unsupported L2 version");

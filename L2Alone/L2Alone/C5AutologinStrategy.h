@@ -7,12 +7,12 @@
 class C5AutologinStrategy : public AutologinStrategy {
 
 public:
-	C5AutologinStrategy();
+	C5AutologinStrategy(L2AloneConfig &config);
 protected:
 	void initSelectCharDefinition(SelectCharacterDefinition& def) override;
 };
 
-C5AutologinStrategy::C5AutologinStrategy() : AutologinStrategy(WindowsDefinitions::createC5VisionDefinition()) {
+C5AutologinStrategy::C5AutologinStrategy(L2AloneConfig& config) : AutologinStrategy(WindowsDefinitions::createC5VisionDefinition(), config) {
 
 }
 
