@@ -18,6 +18,7 @@
 #define MOUSE_INPUT_SPEED "MouseInputSpeed"
 #define VISION_INIT_TIMEOUT "VisionInitTimeoutMs"
 #define ACCOUNT_KEY "Account"
+#define SAVE_REF_SCREEN "SaveRefScreen"
  
 enum L2Version {
 	NONE,
@@ -41,6 +42,7 @@ struct L2AloneConfig {
 	int mouseInputSpeed = -1;
 	int preloadingTime = -1;
 	int visionInitTimeout = 10000;
+	bool saveRefScreen = false;
 };
 
 using namespace std;
@@ -108,6 +110,9 @@ L2AloneConfig loadL2AloneConfig() {
 			}
 			else if (k == VISION_INIT_TIMEOUT) {
 				config.visionInitTimeout = stoi(trim(v));
+			}
+			else if (k == SAVE_REF_SCREEN) {
+				config.saveRefScreen = (bool)stoi(trim(v));
 			}
 		}
 	}

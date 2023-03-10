@@ -91,7 +91,7 @@ AutologinStrategy::AutologinStrategy(VisionDefinition vDef, L2AloneConfig& confi
 	auto bDef = vDef.wDefs[L2Window::WELCOME].bDefs[0];
 	capturer = new ButtonHueDistributionCapturer(vDef.wWidth, vDef.wHeight, bDef);
 	inMemoryVisionCache = new InMemoryVisionCache();
-	runtimeVisionInitializer = new RuntimeVisionInitializer(capturer);
+	runtimeVisionInitializer = new RuntimeVisionInitializer(capturer, config.saveRefScreen);
 	vInitializer = new CachedVisionInitializer(inMemoryVisionCache, runtimeVisionInitializer);
 	wClassifier = new WindowsClassifier(vDef);
 }

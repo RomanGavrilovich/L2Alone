@@ -10,68 +10,44 @@ class RuntimeVisionInitializer : public VisionInitializer {
 
 public:
 
-	RuntimeVisionInitializer(HueDistributionCapturer* capturer);
+	RuntimeVisionInitializer(HueDistributionCapturer* capturer, bool saveRefScreen);
 
 	VisionParams init(VisionProvider& provider, int timeoutMs) override;
 
 private:
-	bool initialized = false;
-	bool loadingScreenDetected = false;
-
 	HueDistributionCapturer* capturer;
+	bool saveRefScreen;
 };
 
-RuntimeVisionInitializer::RuntimeVisionInitializer(HueDistributionCapturer* capturer) {
+RuntimeVisionInitializer::RuntimeVisionInitializer(HueDistributionCapturer* capturer, bool saveRefScreen) {
 	this->capturer = capturer;
+	this->saveRefScreen = saveRefScreen;
 }
 
 VisionParams RuntimeVisionInitializer::init(VisionProvider& vp, int timeoutMs) {
-
-	if (initialized) {
-		throw exception("RuntimeVisionInitializer already initialized");
-	}
 
 	BitMapInfo bitMapInfo;
 
 	long startTime = GetTickCount64();
 
-	int k = 0;
-
 	prepareDirectory("RefCapture");
 	while (GetTickCount64() - startTime < timeoutMs) {
 		if (vp.capture(bitMapInfo)) {
 
-			stringstream ss;
-			ss << "RefCapture/loadingRetry" << k++ << ".bmp";
-			writeBmpToFile(ss.str().c_str(), bitMapInfo);
+			if (!isLoadingWindow(bitMapInfo)) {
+				VisionParams vp;
+				capturer->capture(bitMapInfo, vp.hRef);
 
-			if (!loadingScreenDetected) {
-				if (isLoadingWindow(bitMapInfo)) {
-					logger.log("Loading screen detected");
-
-					loadingScreenDetected = true;
+				if (saveRefScreen) {
+					prepareDirectory("Debug");
+					writeBmpToFile("Debug/Ref.bmp", bitMapInfo);
 				}
 
-				stringstream ss;
-				ss << "RefCapture/loading_" << k++ << ".bmp";
-				writeBmpToFile(ss.str().c_str(), bitMapInfo);
-			}
-			else if (!initialized) {
-				if (!isLoadingWindow(bitMapInfo)) {
-					writeBmpToFile("RefCapture/capture.bmp", bitMapInfo);
-
-					// This is a problem
-
-					VisionParams vp;
-					capturer->capture(bitMapInfo, vp.hRef);
-
-					return vp;
-					initialized = true;
-				}
+				return vp;
 			}
 		}
 
-		Sleep(10);
+		Sleep(100);
 	}
 
 	throw exception("Can't create vision parameters");
