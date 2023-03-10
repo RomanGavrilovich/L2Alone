@@ -210,7 +210,7 @@
     <ClInclude Include="RuntimeVisionInitializer.h" />
     <ClInclude Include="VisionInitializer.h" />
     <ClInclude Include="VisionProvider.h" />
-    <ClInclude Include="VisionTestUtils.h" />
+    <ClInclude Include="TestUtils.h" />
     <ClInclude Include="VisionUtils.h" />
     <ClInclude Include="WindowsClassifier.h" />
     <ClInclude Include="WindowDefinition.h" />

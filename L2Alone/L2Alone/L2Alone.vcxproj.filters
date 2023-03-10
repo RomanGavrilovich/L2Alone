@@ -98,7 +98,7 @@
     <ClInclude Include="WindowsDefinitions.h">
       <Filter>Header Files\Vision</Filter>
     </ClInclude>
-    <ClInclude Include="VisionTestUtils.h">
+    <ClInclude Include="TestUtils.h">
       <Filter>Header Files\Test</Filter>
     </ClInclude>
     <ClInclude Include="ButtonHueDistributionCapturer.h">

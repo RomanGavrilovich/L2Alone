@@ -106,7 +106,7 @@ L2Window WindowsClassifier::captureWindow(VisionProvider& vp, vector<L2Window>& 
 	}
 #endif // !L2A_RELEASE
 
-	delete[] bitMapInfo.data;
+	vp.dispose(bitMapInfo);
 
 	return w;
 }

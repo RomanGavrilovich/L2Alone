@@ -3,258 +3,113 @@
 #include <iostream>
 #include <map>
 #include <sstream>
+#include <Windows.h>
 
 #include "WindowDefinition.h"
 #include "WindowsDefinitions.h"
-#include "VisionTestUtils.h"
+#include "TestUtils.h"
 #include "WindowsDefinitions.h"
 #include "Utils.h"
 #include "WindowsClassifier.h"
 #include "VisionUtils.h"
 #include "BmpVisionInitializer.h"
+#include "BmpVisionProvider.h"
+#include "config_utils.h"
 
 using namespace std;
 
-int main(int argc, char* argv[])
-{
-	VisionDefinition vd = WindowsDefinitions::createC5VisionDefinition();
+struct TestL2VersionFailure {
+	string path;
+	L2Window expected;
+	L2Window actual;
+};
 
+struct TestL2VersionReport {
+	int testCount = 0;
+	vector<TestL2VersionFailure> failures;
+};
 
-	BmpVisionInitializer initializer();
+L2Window testL2WindowClassifier(string& pathToTestBmp, WindowsClassifier& classifier) {
 
-	WindowsClassifier classifier(vd);
+	auto bmi = readBmpFile(pathToTestBmp.c_str());
+
+	BmpVisionProvider provider(bmi);
+
+	auto r = classifier.waitForWindow(provider, 100);
+
+	delete[] bmi.data;
+
+	return r;
 }
 
-//bool testWelcomeWindowClassification() {
-//
-//	map<L2Window, WindowDefinition> dest;
-//	WindowsDefinitions::initC5WindowsDefinitions(dest);
-//
-//	auto welcomeDef = dest[L2Window::WELCOME];
-//	SingleWindowClassifier* classifier = createWinClass(welcomeDef);
-//
-//	auto bmp = readBmpFile("TestResources/Vision/welcome.bmp");
-//
-//	return classifier->isWindow(bmp);
-//}
-//
-//void testServerClassification() {
-//
-//	map<L2Window, WindowDefinition> dest;
-//	WindowsDefinitions::initC5WindowsDefinitions(dest);
-//
-//	auto def = dest[L2Window::SERVERS];
-//	SingleWindowClassifier* classifier = createWinClass(def);
-//
-//	auto bmp = readBmpFile("TestResources/Vision/servers.bmp");
-//
-//	auto result = classifier->isWindow(bmp);
-//
-//	cout << "Result: " << result;
-//}
-//
-//// C2 tests
-//void testC2();
-//void testC2WelcomeWindow();
-//void testC2AgreementScreen();
-//void testC2InUseSreen();
-//
-//
-//// C5 tests
-//void testC5();
-//
-//int main(int argc, char* argv[])
-//{
-//	testC5();
-//
-//	//testServerClassification();
-//	//testWelcomeWindowClassification();
-//}
-//
-//void testC2() {
-//
-//	testC2InUseSreen();
-//
-//	//testC2WelcomeWindow();
-//	//testC2AgreementScreen();
-//}
-//
-//void testC2WelcomeWindow() {
-//
-//	map<L2Window, WindowDefinition> dest;
-//	WindowsDefinitions::initC2WindowsDefinitions(dest);
-//
-//	auto def = dest[L2Window::WELCOME];
-//	SingleWindowClassifier* classifier = createWinClass(def);
-//
-//	auto bmp = readBmpFile("TestResources/Vision/C2/welcome.bmp");
-//
-//	auto result = classifier->isWindow(bmp);
-//
-//	if (!result) {
-//		prepareDirectory("TestFailure");
-//		writeBmpToFile("TestFailure/testC2WelcomeWindow.bmp", bmp);
-//	}
-//
-//	if (!result) {
-//		throw exception("Test failed");
-//	}
-//}
-//
-//void testC2AgreementScreen() {
-//	map<L2Window, WindowDefinition> dest;
-//	WindowsDefinitions::initC2WindowsDefinitions(dest);
-//
-//	auto def = dest[L2Window::AGREEMENT];
-//	SingleWindowClassifier* classifier = createWinClass(def);
-//
-//	auto bmp = readBmpFile("TestResources/Vision/C2/agreement.bmp");
-//
-//	auto result = classifier->isWindow(bmp);
-//
-//	if (!result) {
-//		prepareDirectory("TestFailure");
-//		writeBmpToFile("TestFailure/testC2AgreementWindow.bmp", bmp);
-//	}
-//
-//	if (!result) {
-//		throw exception("Test failed");
-//	}
-//}
-//
-//void testC2InUseSreen() {
-//
-//	map<L2Window, WindowDefinition> dest;
-//	WindowsDefinitions::initC2WindowsDefinitions(dest);
-//
-//	auto def = dest[L2Window::ACCOUNT_IN_USE];
-//	SingleWindowClassifier* classifier = createWinClass(def);
-//
-//	auto bmp = readBmpFile("TestResources/Vision/C2/use.bmp");
-//
-//	auto result = classifier->isWindow(bmp);
-//
-//	if (!result) {
-//		prepareDirectory("TestFailure");
-//		writeBmpToFile("TestFailure/testC2InUseWindow.bmp", bmp);
-//	}
-//
-//	if (!result) {
-//		throw exception("Test failed");
-//	}
-//}
-//
-//bool testClassifier(L2Window window, string testFile, string testName, string caseName, WindowClassifier* classifier) {
-//
-//	map<L2Window, WindowDefinition> dest;
-//	WindowsDefinitions::initC5WindowsDefinitions(dest);
-//
-//	auto bmp = readBmpFile(testFile.c_str());
-//
-//	auto result = classifier->isWindow(bmp);
-//
-//	prepareDirectory("TestCaptures");
-//	prepareDirectory("TestCaptures/" + testName);
-//
-//	stringstream ss;
-//	ss << "TestCaptures/" << testName << "/" << caseName << ".bmp";
-//	writeBmpToFile(ss.str().c_str(), bmp);
-//
-//	delete classifier;
-//	return result;
-//}
-//
-//bool testClassifier(L2Window window, string testFile, string testName, string caseName) {
-//
-//	map<L2Window, WindowDefinition> dest;
-//	WindowsDefinitions::initC5WindowsDefinitions(dest);
-//
-//	auto def = dest[window];
-//	SingleWindowClassifier* classifier = createWinClass(def);
-//
-//	return testClassifier(window, testFile, testName, caseName, classifier);
-//}
-//
-//void assertFalse(bool value) {
-//	if (value) {
-//		throw exception("Assert failed");
-//	}
-//}
-//
-//void assertTrue(bool value) {
-//	if (!value) {
-//		throw exception("Assert failure");
-//	}
-//}
-//
-//// C5
-//void testC5WindowClassifier(L2Window window) {
-//
-//	stringstream ssName;
-//	ssName << "testC5_" << getL2WindowName(window);
-//	string testName = ssName.str().c_str();
-//
-//	bool isWelcome = testClassifier(window, "TestResources/Vision/C5/welcome.bmp", testName, "welcome");
-//	if (window == L2Window::WELCOME) {
-//		assertTrue(isWelcome);
-//	}
-//	else {
-//		assertFalse(isWelcome);
-//	}
-//
-//	bool isPassword = testClassifier(window, "TestResources/Vision/C5/password.bmp", testName, "password");
-//	if (window == L2Window::INCORRECT_PASSWORD) {
-//		assertTrue(isPassword);
-//	}
-//	else {
-//		assertFalse(isPassword);
-//	}
-//
-//	bool isUse = testClassifier(window, "TestResources/Vision/C5/use.bmp", testName, "use");
-//	if (window == L2Window::ACCOUNT_IN_USE) {
-//		assertTrue(isUse);
-//	}
-//	else {
-//		assertFalse(isUse);
-//	}
-//
-//	bool isAgreement = testClassifier(window, "TestResources/Vision/C5/agreement.bmp", testName, "agreement");
-//	if (window == L2Window::AGREEMENT) {
-//		assertTrue(isAgreement);
-//	}
-//	else {
-//		assertFalse(isAgreement);
-//	}
-//
-//	bool isServers = testClassifier(window, "TestResources/Vision/C5/servers.bmp", testName, "servers");
-//	if (window == L2Window::SERVERS) {
-//		assertTrue(isServers);
-//	}
-//	else {
-//		assertFalse(isServers);
-//	}
-//}
-//
-//void testC5Kml() {
-//	assertTrue(testClassifier(L2Window::SERVERS, "TestResources/Vision/C5_CML/servers.bmp", "testC5Kml", "servers"));
-//}
-//
-//void testLoadingClassifier() {
-//	assertTrue(testClassifier(L2Window::SERVERS, "TestResources/Vision/C5_CML/loading.bmp", "testC5Kml", "loading", new LoadingWindowClassifier()));
-//}
-//
-//void testC5() {
-//
-//	//assertFalse(testClassifier(L2Window::INCORRECT_PASSWORD, "TestResources/Vision/C5/password.bmp", "testC5Agreement", "use"));
-//	assertFalse(testClassifier(L2Window::AGREEMENT, "TestResources/Vision/C5/password.bmp", "testC5Agreement", "use"));
-//	return;
-//
-//	//testLoadingClassifier();
-//
-//	testC5WindowClassifier(L2Window::INCORRECT_PASSWORD);
-//	testC5WindowClassifier(L2Window::ACCOUNT_IN_USE);
-//	testC5WindowClassifier(L2Window::AGREEMENT);
-//	//testC5WindowClassifier(L2Window::SERVERS);
-//}
+void testL2VersionSuite(L2Version version, string& pathToSuit, TestL2VersionReport& report) {
+
+	vector<L2Window> windowsToTest;
+	windowsToTest.push_back(L2Window::AGREEMENT);
+	windowsToTest.push_back(L2Window::ACCOUNT_IN_USE);
+	windowsToTest.push_back(L2Window::INCORRECT_PASSWORD);
+	windowsToTest.push_back(L2Window::SERVERS);
+	windowsToTest.push_back(L2Window::CHARACTERS);
+
+	string referenceImage = pathToSuit + "/WELCOME.bmp";
+
+	VisionDefinition vDef;
+	if (version == L2Version::C5) {
+		WindowsDefinitions::initC5WindowsDefinitions(vDef);
+	}
+	else {
+		throw exception("Unexpected l2 version");
+	}
+
+	auto bDef = vDef.wDefs[L2Window::WELCOME].bDefs[0];
+	ButtonHueDistributionCapturer capturer(vDef.wWidth, vDef.wHeight, bDef);
+
+	// For every window we iterate and check 
+	auto refBmp = readBmpFile(referenceImage.c_str());
+
+	BmpVisionInitializer initializer(capturer);
+	BmpVisionProvider provider(refBmp);
+
+	VisionParams vParams = initializer.init(provider, 0);
+
+	WindowsClassifier classifier(vDef);
+	classifier.init(vParams);
+
+	for (L2Window expected : windowsToTest) {
+
+		string testPath = pathToSuit + "/" + getL2WindowName(expected) + ".bmp";
+		auto actual = testL2WindowClassifier(testPath, classifier);
+
+		if (expected != actual) {
+			report.failures.push_back(TestL2VersionFailure{ testPath, expected, actual });
+		}
+
+		report.testCount++;
+	}
+}
+
+void testL2Version(L2Version version, TestL2VersionReport& report) {
+
+	vector<string> testCasePaths;
+	getTestVisionDirectories(version, testCasePaths);
+
+	for (auto testCasePath : testCasePaths) {
+		testL2VersionSuite(version, testCasePath, report);
+	}
+}
+
+
+int main(int argc, char* argv[])
+{
+	L2Version version = L2Version::C5;
+	TestL2VersionReport report;
+	testL2Version(version, report);
+
+	cout << "========================================" << endl;
+
+	cout << "L2 Version " << getL2VersionName(version)
+		<< ". Total tests count: " << report.testCount 
+		<< ". Failed tests count: " << report.failures.size() << endl;
+}
 
 #endif // TEST

@@ -9,6 +9,8 @@ public:
 
 	bool capture(BitMapInfo& bmi) override;
 
+	void dispose(BitMapInfo& bmi) override;
+
 private:
 	HWND hWindow;
 };
@@ -19,4 +21,8 @@ HwndVisionProvider::HwndVisionProvider(HWND hWindow) {
 
 bool HwndVisionProvider::capture(BitMapInfo& bmi) {
 	return captureDcBmp(hWindow, bmi);
+}
+
+void HwndVisionProvider::dispose(BitMapInfo& bmi) {
+	delete[] bmi.data;
 }

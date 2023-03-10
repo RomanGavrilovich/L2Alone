@@ -15,6 +15,10 @@ public:
 		return true;
 	}
 
+	void dispose(BitMapInfo& bmi) override {
+		// Do nothing
+	}
+
 private:
 	BitMapInfo bmi;
 };

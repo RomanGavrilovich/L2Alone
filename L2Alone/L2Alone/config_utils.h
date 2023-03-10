@@ -244,3 +244,14 @@ L2AccountHotKey getAccountHotKey(string& hotKeyConfigKey, string hotKeyConfigVal
 
 	return L2AccountHotKey{ fKey, login, password, slot };
 }
+
+string getL2VersionName(L2Version v) {
+	if (v == L2Version::C2) {
+		return "C2";
+	}
+	else if (v == L2Version::C5) {
+		return "C5";
+	}
+
+	throw exception("Unexpected L2 version");
+}
