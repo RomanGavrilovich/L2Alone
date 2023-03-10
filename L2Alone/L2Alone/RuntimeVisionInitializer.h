@@ -19,7 +19,6 @@ private:
 	bool loadingScreenDetected = false;
 
 	HueDistributionCapturer* capturer;
-	HWND hWindow;
 };
 
 RuntimeVisionInitializer::RuntimeVisionInitializer(HueDistributionCapturer* capturer) {
@@ -40,7 +39,7 @@ VisionParams RuntimeVisionInitializer::init(VisionProvider& vp, int timeoutMs) {
 
 	prepareDirectory("RefCapture");
 	while (GetTickCount64() - startTime < timeoutMs) {
-		if (captureDcBmp(hWindow, bitMapInfo)) {
+		if (vp.capture(bitMapInfo)) {
 			if (!loadingScreenDetected) {
 				if (isLoadingWindow(bitMapInfo)) {
 					logger.log("Loading screen detected");
