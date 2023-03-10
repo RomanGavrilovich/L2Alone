@@ -15,10 +15,11 @@
 
 using namespace std;
 
+
 class WindowsClassifier {
 
 public:
-	WindowsClassifier(VisionDefinition& vDef);
+	WindowsClassifier(VisionDefinition& vDef, bool saveWcFailures);
 	~WindowsClassifier();
 
 	void init(VisionParams& params);
@@ -29,16 +30,17 @@ public:
 
 private:
 
+	bool saveWcFailures;
+
 	VisionParams vParams;
 	VisionDefinition vDef;
-
-	L2Window captureWindow(VisionProvider& vp, vector<L2Window>& windows);
 
 	bool isWindow(BitMapInfo& bmi, L2Window window);
 };
 
-WindowsClassifier::WindowsClassifier(VisionDefinition& vDef) {
+WindowsClassifier::WindowsClassifier(VisionDefinition& vDef, bool saveWcFailures) {
 	this->vDef = vDef;
+	this->saveWcFailures = saveWcFailures;
 }
 
 void WindowsClassifier::init(VisionParams &vParams) {
@@ -47,8 +49,6 @@ void WindowsClassifier::init(VisionParams &vParams) {
 
 WindowsClassifier::~WindowsClassifier() {
 }
-
-int k = 0;
 
 bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
 
@@ -75,67 +75,49 @@ bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
 	return true;
 }
 
-L2Window WindowsClassifier::captureWindow(VisionProvider& vp, vector<L2Window>& windows) {
-
-	BitMapInfo bitMapInfo;
-
-	if (!vp.capture(bitMapInfo)) {
-		return L2Window::UNKNOWN;
-	}
-
-	L2Window w = L2Window::UNKNOWN;
-
-	for (auto& i : windows) {
-		if (isWindow(bitMapInfo, i)) {
-			w = i;
-			break;
-		}
-	}
-
-#ifndef L2A_RELEASE
-	if (w == UNKNOWN) {
-		prepareDirectory("CapturesFailure");
-		stringstream ss;
-		ss << "CapturesFailure/" << k++;
-		for (auto& w : windows) {
-			ss << getL2WindowName(w) << ".";
-		}
-		ss << "bmp";
-
-		writeBmpToFile(ss.str().c_str(), bitMapInfo);
-	}
-#endif // !L2A_RELEASE
-
-	vp.dispose(bitMapInfo);
-
-	return w;
-}
-
 L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>& windows, int timeoutMs) {
+
+	int sleepTime = 100;
+	L2Window w = L2Window::UNKNOWN;
 
 	stringstream ss;
 	for (int i = 0; i < windows.size(); ++i) {
-		ss << getL2WindowName(windows[i]) << "/";
+		ss << getL2WindowName(windows[i]) << ".";
 	}
 	logger.log("Start window capturing: ", ss.str(), " with ", timeoutMs, " ms timeout");
+
+	bool failureSaved = false;
 
 	int startTick = GetTickCount64();
 	while (GetTickCount64() - startTick < timeoutMs) {
 		logger.log("Capture window");
 		try {
-			L2Window w = captureWindow(vp, windows);
-			logger.log("Capture window result: ", getL2WindowName(w));
-			if (find(windows.begin(), windows.end(), w) != windows.end()) {
-				return w;
-			}
-			else {
-				if (w != UNKNOWN) {
-					logger.warn("Find unexpected window: ", getL2WindowName(w));
+
+			BitMapInfo bitMapInfo;
+
+			if (vp.capture(bitMapInfo)) {
+				for (auto& i : windows) {
+					if (isWindow(bitMapInfo, i)) {
+						w = i;
+						break;
+					}
 				}
+
+				if (w == UNKNOWN && saveWcFailures && !failureSaved) {
+					failureSaved = true;
+
+					prepareDirectory("Debug");
+
+					string debugFile = "Debug/" + ss.str() + ".bmp";
+					writeBmpToFile(debugFile.c_str(), bitMapInfo);
+				}
+
+				vp.dispose(bitMapInfo);
+
+				logger.log("Capture window result: ", getL2WindowName(w));
 			}
 
-			logger.log("Didn't capture window");
-			Sleep(100);
+			Sleep(sleepTime);
 		}
 		catch (exception e) {
 			logger.error("Capturing failed with exception: ", e.what());
@@ -143,7 +125,7 @@ L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>&
 		}
 	}
 
-	return UNKNOWN;
+	return w;
 
 }
 

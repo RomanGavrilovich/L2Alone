@@ -14,11 +14,12 @@
 #define L2_VERSION "L2Version"
 #define LOGS_ENABLED_CONFIG_KEY "LogsEnabled"
 #define CAPTURE_LOGS_ENABLED_CONFIG_KEY "CaptureLogsEnabled"
-#define PRELOADING_TIME "PreloadingTime"
 #define MOUSE_INPUT_SPEED "MouseInputSpeed"
 #define VISION_INIT_TIMEOUT "VisionInitTimeoutMs"
 #define ACCOUNT_KEY "Account"
 #define SAVE_REF_SCREEN "SaveRefScreen"
+#define SAVE_WC_FAILURES "SaveWcFailures"
+#define FAST_FLOW_ENABLED "FastFlowEnabled"
  
 enum L2Version {
 	NONE,
@@ -40,9 +41,10 @@ struct L2AloneConfig {
 	bool captureLogsEnabled = false;
 	vector<L2AccountHotKey> accountHotKeys;
 	int mouseInputSpeed = -1;
-	int preloadingTime = -1;
 	int visionInitTimeout = 10000;
 	bool saveRefScreen = false;
+	bool saveWcFailures = false;
+	bool fastFlowEnabled = true;
 };
 
 using namespace std;
@@ -82,8 +84,6 @@ L2AloneConfig loadL2AloneConfig() {
 				continue;
 			}
 
-			logger.log("Parameter received '", k, "' '", v, "'");
-
 			if (k == L2_FILE_CONFIG_KEY) {
 				config.pathToL2 = v;
 				cout << "L2 file set to: " << config.pathToL2 << endl;
@@ -101,18 +101,27 @@ L2AloneConfig loadL2AloneConfig() {
 			}
 			else if (k == L2_VERSION) {
 				config.version = toL2Version(v);
-			}
-			else if (k == PRELOADING_TIME) {
-				config.preloadingTime = stoi(trim(v));
+				logger.log("L2 version: ", config.version);
 			}
 			else if (k == MOUSE_INPUT_SPEED) {
 				config.mouseInputSpeed = stoi(trim(v));
+				logger.log("Mouse input speed: ", config.mouseInputSpeed);
 			}
 			else if (k == VISION_INIT_TIMEOUT) {
 				config.visionInitTimeout = stoi(trim(v));
+				logger.log("Vision init timeout: ", config.visionInitTimeout);
 			}
 			else if (k == SAVE_REF_SCREEN) {
 				config.saveRefScreen = (bool)stoi(trim(v));
+				logger.log("Save ref screen: ", config.saveRefScreen);
+			}
+			else if (k == SAVE_WC_FAILURES) {
+				config.saveWcFailures = (bool)stoi(trim(v));
+				logger.log("Save WC failures: ", config.saveWcFailures);
+			}
+			else if (k == FAST_FLOW_ENABLED) {
+				config.fastFlowEnabled = (bool)stoi(trim(v));
+				logger.log("Fast flow enabled: ", config.fastFlowEnabled);
 			}
 		}
 	}

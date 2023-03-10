@@ -93,7 +93,7 @@ AutologinStrategy::AutologinStrategy(VisionDefinition vDef, L2AloneConfig& confi
 	inMemoryVisionCache = new InMemoryVisionCache();
 	runtimeVisionInitializer = new RuntimeVisionInitializer(capturer, config.saveRefScreen);
 	vInitializer = new CachedVisionInitializer(inMemoryVisionCache, runtimeVisionInitializer);
-	wClassifier = new WindowsClassifier(vDef);
+	wClassifier = new WindowsClassifier(vDef, config.saveWcFailures);
 }
 
 bool AutologinStrategy::fastFlowSupported(L2CharSlot slot) {
@@ -121,14 +121,6 @@ L2Window AutologinStrategy::doFastAutoLogin(HWND hWindow) {
 
 void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot) {
 
-	// Workaround to avoid capturing defect
-	// Since we can receive following flow: black window -> loading image with partially transparent background -> black window -> welcome screen
-	int preloadingTime = 100;
-	if (config.preloadingTime > 0) {
-		preloadingTime = config.preloadingTime;
-	}
-	//Sleep(preloadingTime);
-
 	HwndVisionProvider provider(hWindow);
 	auto vp = vInitializer->init(provider, config.visionInitTimeout);
 	wClassifier->init(vp);
@@ -140,7 +132,7 @@ void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passwor
 		charDef.actionTimeout = config.mouseInputSpeed;
 	}
 
-	if (fastFlowSupported(slot)) {
+	if (config.fastFlowEnabled && fastFlowSupported(slot)) {
 		postCredentials(hWindow, login, password);
 		
 		L2Window w = doFastAutoLogin(hWindow);

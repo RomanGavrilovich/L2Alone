@@ -215,7 +215,6 @@ int getPixelIndex(BitMapInfo& bitMapInfo, int x, int y) {
 
 void writeBmpToFile(const char* filename, BitMapInfo& bitMapInfo) {
 
-#ifndef L2A_RELEASE
 	BITMAPINFOHEADER bih = {};
 	bih.biSize = sizeof(BITMAPINFOHEADER);
 	bih.biWidth = bitMapInfo.width;
@@ -233,6 +232,7 @@ void writeBmpToFile(const char* filename, BitMapInfo& bitMapInfo) {
 	std::ofstream file(filename, std::ios::out | std::ios::binary);
 	if (!file.is_open())
 	{
+		logger.log("Fail to open file ", filename);
 		return;
 	}
 
@@ -240,7 +240,6 @@ void writeBmpToFile(const char* filename, BitMapInfo& bitMapInfo) {
 	file.write(reinterpret_cast<const char*>(&bih), sizeof(bih));
 	file.write(reinterpret_cast<const char*>(bitMapInfo.data), dwBmpSize);
 	return;
-#endif // !L2A_RELEASE
 }
 
 string getL2WindowName(L2Window window) {
