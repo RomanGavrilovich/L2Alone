@@ -408,7 +408,8 @@ bool captureDcBmp(HWND hWnd, BitMapInfo& bitMapInfo) {
 	HBITMAP hBitmap = CreateCompatibleBitmap(hWindowDC, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top);
 	HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
 
-	BitBlt(hMemDC, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, hWindowDC, 0, 0, SRCCOPY);
+	PrintWindow(hWnd, hMemDC, PW_CLIENTONLY);
+	//BitBlt(hMemDC, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, hWindowDC, 0, 0, SRCCOPY | CAPTUREBLT);
 
 	try {
 		bitMapInfo = createBitMapInfo(hBitmap);

@@ -127,7 +127,7 @@ void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passwor
 	if (config.preloadingTime > 0) {
 		preloadingTime = config.preloadingTime;
 	}
-	Sleep(preloadingTime);
+	//Sleep(preloadingTime);
 
 	HwndVisionProvider provider(hWindow);
 	auto vp = vInitializer->init(provider, config.visionInitTimeout);

@@ -40,6 +40,11 @@ VisionParams RuntimeVisionInitializer::init(VisionProvider& vp, int timeoutMs) {
 	prepareDirectory("RefCapture");
 	while (GetTickCount64() - startTime < timeoutMs) {
 		if (vp.capture(bitMapInfo)) {
+
+			stringstream ss;
+			ss << "RefCapture/loadingRetry" << k++ << ".bmp";
+			writeBmpToFile(ss.str().c_str(), bitMapInfo);
+
 			if (!loadingScreenDetected) {
 				if (isLoadingWindow(bitMapInfo)) {
 					logger.log("Loading screen detected");
@@ -66,7 +71,7 @@ VisionParams RuntimeVisionInitializer::init(VisionProvider& vp, int timeoutMs) {
 			}
 		}
 
-		Sleep(100);
+		Sleep(10);
 	}
 
 	throw exception("Can't create vision parameters");
