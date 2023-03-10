@@ -51,7 +51,7 @@ void CachedVisionInitializer::waitForLoadingScreen(VisionProvider& provider, int
 
 	BitMapInfo bitMapInfo;
 
-	long startTime = GetTickCount64();
+	ULONGLONG startTime = GetTickCount64();
 	while (GetTickCount64() - startTime < timeoutMs) {
 		if (provider.capture(bitMapInfo)) {
 			if (isLoadingWindow(bitMapInfo)) {

@@ -105,7 +105,7 @@ bool AutologinStrategy::stopFastLogin(L2Window w) {
 }
 
 L2Window AutologinStrategy::doFastAutoLogin(HWND hWindow) {
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 30; ++i) {
 		for (int j = 0; j < 3; ++j) {
 			Sleep(100);
 			postControlMessage(hWindow, VK_RETURN);
@@ -117,6 +117,8 @@ L2Window AutologinStrategy::doFastAutoLogin(HWND hWindow) {
 			return w;
 		}
 	}
+
+	throw exception("Unexpected way in fast auto login flow");
 }
 
 void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot) {

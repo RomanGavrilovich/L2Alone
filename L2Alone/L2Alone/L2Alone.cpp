@@ -7,7 +7,6 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
-#include <filesystem>
 #include <stdio.h>
 #include <tlhelp32.h>
 #include <winuser.h>

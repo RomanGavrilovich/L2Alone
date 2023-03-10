@@ -7,7 +7,7 @@
 
 using namespace std;
 
-static class WindowsDefinitions {
+class WindowsDefinitions {
 
 public:
 

@@ -83,8 +83,8 @@ void sendLowLevelMouseEvent(HWND hWindow, DWORD globalX, DWORD globalY, int e) {
 
 	INPUT input = { 0 };
 	input.type = INPUT_MOUSE;
-	input.mi.dx = globalX * (65535.0 / GetSystemMetrics(SM_CXSCREEN));
-	input.mi.dy = globalY * (65535.0 / GetSystemMetrics(SM_CYSCREEN));
+	input.mi.dx = (long)(globalX * (65535.0 / GetSystemMetrics(SM_CXSCREEN)));
+	input.mi.dy = (long)(globalY * (65535.0 / GetSystemMetrics(SM_CYSCREEN)));
 	input.mi.mouseData = 0;
 	input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | e;
 	input.mi.time = 0;

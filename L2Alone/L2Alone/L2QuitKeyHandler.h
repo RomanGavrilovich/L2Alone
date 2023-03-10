@@ -36,7 +36,7 @@ public:
 		}
 
 		if (kbdll->vkCode == VK_ESCAPE) {
-			DWORD currentTick = GetTickCount64();
+			ULONGLONG currentTick = GetTickCount64();
 			if (currentTick - lastEscapeTick < 100) {
 				escapeCount++;
 			}
@@ -67,7 +67,7 @@ public:
 	}
 
 private:
-	DWORD lastEscapeTick = INT_MAX;
+	ULONGLONG lastEscapeTick = LONG_MAX;
 	int escapeCount = 0;
 	DWORD l2ProcessId;
 	vector<L2AccountHotKey> *accountHotKeys;

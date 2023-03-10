@@ -43,7 +43,7 @@ WindowsClassifier::WindowsClassifier(VisionDefinition& vDef, bool saveWcFailures
 	this->saveWcFailures = saveWcFailures;
 }
 
-void WindowsClassifier::init(VisionParams &vParams) {
+void WindowsClassifier::init(VisionParams& vParams) {
 	this->vParams = vParams;
 }
 
@@ -88,8 +88,9 @@ L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>&
 
 	bool failureSaved = false;
 
-	int startTick = GetTickCount64();
-	while (GetTickCount64() - startTick < timeoutMs) {
+	ULONGLONG startTick = GetTickCount64();
+	ULONGLONG endTick = startTick + timeoutMs;
+	while (GetTickCount64() < endTick) {
 		logger.log("Capture window");
 		try {
 
@@ -103,7 +104,13 @@ L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>&
 					}
 				}
 
-				if (w == UNKNOWN && saveWcFailures && !failureSaved) {
+				if (w != UNKNOWN) {
+					break;
+				}
+				else if (
+					saveWcFailures 
+					&& !failureSaved
+					&& GetTickCount64() > endTick - 2 * sleepTime) {
 					failureSaved = true;
 
 					prepareDirectory("Debug");
@@ -126,7 +133,6 @@ L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>&
 	}
 
 	return w;
-
 }
 
 L2Window WindowsClassifier::waitForWindow(VisionProvider& vp, L2Window window, int timeoutMs) {

@@ -28,7 +28,7 @@ VisionParams RuntimeVisionInitializer::init(VisionProvider& vp, int timeoutMs) {
 
 	BitMapInfo bitMapInfo;
 
-	long startTime = GetTickCount64();
+	ULONGLONG startTime = GetTickCount64();
 
 	prepareDirectory("RefCapture");
 	while (GetTickCount64() - startTime < timeoutMs) {

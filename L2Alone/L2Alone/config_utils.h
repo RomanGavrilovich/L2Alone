@@ -78,6 +78,11 @@ L2AloneConfig loadL2AloneConfig() {
 	configFile.close();
 
 	for (string s : params) {
+
+		if (trim(s).size() == 0) {
+			continue;
+		}
+
 		string k, v;
 		if (splitParam(s, k, v)) {
 			if (startWith(k, "//")) {
@@ -158,16 +163,20 @@ bool toBoolean(string s) {
 
 string trim(string s) {
 
-	int trimStart = 0;
-	for (int i = 0; i < s.size(); ++i) {
+	if (s.size() == 0) {
+		return s;
+	}
+
+	size_t trimStart = 0;
+	for (auto i = 0; i < s.size(); ++i) {
 		if (s[i] != ' ') {
 			trimStart = i;
 			break;
 		}
 	}
 
-	int trimEnd = 0;
-	for (int i = s.size() - 1; i >= 0; --i) {
+	size_t trimEnd = 0;
+	for (auto i = s.size() - 1; i >= 0; --i) {
 		if (s[i] != ' ') {
 			trimEnd = i;
 			break;
@@ -206,7 +215,7 @@ void splitHotKeyAccountValue(string s, string& login, string& password, L2CharSl
 
 		login = trim(s.substr(0, index));
 
-		int secondIndex = s.find(",", index + 1);
+		auto secondIndex = s.find(",", index + 1);
 		if (secondIndex != -1) {
 			password = trim(s.substr(index + 1, secondIndex - index - 1));
 			auto slotString = trim(s.substr(secondIndex + 1));

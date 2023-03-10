@@ -239,7 +239,6 @@ void writeBmpToFile(const char* filename, BitMapInfo& bitMapInfo) {
 	file.write(reinterpret_cast<const char*>(&bmfh), sizeof(bmfh));
 	file.write(reinterpret_cast<const char*>(&bih), sizeof(bih));
 	file.write(reinterpret_cast<const char*>(bitMapInfo.data), dwBmpSize);
-	return;
 }
 
 string getL2WindowName(L2Window window) {
