@@ -433,7 +433,7 @@ bool L2EventService::waitMutex()
 	for (int i = 0; i < 3; ++i) {
 		hEventLockMutex = OpenMutexA(SYNCHRONIZE, FALSE, "L2Alone_L2EventServiceMutex");
 		if (hEventLockMutex == NULL) {
-			logger.error("Failed to open mutex, try to create mutex for L2EventService");
+			logger.warn("Failed to open mutex, try to create mutex for L2EventService");
 
 			hEventLockMutex = CreateMutexA(NULL, FALSE, "L2Alone_L2EventServiceMutex");
 			if (hEventLockMutex == NULL) {

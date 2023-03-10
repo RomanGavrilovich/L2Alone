@@ -273,11 +273,11 @@ void AutologinStrategy::selectCharacter(HWND hWindow, SelectCharacterDefinition&
 		SetForegroundWindow(hWindow);
 		SetFocus(hWindow);
 
-		doClick(hWindow, dropdownClickX, dropdownClickY, def.actionTimeout);
-		doClick(hWindow, dropdownClickX, dropdownClickY, def.actionTimeout);
+		doClick(hWindow, dropdownClickX, dropdownClickY, config.mouseInputDelay);
+		doClick(hWindow, dropdownClickX, dropdownClickY, config.mouseInputDelay);
 		Sleep(def.actionTimeout);
 
-		doClick(hWindow, charSlotClickX, charSlotClickY, def.actionTimeout);
+		doClick(hWindow, charSlotClickX, charSlotClickY, config.mouseInputDelay);
 		Sleep(def.actionTimeout);
 
 		doClick(hWindow, targetX, targetY, def.actionTimeout);

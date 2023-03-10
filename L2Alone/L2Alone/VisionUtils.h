@@ -480,17 +480,22 @@ inline bool isWhite(int r, int g, int b) {
 
 bool isLoadingWindow(BitMapInfo& bmi) {
 
-	int total = bmi.width * bmi.height;
+	int threshold = bmi.width * bmi.height / 2;
+	int count = 0;
 
 	for (int i = 0; i < bmi.width; ++i) {
 		for (int j = 0; j < bmi.height; ++j) {
 			int r, g, b;
 			getPixelRgb(bmi, i, j, r, g, b);
-			if (!isBlack(r, g, b) && !isWhite(r, g, b)) {
-				return false;
+			if (isBlack(r, g, b) || isWhite(r, g, b)) {
+				count++;
+			}
+
+			if (count > threshold) {
+				return true;
 			}
 		}
 	}
 
-	return true;
+	return false;
 }

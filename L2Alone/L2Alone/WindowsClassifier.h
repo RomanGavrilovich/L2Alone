@@ -78,6 +78,8 @@ bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
 L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>& windows, int timeoutMs) {
 
 	int sleepTime = 100;
+	int maxSleepTime = 1000;
+
 	L2Window w = L2Window::UNKNOWN;
 
 	stringstream ss;
@@ -125,6 +127,10 @@ L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>&
 			}
 
 			Sleep(sleepTime);
+			sleepTime = sleepTime * 2;
+			if (sleepTime > maxSleepTime) {
+				sleepTime = maxSleepTime;
+			}
 		}
 		catch (exception e) {
 			logger.error("Capturing failed with exception: ", e.what());

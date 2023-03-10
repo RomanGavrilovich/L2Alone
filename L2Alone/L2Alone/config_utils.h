@@ -15,6 +15,7 @@
 #define LOGS_ENABLED_CONFIG_KEY "LogsEnabled"
 #define CAPTURE_LOGS_ENABLED_CONFIG_KEY "CaptureLogsEnabled"
 #define MOUSE_INPUT_SPEED "MouseInputSpeed"
+#define MOUSE_INPUT_DELAY "MouseInputDelay"
 #define VISION_INIT_TIMEOUT "VisionInitTimeoutMs"
 #define ACCOUNT_KEY "Account"
 #define SAVE_REF_SCREEN "SaveRefScreen"
@@ -41,6 +42,7 @@ struct L2AloneConfig {
 	bool captureLogsEnabled = false;
 	vector<L2AccountHotKey> accountHotKeys;
 	int mouseInputSpeed = -1;
+	int mouseInputDelay = 0;
 	int visionInitTimeout = 10000;
 	bool saveRefScreen = false;
 	bool saveWcFailures = false;
@@ -127,6 +129,10 @@ L2AloneConfig loadL2AloneConfig() {
 			else if (k == FAST_FLOW_ENABLED) {
 				config.fastFlowEnabled = (bool)stoi(trim(v));
 				logger.log("Fast flow enabled: ", config.fastFlowEnabled);
+			}
+			else if (k == MOUSE_INPUT_DELAY) {
+				config.mouseInputDelay = stoi(trim(v));
+				logger.log("Mouse input delay: ", config.mouseInputDelay);
 			}
 		}
 	}
