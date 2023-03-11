@@ -17,8 +17,6 @@ public:
 
 private:
 
-	Point toLbPoint(BitMapInfo& bitMapInfo, ButtonDefinition& bDef);
-
 	ButtonDefinition def;
 	int rtWidth;
 	int rtHeight;
@@ -32,26 +30,9 @@ ButtonHueDistributionCapturer::ButtonHueDistributionCapturer(int rtWidth, int rt
 
 void ButtonHueDistributionCapturer::capture(BitMapInfo& bmi, map<int, double>& dest) {
 
-	Point targetLb = toLbPoint(bmi, def);
+	Point targetLb = toLbPoint(rtWidth, rtHeight, bmi, def);
 	int lbX = targetLb.x;
 	int lbY = targetLb.y - def.height;
 
 	initHDistribution(bmi, lbX, lbY, def.width, def.height, dest);
-}
-
-Point ButtonHueDistributionCapturer::toLbPoint(BitMapInfo& bitMapInfo, ButtonDefinition& bDef) {
-
-	if (bDef.anchor == RefAnchor::Center) {
-		return toLbViaCenterOffset(rtWidth, rtHeight, bitMapInfo.width, bitMapInfo.height, bDef.rtX, bDef.rtY);
-	}
-
-	if (bDef.anchor == RefAnchor::CenterBottom) {
-		return toLbViaCenterBottomOffset(rtWidth, rtHeight, bitMapInfo.width, bitMapInfo.height, bDef.rtX, bDef.rtY);
-	}
-
-	if (bDef.anchor == RefAnchor::BottomRight) {
-		return toLbViaRightBottomOffset(rtWidth, rtHeight, bitMapInfo.width, bitMapInfo.height, bDef.rtX, bDef.rtY);
-	}
-
-	throw exception("Unrecognised ref anchor");
 }

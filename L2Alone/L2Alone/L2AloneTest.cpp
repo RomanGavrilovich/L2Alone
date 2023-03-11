@@ -29,15 +29,32 @@ struct TestL2VersionReport {
 	vector<TestL2VersionFailure> failures;
 };
 
-L2Window testL2WindowClassifier(string& pathToTestBmp, WindowsClassifier& classifier) {
+L2Window testL2WindowClassifier(string& pathToTestBmp, L2Window expected, WindowsClassifier& classifier) {
 
-	auto bmi = readBmpFile(pathToTestBmp.c_str());
+	L2Window r = UNKNOWN;
 
-	BmpVisionProvider provider(bmi);
+	vector<L2Window> v;
 
-	auto r = classifier.waitForWindow(provider, 100);
+	v.push_back(L2Window::AGREEMENT);
+	v.push_back(L2Window::INCORRECT_PASSWORD);
+	v.push_back(L2Window::ACCOUNT_IN_USE);
+	v.push_back(L2Window::SERVERS);
+	v.push_back(L2Window::CHARACTERS);
 
-	delete[] bmi.data;
+	for (L2Window w : v) {
+		auto bmi = readBmpFile(pathToTestBmp.c_str());
+
+		BmpVisionProvider provider(bmi);
+
+		auto actual = classifier.waitForWindow(provider, w, 0);
+		if (actual != UNKNOWN) {
+			r = actual;
+		}
+
+		writeTestOutput(pathToTestBmp, expected, w, bmi);
+
+		delete[] bmi.data;
+	}
 
 	return r;
 }
@@ -125,7 +142,7 @@ void testL2VersionSuite(L2Version version, string& pathToSuit, TestL2VersionRepo
 	for (L2Window expected : windowsToTest) {
 
 		string testPath = pathToSuit + "/" + getL2WindowName(expected) + ".bmp";
-		auto actual = testL2WindowClassifier(testPath, classifier);
+		auto actual = testL2WindowClassifier(testPath, expected, classifier);
 
 		if (expected != actual) {
 			report.failures.push_back(TestL2VersionFailure{ testPath, expected, actual });

@@ -527,3 +527,20 @@ bool isLoadingWindow(BitMapInfo& bmi) {
 
 	return false;
 }
+
+Point toLbPoint(int rtWidth, int rtHeight, BitMapInfo& bitMapInfo, ButtonDefinition& bDef) {
+
+	if (bDef.anchor == RefAnchor::Center) {
+		return toLbViaCenterOffset(rtWidth, rtHeight, bitMapInfo.width, bitMapInfo.height, bDef.rtX, bDef.rtY);
+	}
+
+	if (bDef.anchor == RefAnchor::CenterBottom) {
+		return toLbViaCenterBottomOffset(rtWidth, rtHeight, bitMapInfo.width, bitMapInfo.height, bDef.rtX, bDef.rtY);
+	}
+
+	if (bDef.anchor == RefAnchor::BottomRight) {
+		return toLbViaRightBottomOffset(rtWidth, rtHeight, bitMapInfo.width, bitMapInfo.height, bDef.rtX, bDef.rtY);
+	}
+
+	throw exception("Unrecognised ref anchor");
+}

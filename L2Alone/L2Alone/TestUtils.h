@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 #include "VisionUtils.h"
 #include "Utils.h"
@@ -14,6 +15,7 @@
 using namespace std;
 
 #define TEST_RESOURCES_DIRECTORY "TestResources/Vision"
+#define TEST_RESULT_OUTPUT "TestResult/Vision"
 
 BitMapInfo readBmpFile(const char* filename)
 {
@@ -141,5 +143,45 @@ void getTestVisionDirectories(L2Version version, vector<string> &dest) {
 	FindClose(hFind);
 }
 
- 
+void debugDraw(BitMapInfo& bmi, int rtWidth, int rtHeight, ButtonDefinition def) {
+
+	auto point = toLbPoint(rtWidth, rtHeight, bmi, def);
+	point.y -= def.height;
+
+	drawRect(point.x, point.y, def.width, def.height, bmi);
+}
+
+void prepareDirectoriesForFile(string file) {
+	
+	vector<string> v;
+	
+	stringstream ss(file);
+	string directory;
+
+	while (std::getline(ss, directory, '/')) {
+		v.push_back(directory);
+	}
+
+	stringstream ssFullPath;
+	for (int i = 0; i < v.size() - 1; ++i) {
+		ssFullPath << v.at(i);
+		prepareDirectory(ssFullPath.str());
+		if (i < v.size() - 2) {
+			ssFullPath << "/";
+		}
+	}
+}
+
+string toTestOutputFile(string testFile) {
+	string resourcePath = TEST_RESOURCES_DIRECTORY;
+	string testResultDir = testFile.replace(testFile.find(resourcePath), resourcePath.length(), TEST_RESULT_OUTPUT);
+	return testResultDir;
+}
+
+void writeTestOutput(string testFile, L2Window expected, L2Window actual, BitMapInfo& bmi) {
+	string testOutputFile = toTestOutputFile(testFile) + "/" + getL2WindowName(actual) + ".bmp";
+	prepareDirectoriesForFile(testOutputFile);
+	writeBmpToFile(testOutputFile.c_str(), bmi);
+}
+
 #endif // TEST

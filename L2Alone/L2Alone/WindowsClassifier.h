@@ -13,6 +13,10 @@
 #include "VisionProvider.h"
 #include "Utils.h"
 
+#ifdef TEST
+#include "TestUtils.h"
+#endif // TEST
+
 using namespace std;
 
 
@@ -54,6 +58,8 @@ bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
 
 	auto wDef = vDef.wDefs[window];
 
+	bool res = true;
+
 	for (auto& bDef : wDef.bDefs) {
 		ButtonHueDistributionCapturer capturer(vDef.wWidth, vDef.wHeight, bDef);
 
@@ -61,18 +67,25 @@ bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
 		capturer.capture(bmi, hDistr);
 
 		if (getDistributionError(vParams.hRef, hDistr) > 10) {
-			return false;
+			res = false;
+			break;
 		}
 	}
 
 	if (wDef.textMaxSize > 0 && wDef.textMinSize > 0) {
 		auto length = getSystemMessageLength(bmi);
 		if (!(wDef.textMinSize <= length && length <= wDef.textMaxSize)) {
-			return false;
+			res = false;
 		}
 	}
 
-	return true;
+#ifdef TEST
+	for (auto& bDef : wDef.bDefs) {
+		debugDraw(bmi, vDef.wWidth, vDef.wHeight, bDef);
+	}
+#endif // TEST
+
+	return res;
 }
 
 L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>& windows, int timeoutMs) {
@@ -92,7 +105,8 @@ L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>&
 
 	ULONGLONG startTick = GetTickCount64();
 	ULONGLONG endTick = startTick + timeoutMs;
-	while (GetTickCount64() < endTick) {
+
+	do {
 		logger.log("Capture window");
 		try {
 
@@ -134,7 +148,7 @@ L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>&
 			logger.error("Capturing failed with exception: ", e.what());
 			throw e;
 		}
-	}
+	} while (GetTickCount64() < endTick);
 
 	return w;
 }
