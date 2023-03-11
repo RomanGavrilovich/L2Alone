@@ -81,6 +81,9 @@ private:
 
 	void doConfirmationFlow(HWND hWindow, SelectCharacterDefinition &selectCharDef);
 	void handleAccountIsUsing(HWND hWindow, SelectCharacterDefinition &selectCharDef);
+
+	L2Window transitWindow(HWND hWindow, L2Window from, L2Window to, int transitionDelay, int timeoutMs);
+	L2Window transitWindow(HWND hWindow, L2Window from, vector<L2Window>& to, int transitionDelay, int timeoutMs);
 	
 	L2Window doFastAutoLogin(HWND hWindow);
 };
@@ -154,6 +157,7 @@ void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passwor
 	}
 	else {
 		HwndVisionProvider provider(hWindow);
+
 		if (wClassifier->waitForWindow(provider, L2Window::WELCOME, 3000) != L2Window::WELCOME) {
 			throw exception("Can't detect welcome window");
 		}
@@ -196,20 +200,67 @@ void AutologinStrategy::handleAccountIsUsing(HWND hWindow, SelectCharacterDefini
 	doConfirmationFlow(hWindow, charDef);
 }
 
+L2Window AutologinStrategy::transitWindow(
+	HWND hWindow,
+	L2Window from, 
+	vector<L2Window>& to, 
+	int transitionDelay, 
+	int timeoutMs) {
+
+	int maxDelay = 1000;
+
+	HwndVisionProvider provider(hWindow);
+
+	int currentDelay = transitionDelay;
+
+	vector<L2Window> awaitedWindows;
+	awaitedWindows.push_back(from);
+	for (auto& w : to) {
+		awaitedWindows.push_back(w);
+	}
+
+	auto startTime = GetTickCount64();
+	auto endTime = startTime + timeoutMs;
+
+	while (GetTickCount64() < endTime) {
+		Sleep(currentDelay);
+		postControlMessage(hWindow, VK_RETURN);
+		Sleep(currentDelay);
+		auto currentWindow = wClassifier->waitForWindows(provider, awaitedWindows, 100);
+		if (currentWindow != from) {
+			return currentWindow;
+		}
+
+		currentDelay *= 2;
+		if (currentDelay > maxDelay) {
+			currentDelay = maxDelay;
+		}
+	}
+
+	return UNKNOWN;
+}
+
+L2Window AutologinStrategy::transitWindow(HWND hWindow, L2Window from, L2Window to, int transitionDelay, int timeoutMs) {
+	vector<L2Window> v;
+	v.push_back(to);
+	return transitWindow(hWindow, from, v, transitionDelay, timeoutMs);
+}
+
 void AutologinStrategy::doConfirmationFlow(HWND hWindow, SelectCharacterDefinition& selectCharDef) {
 	logger.log("Agreement window detected");
 
-	Sleep(100);
-	postControlMessage(hWindow, VK_RETURN);
+	int transitionDelay = 100;
+	int transitionTimeout = 3000;
+
 	HwndVisionProvider provider(hWindow);
-	if (wClassifier->waitForWindow(provider, L2Window::SERVERS, 3000) != L2Window::SERVERS) {
+
+	logger.log("Wait for servers window");
+	if(transitWindow(hWindow, L2Window::AGREEMENT, L2Window::SERVERS, transitionDelay, transitionTimeout) != L2Window::SERVERS) {
 		throw exception("Can't detect servers window");
 	}
 
-	logger.log("Post agreement");
-	Sleep(100);
-	postControlMessage(hWindow, VK_RETURN);
-	if (wClassifier->waitForWindow(provider, L2Window::CHARACTERS, 3000) != L2Window::CHARACTERS) {
+	logger.log("Wait for characters window");
+	if (transitWindow(hWindow, L2Window::SERVERS, L2Window::CHARACTERS, transitionDelay, transitionTimeout) != L2Window::CHARACTERS) {
 		throw exception("Can't detect characters window");
 	}
 
