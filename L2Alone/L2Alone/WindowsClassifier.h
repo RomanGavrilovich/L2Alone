@@ -19,7 +19,7 @@ using namespace std;
 class WindowsClassifier {
 
 public:
-	WindowsClassifier(VisionDefinition& vDef, bool saveWcFailures);
+	WindowsClassifier(VisionDefinition& vDef, string saveFailurePath);
 	~WindowsClassifier();
 
 	void init(VisionParams& params);
@@ -30,7 +30,7 @@ public:
 
 private:
 
-	bool saveWcFailures;
+	string saveFailurePath;
 
 	VisionParams vParams;
 	VisionDefinition vDef;
@@ -38,9 +38,9 @@ private:
 	bool isWindow(BitMapInfo& bmi, L2Window window);
 };
 
-WindowsClassifier::WindowsClassifier(VisionDefinition& vDef, bool saveWcFailures) {
+WindowsClassifier::WindowsClassifier(VisionDefinition& vDef, string saveFailurePath) {
 	this->vDef = vDef;
-	this->saveWcFailures = saveWcFailures;
+	this->saveFailurePath = saveFailurePath;
 }
 
 void WindowsClassifier::init(VisionParams& vParams) {
@@ -110,14 +110,12 @@ L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>&
 					break;
 				}
 				else if (
-					saveWcFailures 
+					saveFailurePath.size() > 0
 					&& !failureSaved
 					&& GetTickCount64() > endTick - 2 * sleepTime) {
 					failureSaved = true;
 
-					prepareDirectory("Debug");
-
-					string debugFile = "Debug/" + ss.str() + ".bmp";
+					string debugFile = saveFailurePath + "/" + ss.str() + ".bmp";
 					writeBmpToFile(debugFile.c_str(), bitMapInfo);
 				}
 

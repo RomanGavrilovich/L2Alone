@@ -38,8 +38,6 @@ private:
 
 Logger logger;
 
-#ifndef L2A_RELEASE
-
 template<typename... Args>
 void Logger::log(const std::string& message, Args... args) {
     std::stringstream ss;
@@ -88,25 +86,3 @@ Logger::~Logger() {
         file_.close();
     }
 }
-
-#else
-
-template<typename... Args>
-void Logger::log(const std::string& message, Args... args) {
-}
-
-template<typename... Args>
-void Logger::warn(const std::string& message, Args... args) {
-}
-
-template<typename... Args>
-void Logger::error(const std::string& message, Args... args) {
-}
-
-void Logger::open(const std::string& filename) {
-}
-
-Logger::~Logger() {
-}
-
-#endif // !L2A_RELEASE

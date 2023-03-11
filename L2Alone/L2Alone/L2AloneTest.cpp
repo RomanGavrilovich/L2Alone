@@ -72,9 +72,10 @@ void testL2VersionSuite(L2Version version, string& pathToSuit, TestL2VersionRepo
 
 	VisionParams vParams = initializer.init(provider, 0);
 
-	WindowsClassifier classifier(vDef);
+	WindowsClassifier classifier(vDef, "");
 	classifier.init(vParams);
 
+	// Test classification
 	for (L2Window expected : windowsToTest) {
 
 		string testPath = pathToSuit + "/" + getL2WindowName(expected) + ".bmp";
@@ -85,6 +86,22 @@ void testL2VersionSuite(L2Version version, string& pathToSuit, TestL2VersionRepo
 		}
 
 		report.testCount++;
+	}
+
+	// Test collision
+	for (L2Window windowA: windowsToTest) {
+		for (L2Window windowB : windowsToTest) {
+			if (windowA != windowB) {
+				string testPath = pathToSuit + "/" + getL2WindowName(windowB) + ".bmp";
+				auto actual = testL2WindowClassifier(testPath, classifier);
+
+				if (actual == windowA) {
+					report.failures.push_back(TestL2VersionFailure{ testPath, windowB, actual });
+				}
+			}
+
+			report.testCount++;
+		}
 	}
 }
 

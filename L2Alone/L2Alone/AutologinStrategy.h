@@ -91,9 +91,9 @@ AutologinStrategy::AutologinStrategy(VisionDefinition vDef, L2AloneConfig& confi
 	auto bDef = vDef.wDefs[L2Window::WELCOME].bDefs[0];
 	capturer = new ButtonHueDistributionCapturer(vDef.wWidth, vDef.wHeight, bDef);
 	inMemoryVisionCache = new InMemoryVisionCache();
-	runtimeVisionInitializer = new RuntimeVisionInitializer(capturer, config.saveRefScreen);
+	runtimeVisionInitializer = new RuntimeVisionInitializer(capturer, config.debugBmpPath);
 	vInitializer = new CachedVisionInitializer(inMemoryVisionCache, runtimeVisionInitializer);
-	wClassifier = new WindowsClassifier(vDef, config.saveWcFailures);
+	wClassifier = new WindowsClassifier(vDef, config.debugBmpPath);
 }
 
 bool AutologinStrategy::fastFlowSupported(L2CharSlot slot) {
@@ -118,7 +118,7 @@ L2Window AutologinStrategy::doFastAutoLogin(HWND hWindow) {
 		}
 	}
 
-	throw exception("Unexpected way in fast auto login flow");
+	throw exception("Auto login flow failure");
 }
 
 void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot) {

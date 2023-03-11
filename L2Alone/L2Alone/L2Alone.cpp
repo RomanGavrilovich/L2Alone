@@ -33,7 +33,6 @@ struct FindL2WindowParams {
 
 #define APP_NAME "L2Alone"
 #define L2_ALONE_CONFIG_FILE_NAME "L2Alone.config"
-#define L2_ALONE_LOGS_DIR "logs"
 
 string getLogFilePath(string absFilePath);
 int autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& config, AutologinStrategy* s);
@@ -81,13 +80,22 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		L2AloneConfig config = loadL2AloneConfig();
-		if (config.logsEnabled) {
-			prepareDirectory(L2_ALONE_LOGS_DIR);
+		stringstream ss;
 
-			stringstream ss;
-			ss << L2_ALONE_LOGS_DIR << "\\l2_" << GetCurrentProcessId() << ".log";
-			logger.open(ss.str().c_str());
+		L2AloneConfig config = loadL2AloneConfig();
+		if (config.debugEnabled) {
+			ss << "Debug/" << GetCurrentProcessId();
+			prepareDirectory("Debug");
+			prepareDirectory(ss.str());
+
+			config.debugBmpPath = ss.str() + "/Captures";
+			if (config.debugSaveRefScreen || config.debugSaveWcFailures) {
+				prepareDirectory(config.debugBmpPath);
+			}
+		}
+
+		if (config.debugLogEnabled) {
+			logger.open((ss.str() + "/L2Alone.log").c_str());
 		}
 
 		eventService.start();
@@ -164,12 +172,6 @@ int autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& c
 		logger.log("L2 process started with id: ", pi.dwProcessId);
 
 		L2WindowCreatedEvent d = waitL2WindowCreated(pi.dwProcessId);
-
-		if (config.captureLogsEnabled) {
-			stringstream ssPathToCoreLogs;
-			ssPathToCoreLogs << L2_ALONE_LOGS_DIR << "\\" << "l2_" << pi.dwProcessId << ".log";
-			string pathToCoreLogs = ssPathToCoreLogs.str();
-		}
 
 		auto hotKeyHandler = shared_ptr<L2QuitKeyHandler>(new L2QuitKeyHandler(d.processId, &config.accountHotKeys));
 		eventService.setKeyboardHandler(d.hWindow, hotKeyHandler);

@@ -10,18 +10,18 @@ class RuntimeVisionInitializer : public VisionInitializer {
 
 public:
 
-	RuntimeVisionInitializer(HueDistributionCapturer* capturer, bool saveRefScreen);
+	RuntimeVisionInitializer(HueDistributionCapturer* capturer, string debugFolder);
 
 	VisionParams init(VisionProvider& provider, int timeoutMs) override;
 
 private:
 	HueDistributionCapturer* capturer;
-	bool saveRefScreen;
+	string debugFolder;
 };
 
-RuntimeVisionInitializer::RuntimeVisionInitializer(HueDistributionCapturer* capturer, bool saveRefScreen) {
+RuntimeVisionInitializer::RuntimeVisionInitializer(HueDistributionCapturer* capturer, string debugFolder) {
 	this->capturer = capturer;
-	this->saveRefScreen = saveRefScreen;
+	this->debugFolder = debugFolder;
 }
 
 VisionParams RuntimeVisionInitializer::init(VisionProvider& vp, int timeoutMs) {
@@ -30,7 +30,6 @@ VisionParams RuntimeVisionInitializer::init(VisionProvider& vp, int timeoutMs) {
 
 	ULONGLONG startTime = GetTickCount64();
 
-	prepareDirectory("RefCapture");
 	while (GetTickCount64() - startTime < timeoutMs) {
 		if (vp.capture(bitMapInfo)) {
 
@@ -38,9 +37,8 @@ VisionParams RuntimeVisionInitializer::init(VisionProvider& vp, int timeoutMs) {
 				VisionParams vp;
 				capturer->capture(bitMapInfo, vp.hRef);
 
-				if (saveRefScreen) {
-					prepareDirectory("Debug");
-					writeBmpToFile("Debug/Ref.bmp", bitMapInfo);
+				if (debugFolder.size() > 0) {
+					writeBmpToFile((debugFolder + "/Ref.bmp").c_str(), bitMapInfo);
 				}
 
 				return vp;

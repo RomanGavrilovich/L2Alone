@@ -12,15 +12,19 @@
 
 #define L2_FILE_CONFIG_KEY "PathToL2exe"
 #define L2_VERSION "L2Version"
-#define LOGS_ENABLED_CONFIG_KEY "LogsEnabled"
-#define CAPTURE_LOGS_ENABLED_CONFIG_KEY "CaptureLogsEnabled"
 #define MOUSE_INPUT_SPEED "MouseInputSpeed"
 #define MOUSE_INPUT_DELAY "MouseInputDelay"
 #define VISION_INIT_TIMEOUT "VisionInitTimeoutMs"
+
+// Features
+#define FAST_FLOW_ENABLED "FastFlowEnabled"
 #define ACCOUNT_KEY "Account"
+
+// Debugging options
+#define DEBUGGING_ENABLED "DebugEnabled"
 #define SAVE_REF_SCREEN "SaveRefScreen"
 #define SAVE_WC_FAILURES "SaveWcFailures"
-#define FAST_FLOW_ENABLED "FastFlowEnabled"
+#define LOGGER_ENABLED "LogEnabled"
  
 enum L2Version {
 	NONE,
@@ -38,15 +42,18 @@ struct L2AccountHotKey {
 struct L2AloneConfig {
 	L2Version version = L2Version::NONE;
 	string pathToL2 = "";
-	bool logsEnabled = false;
-	bool captureLogsEnabled = false;
 	vector<L2AccountHotKey> accountHotKeys;
 	int mouseInputSpeed = -1;
 	int mouseInputDelay = 0;
 	int visionInitTimeout = 10000;
-	bool saveRefScreen = false;
-	bool saveWcFailures = false;
 	bool fastFlowEnabled = true;
+
+	// Debugging
+	bool debugSaveRefScreen = false;
+	bool debugSaveWcFailures = false;
+	bool debugLogEnabled = false;
+	bool debugEnabled = false;
+	string debugBmpPath = "";
 };
 
 using namespace std;
@@ -95,14 +102,6 @@ L2AloneConfig loadL2AloneConfig() {
 				config.pathToL2 = v;
 				cout << "L2 file set to: " << config.pathToL2 << endl;
 			}
-			else if (k == LOGS_ENABLED_CONFIG_KEY) {
-				config.logsEnabled = toBoolean(v);
-				cout << "Core logs enabled: " << config.logsEnabled << endl;
-			}
-			else if (k == CAPTURE_LOGS_ENABLED_CONFIG_KEY) {
-				config.captureLogsEnabled = toBoolean(v);
-				cout << "Capture logs enabled: " << config.captureLogsEnabled << endl;
-			}
 			else if (startWith(k, ACCOUNT_KEY)) {
 				config.accountHotKeys.push_back(getAccountHotKey(k, v));
 			}
@@ -119,12 +118,16 @@ L2AloneConfig loadL2AloneConfig() {
 				logger.log("Vision init timeout: ", config.visionInitTimeout);
 			}
 			else if (k == SAVE_REF_SCREEN) {
-				config.saveRefScreen = (bool)stoi(trim(v));
-				logger.log("Save ref screen: ", config.saveRefScreen);
+				config.debugSaveRefScreen = (bool)stoi(trim(v));
+				logger.log("Save ref screen: ", config.debugSaveRefScreen);
 			}
 			else if (k == SAVE_WC_FAILURES) {
-				config.saveWcFailures = (bool)stoi(trim(v));
-				logger.log("Save WC failures: ", config.saveWcFailures);
+				config.debugSaveWcFailures = (bool)stoi(trim(v));
+				logger.log("Save WC failures: ", config.debugSaveWcFailures);
+			}
+			else if (k == LOGGER_ENABLED) {
+				config.debugLogEnabled = (bool)stoi(trim(v));
+				logger.log("Logger enabled: ", config.debugLogEnabled);
 			}
 			else if (k == FAST_FLOW_ENABLED) {
 				config.fastFlowEnabled = (bool)stoi(trim(v));
@@ -134,6 +137,10 @@ L2AloneConfig loadL2AloneConfig() {
 				config.mouseInputDelay = stoi(trim(v));
 				logger.log("Mouse input delay: ", config.mouseInputDelay);
 			}
+			else if (k == DEBUGGING_ENABLED) {
+				config.debugEnabled = stoi(trim(v));
+				logger.log("Debug enabled: ", config.debugEnabled);
+			}
 		}
 	}
 
@@ -141,6 +148,12 @@ L2AloneConfig loadL2AloneConfig() {
 		stringstream ss;
 		ss << "Specify '" << L2_VERSION << "' in " << L2_ALONE_CONFIG_FILE_NAME << ", e.g '" << L2_VERSION << "=C5'";
 		throw exception(ss.str().c_str());
+	}
+
+	if (!config.debugEnabled) {
+		config.debugLogEnabled = false;
+		config.debugSaveRefScreen = false;
+		config.debugSaveWcFailures = false;
 	}
 
 	return config;
