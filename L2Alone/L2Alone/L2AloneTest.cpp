@@ -42,6 +42,52 @@ L2Window testL2WindowClassifier(string& pathToTestBmp, WindowsClassifier& classi
 	return r;
 }
 
+void debugCollision(L2Version version, L2Window expected, L2Window collision, string pathToSuit) {
+
+	string referenceImage = pathToSuit + "/WELCOME.bmp";
+
+	VisionDefinition vDef;
+	if (version == L2Version::C5) {
+		WindowsDefinitions::initC5WindowsDefinitions(vDef);
+	}
+	else {
+		throw exception("Unexpected l2 version");
+	}
+
+	auto bDef = vDef.wDefs[L2Window::WELCOME].bDefs[0];
+	ButtonHueDistributionCapturer capturer(vDef.wWidth, vDef.wHeight, bDef);
+
+	// For every window we iterate and check 
+	auto refBmp = readBmpFile(referenceImage.c_str());
+
+	BmpVisionInitializer initializer(capturer);
+	BmpVisionProvider initProvider(refBmp);
+
+	VisionParams vParams = initializer.init(initProvider, 0);
+
+	WindowsClassifier classifier(vDef, "");
+	classifier.init(vParams);
+
+
+	// Test
+	string testPath = pathToSuit + "/" + getL2WindowName(expected) + ".bmp";
+
+	auto bmi = readBmpFile(testPath.c_str());
+	BmpVisionProvider testProvider(bmi);
+
+	auto actual = classifier.waitForWindow(testProvider, collision, 100);
+	delete[] bmi.data;
+
+	if (expected != actual) {
+		cout << "    >> "
+			<< "Expected " << getL2WindowName(expected)
+			<< ", but got " << getL2WindowName(actual)
+			<< " for " << testPath << endl;
+	}
+
+	exit(0);
+}
+
 void testL2VersionSuite(L2Version version, string& pathToSuit, TestL2VersionReport& report) {
 
 	vector<L2Window> windowsToTest;
@@ -87,22 +133,6 @@ void testL2VersionSuite(L2Version version, string& pathToSuit, TestL2VersionRepo
 
 		report.testCount++;
 	}
-
-	// Test collision
-	for (L2Window windowA: windowsToTest) {
-		for (L2Window windowB : windowsToTest) {
-			if (windowA != windowB) {
-				string testPath = pathToSuit + "/" + getL2WindowName(windowB) + ".bmp";
-				auto actual = testL2WindowClassifier(testPath, classifier);
-
-				if (actual == windowA) {
-					report.failures.push_back(TestL2VersionFailure{ testPath, windowB, actual });
-				}
-			}
-
-			report.testCount++;
-		}
-	}
 }
 
 void testL2Version(L2Version version, TestL2VersionReport& report) {
@@ -124,8 +154,19 @@ int main(int argc, char* argv[])
 
 	cout << "========================================" << endl;
 
+	if (report.failures.size() > 0) {
+		cout << "Test failures:" << endl;
+		for (auto f : report.failures) {
+			cout << "    >> "
+				<< "Expected " << getL2WindowName(f.expected)
+				<< ", but got " << getL2WindowName(f.actual)
+				<< " for " << f.path << endl;
+		}
+	}
+
+	cout << "========================================" << endl;
 	cout << "L2 Version " << getL2VersionName(version)
-		<< ". Total tests count: " << report.testCount 
+		<< ". Total tests count: " << report.testCount
 		<< ". Failed tests count: " << report.failures.size() << endl;
 }
 

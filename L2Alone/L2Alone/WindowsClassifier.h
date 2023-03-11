@@ -60,7 +60,7 @@ bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
 		map<int, double> hDistr;
 		capturer.capture(bmi, hDistr);
 
-		if (getDistributionError(vParams.hRef, hDistr) > 5) {
+		if (getDistributionError(vParams.hRef, hDistr) > 10) {
 			return false;
 		}
 	}

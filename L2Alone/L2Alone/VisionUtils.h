@@ -361,7 +361,35 @@ Point toLbViaRightBottomOffset(int rtWidth, int rtHeight, int lbWidth, int lbHei
 	return p;
 }
 
-double getDistributionError(map<int, double>& first, map<int, double>& second) {
+struct DescDoubleCompare {
+	bool operator()(const double& a, const double& b) const {
+		return a > b;
+	}
+};
+
+void removeNoise(map<int, double>& src, map<int, double>& dest) {
+
+	map<double, int, DescDoubleCompare> sortedByValue;
+	for (auto& kv : src) {
+		sortedByValue[kv.second] = kv.first;
+	}
+
+	int countToPeek = 1;
+	for (auto& kv : sortedByValue) {
+		dest[kv.second] = kv.first;
+		if (--countToPeek == 0) {
+			break;
+		}
+	}
+}
+
+double getDistributionError(map<int, double>& a, map<int, double>& b) {
+
+	map<int, double> first;
+	removeNoise(a, first);
+
+	map<int, double> second;
+	removeNoise(b, second);
 
 	auto fp = first.begin();
 	auto sp = second.begin();
@@ -379,7 +407,7 @@ double getDistributionError(map<int, double>& first, map<int, double>& second) {
 			++fp;
 		}
 		else if (abs(fp->first - sp->first) < 4) {
-			sum += abs(fp->second - fp->second);
+			sum += abs(fp->second - sp->second);
 			++fp;
 			++sp;
 		}
