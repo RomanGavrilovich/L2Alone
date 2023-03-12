@@ -20,6 +20,8 @@ public:
 	VisionParams init(VisionProvider& vp, int timeoutMs) override;
 
 private:
+	const int CAPTURE_RETRY_DELAY = 100;
+
 	VisionCache* pCache;
 	VisionInitializer* pTarget;
 
@@ -34,34 +36,10 @@ CachedVisionInitializer::CachedVisionInitializer(VisionCache* pCache, VisionInit
 VisionParams CachedVisionInitializer::init(VisionProvider& provider, int timeoutMs) {
 
 	VisionParams vp;
-	if (pCache->get(vp)) {
-		waitForLoadingScreen(provider, timeoutMs);
-		vp;
-
-	}
-	else {
+	if (!pCache->get(vp)) {
 		vp = pTarget->init(provider, timeoutMs);
 		pCache->set(vp);
 	}
 
 	return vp;
-}
-
-void CachedVisionInitializer::waitForLoadingScreen(VisionProvider& provider, int timeoutMs) {
-
-	BitMapInfo bitMapInfo;
-
-	ULONGLONG startTime = GetTickCount64();
-	while (GetTickCount64() - startTime < timeoutMs) {
-		if (provider.capture(bitMapInfo)) {
-			if (isLoadingWindow(bitMapInfo)) {
-				logger.log("Loading screen detected");
-				return;
-			}
-		}
-
-		Sleep(100);
-	}
-
-	throw exception("Can't detect loading screen");
 }

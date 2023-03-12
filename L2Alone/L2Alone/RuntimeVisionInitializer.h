@@ -45,7 +45,7 @@ VisionParams RuntimeVisionInitializer::init(VisionProvider& vp, int timeoutMs) {
 			}
 		}
 
-		Sleep(100);
+		Sleep(CAPTURE_RETRY_DELAY);
 	}
 
 	throw exception("Can't create vision parameters");

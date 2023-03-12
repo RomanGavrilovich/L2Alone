@@ -18,7 +18,7 @@
 
 using namespace std;
 
-#define CAPTURE_ALL_WINDOWS 0
+bool CAPTURE_ALL_WINDOWS = false;
 
 struct TestL2VersionFailure {
 	string path;
@@ -27,6 +27,7 @@ struct TestL2VersionFailure {
 };
 
 struct TestL2VersionReport {
+	L2Version version;
 	int testCount = 0;
 	vector<TestL2VersionFailure> failures;
 };
@@ -140,6 +141,9 @@ void testL2VersionSuite(L2Version version, string& pathToSuit, TestL2VersionRepo
 	if (version == L2Version::C5) {
 		WindowsDefinitions::initC5WindowsDefinitions(vDef);
 	}
+	else if (version == L2Version::C2) {
+		WindowsDefinitions::initC2WindowsDefinitions(vDef);
+	}
 	else {
 		throw exception("Unexpected l2 version");
 	}
@@ -172,38 +176,44 @@ void testL2VersionSuite(L2Version version, string& pathToSuit, TestL2VersionRepo
 	}
 }
 
-void testL2Version(L2Version version, TestL2VersionReport& report) {
+void testL2Version(TestL2VersionReport& report) {
 
 	vector<string> testCasePaths;
-	getTestVisionDirectories(version, testCasePaths);
+	getTestVisionDirectories(report.version, testCasePaths);
 
 	for (auto testCasePath : testCasePaths) {
-		testL2VersionSuite(version, testCasePath, report);
+		testL2VersionSuite(report.version, testCasePath, report);
 	}
 }
 
-
 int main(int argc, char* argv[])
 {
-	L2Version version = L2Version::C5;
-	TestL2VersionReport report;
-	testL2Version(version, report);
+	CAPTURE_ALL_WINDOWS = false;
 
-	cout << "========================================" << endl;
-	if (report.failures.size() > 0) {
-		cout << "Test failures:" << endl;
-		for (auto f : report.failures) {
-			cout << "    >> "
-				<< "Expected " << getL2WindowName(f.expected)
-				<< ", but got " << getL2WindowName(f.actual)
-				<< " for " << f.path << endl;
-		}
+	vector<TestL2VersionReport> reports;
+	reports.push_back(TestL2VersionReport{ L2Version::C5 });
+	reports.push_back(TestL2VersionReport{ L2Version::C2 });
+
+	for (auto& report : reports) {
+		testL2Version(report);
 	}
 
-	cout << "========================================" << endl;
-	cout << "L2 Version " << getL2VersionName(version)
-		<< ". Total tests count: " << report.testCount
-		<< ". Failed tests count: " << report.failures.size() << endl;
+	for (auto& report : reports) {
+		cout << "========================================" << endl;
+		cout << "Version: " << getL2VersionName(report.version) << endl;
+		if (report.failures.size() > 0) {
+			cout << "Test failures:" << endl;
+			for (auto f : report.failures) {
+				cout << "    >> "
+					<< "Expected " << getL2WindowName(f.expected)
+					<< ", but got " << getL2WindowName(f.actual)
+					<< " for " << f.path << endl;
+			}
+		}
+
+		cout << "Total tests count: " << report.testCount
+			<< ". Failed tests count: " << report.failures.size() << endl;
+	}
 }
 
 #endif // TEST

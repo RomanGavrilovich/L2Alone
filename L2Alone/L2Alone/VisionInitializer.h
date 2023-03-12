@@ -12,4 +12,7 @@ class VisionInitializer {
 
 public:
 	virtual VisionParams init(VisionProvider& provider, int timeoutMs) = 0;
+
+protected:
+	const int CAPTURE_RETRY_DELAY = 100;
 };

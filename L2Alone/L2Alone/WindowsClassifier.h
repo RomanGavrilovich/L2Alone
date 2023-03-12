@@ -132,12 +132,16 @@ L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>&
 				}
 
 				if (w != UNKNOWN) {
+					logger.log("Capture window result: ", getL2WindowName(w));
 					break;
 				}
 				else if (
 					saveFailurePath.size() > 0
 					&& !failureSaved
 					&& GetTickCount64() > endTick - 2 * sleepTime) {
+					
+					logger.log("Capture window failure");
+					
 					failureSaved = true;
 
 					string debugFile = saveFailurePath + "/" + ss.str() + ".bmp";
@@ -145,8 +149,6 @@ L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>&
 				}
 
 				vp.dispose(bitMapInfo);
-
-				logger.log("Capture window result: ", getL2WindowName(w));
 			}
 
 			Sleep(sleepTime);

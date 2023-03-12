@@ -71,8 +71,9 @@ protected:
 	virtual bool fastFlowSupported(L2CharSlot slot);
 	virtual bool stopFastLogin(L2Window w);
 
-private:
 	L2AloneConfig config;
+
+private:
 	WindowsClassifier* wClassifier;
 	HueDistributionCapturer* capturer;
 	VisionInitializer* vInitializer;
@@ -110,7 +111,7 @@ bool AutologinStrategy::stopFastLogin(L2Window w) {
 L2Window AutologinStrategy::doFastAutoLogin(HWND hWindow) {
 	for (int i = 0; i < 30; ++i) {
 		for (int j = 0; j < 3; ++j) {
-			Sleep(100);
+			Sleep(config.inputInitialDelay);
 			postControlMessage(hWindow, VK_RETURN);
 		}
 
@@ -250,7 +251,7 @@ void AutologinStrategy::doConfirmationFlow(HWND hWindow, SelectCharacterDefiniti
 
 	if (selectCharDef.slot == ACTIVE) {
 		for (int i = 0; i < 10; ++i) {
-			Sleep(100);
+			Sleep(config.inputInitialDelay);
 			postControlMessage(hWindow, VK_RETURN);
 		}
 	}
