@@ -17,6 +17,7 @@
 #define VISION_INIT_TIMEOUT "VisionInitTimeoutMs"
 #define INPUT_INITIAL_DELAY "InputInitialDelay"
 #define INPUT_FALLBACK_DELAY "InputFallbackDelay"
+#define ACCOUNT_IN_USE_DELAY "AccountInUseDelay"
 
 // Features
 #define FAST_FLOW_ENABLED "FastFlowEnabled"
@@ -54,6 +55,7 @@ struct L2AloneConfig {
 	int inputInitialDelay = 100;
 	int inputFallbackDelay = 1000;
 	int windowTransitionRetryCount = 3;
+	int accountInUseDelay = 500;
 
 	// Debugging
 	bool debugSaveRefScreen = false;
@@ -155,6 +157,10 @@ L2AloneConfig loadL2AloneConfig() {
 			else if (k == DEBUGGING_ENABLED) {
 				config.debugEnabled = stoi(trim(v));
 				logger.log("Debug enabled: ", config.debugEnabled);
+			}
+			else if (k == ACCOUNT_IN_USE_DELAY) {
+				config.accountInUseDelay = stoi(trim(v));
+				logger.log("Account in use delay: ", config.accountInUseDelay);
 			}
 		}
 	}

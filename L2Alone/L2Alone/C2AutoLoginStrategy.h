@@ -48,5 +48,5 @@ void C2AutologinStrategy::initSelectCharDefinition(SelectCharacterDefinition& de
 void C2AutologinStrategy::onAccountInUse(HWND hWindow) {
 	Sleep(config.inputInitialDelay);
 	postControlMessage(hWindow, VK_TAB);
-	Sleep(config.inputInitialDelay);
+	Sleep(config.accountInUseDelay);
 }
