@@ -18,6 +18,8 @@
 
 using namespace std;
 
+#define CAPTURE_ALL_WINDOWS 0
+
 struct TestL2VersionFailure {
 	string path;
 	L2Window expected;
@@ -31,32 +33,47 @@ struct TestL2VersionReport {
 
 L2Window testL2WindowClassifier(string& pathToTestBmp, L2Window expected, WindowsClassifier& classifier) {
 
-	L2Window r = UNKNOWN;
+	if (CAPTURE_ALL_WINDOWS) {
+		L2Window r = UNKNOWN;
 
-	vector<L2Window> v;
+		vector<L2Window> v;
 
-	v.push_back(L2Window::AGREEMENT);
-	v.push_back(L2Window::INCORRECT_PASSWORD);
-	v.push_back(L2Window::ACCOUNT_IN_USE);
-	v.push_back(L2Window::SERVERS);
-	v.push_back(L2Window::CHARACTERS);
+		v.push_back(L2Window::AGREEMENT);
+		v.push_back(L2Window::INCORRECT_PASSWORD);
+		v.push_back(L2Window::ACCOUNT_IN_USE);
+		v.push_back(L2Window::SERVERS);
+		v.push_back(L2Window::CHARACTERS);
 
-	for (L2Window w : v) {
+		for (L2Window w : v) {
+			auto bmi = readBmpFile(pathToTestBmp.c_str());
+
+			BmpVisionProvider provider(bmi);
+
+			auto actual = classifier.waitForWindow(provider, w, 0);
+			if (actual != UNKNOWN) {
+				r = actual;
+			}
+
+			writeTestOutput(pathToTestBmp, expected, w, bmi);
+
+			delete[] bmi.data;
+		}
+
+		return r;
+	}
+	else {
 		auto bmi = readBmpFile(pathToTestBmp.c_str());
 
 		BmpVisionProvider provider(bmi);
 
-		auto actual = classifier.waitForWindow(provider, w, 0);
-		if (actual != UNKNOWN) {
-			r = actual;
-		}
+		auto actual = classifier.waitForWindow(provider, 0);
 
-		writeTestOutput(pathToTestBmp, expected, w, bmi);
+		writeTestOutput(pathToTestBmp, expected, actual, bmi);
 
 		delete[] bmi.data;
-	}
 
-	return r;
+		return actual;
+	}
 }
 
 void debugCollision(L2Version version, L2Window expected, L2Window collision, string pathToSuit) {
@@ -93,6 +110,9 @@ void debugCollision(L2Version version, L2Window expected, L2Window collision, st
 	BmpVisionProvider testProvider(bmi);
 
 	auto actual = classifier.waitForWindow(testProvider, collision, 100);
+
+	writeTestOutput(testPath, expected, actual, bmi);
+
 	delete[] bmi.data;
 
 	if (expected != actual) {
@@ -170,7 +190,6 @@ int main(int argc, char* argv[])
 	testL2Version(version, report);
 
 	cout << "========================================" << endl;
-
 	if (report.failures.size() > 0) {
 		cout << "Test failures:" << endl;
 		for (auto f : report.failures) {

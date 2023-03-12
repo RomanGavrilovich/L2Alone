@@ -48,9 +48,9 @@ public:
 
 		// Servers screen
 		vector<ButtonDefinition> serverBtnDefs;
-		serverBtnDefs.push_back(ButtonDefinition{ 563, 410, 74, 21 });
+		//serverBtnDefs.push_back(ButtonDefinition{ 563, 410, 74, 21 });
 		serverBtnDefs.push_back(ButtonDefinition{ 643, 410, 74, 21 });
-		serverBtnDefs.push_back(ButtonDefinition{ 724, 410, 74, 21 });
+		//serverBtnDefs.push_back(ButtonDefinition{ 724, 410, 74, 21 });
 
 		auto serversDef = WindowDefinition{ serverBtnDefs, 0, 0 };
 		dest.wDefs[L2Window::SERVERS] = serversDef;

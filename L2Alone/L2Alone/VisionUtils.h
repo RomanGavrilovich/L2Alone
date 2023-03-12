@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <fstream>
+#include <map>
 
 #include "Logger.h"
 
@@ -192,21 +193,21 @@ void drawRect(int startX, int startY, int width, int height, BitMapInfo& info) {
 	}
 }
 
-void getPixelRgb(BitMapInfo& bitMapInfo, int pixelX, int pixelY, int& r, int& g, int& hasHorizontalBorder) {
+void getPixelRgb(BitMapInfo& bitMapInfo, int pixelX, int pixelY, int& r, int& g, int& b) {
 
 	int index = getPixelIndex(bitMapInfo, pixelX, pixelY);
 
 	r = bitMapInfo.data[index + 2];
 	g = bitMapInfo.data[index + 1];
-	hasHorizontalBorder = bitMapInfo.data[index];
+	b = bitMapInfo.data[index];
 }
 
-void drawPixelRgb(BitMapInfo& bitMapInfo, int x, int y, int r, int g, int hasHorizontalBorder) {
+void drawPixelRgb(BitMapInfo& bitMapInfo, int x, int y, int r, int g, int b) {
 
 	int index = getPixelIndex(bitMapInfo, x, y);
 	bitMapInfo.data[index + 2] = r;
 	bitMapInfo.data[index + 1] = g;
-	bitMapInfo.data[index] = hasHorizontalBorder;
+	bitMapInfo.data[index] = b;
 }
 
 int getPixelIndex(BitMapInfo& bitMapInfo, int x, int y) {
@@ -544,3 +545,147 @@ Point toLbPoint(int rtWidth, int rtHeight, BitMapInfo& bitMapInfo, ButtonDefinit
 
 	throw exception("Unrecognised ref anchor");
 }
+
+int getV(BitMapInfo& bmi, int x, int y) {
+
+	int h, s, v;
+	getPixelHsv(bmi, x, y, h, s, v);
+	return v;
+}
+
+bool hasHorizontalBorder(BitMapInfo& bmi, int x, int y, int width, int borderThreshold, double missFactor, bool draw) {
+
+	bool result = true;
+
+	int missThreshold = width * missFactor;
+
+	for (int i = x; i < x + width; ++i) {
+		
+		int targetH = getV(bmi, i, y);
+		int underH = getV(bmi, i, y - 1);
+		int nextH = getV(bmi, i + 1, y);
+		if (abs(underH - targetH) <= borderThreshold || abs(nextH - targetH) > borderThreshold) {
+			missThreshold--;
+
+			if (missThreshold == 0) {
+				result = false;
+				break;
+			}
+
+			if (draw) {
+				drawPixelRgb(bmi, i, y, 255, 0, 0);
+			}
+		}
+		else {
+			if (draw) {
+				drawPixelRgb(bmi, i, y, 0, 255, 0);
+			}
+		}
+	}
+
+	return result;
+}
+
+bool hasVerticalBorder(BitMapInfo& bmi, int x, int y, int height, int borderThreshold, double missFactor, bool draw) {
+	
+	bool result = true;
+
+	int missThreshold = height * missFactor;
+
+	for (int i = y; i < y + height; ++i) {
+
+		int targetH = getV(bmi, x, i);
+		int underH = getV(bmi, x - 1, i);
+		int nextH = getV(bmi, x, i + 1);
+		if (abs(underH - targetH) <= borderThreshold || abs(nextH - targetH) > borderThreshold) {
+			missThreshold--;
+
+			if (missThreshold == 0) {
+				result = false;
+				break;
+			}
+
+			if (draw) {
+				drawPixelRgb(bmi, x, i, 255, 0, 0);
+			}
+		}
+		else {
+			if (draw) {
+				drawPixelRgb(bmi, x, i, 0, 255, 0);
+			}
+		}
+	}
+
+	return result;
+}
+
+bool hasHorizontalBorderInRange(BitMapInfo& bmi, int x, int y, int width, int borderThreshold, double missFactor, int range) {
+
+	bool r = false;
+
+	int startY = y - range / 2 ;
+	for (int i = 0; i < range; ++i) {
+		if (hasHorizontalBorder(bmi, x, startY + i, width, borderThreshold, missFactor, false)) {
+			r = true;
+			break;
+		}
+	}
+
+//#ifdef TEST
+//	for (int i = 0; i < range; ++i) {
+//		if (hasHorizontalBorder(bmi, x, startY + i, width, borderThreshold, missFactor, false)) {
+//		}
+//	}
+//#endif // TEST
+
+	return r;
+}
+
+bool hasVerticalBorderInRange(BitMapInfo& bmi, int x, int y, int height, int borderThreshold, double missFactor, int range) {
+
+	bool r = false;
+
+	int startX = x - range / 2;
+	for (int i = 0; i < range; ++i) {
+		if (hasVerticalBorder(bmi, startX + i, y, height, borderThreshold, missFactor, false)) {
+			r = true;
+			break;
+		}
+	}
+
+	return r;
+}
+
+bool hasBorders(int rtWidth, int rtHeight, BitMapInfo& bmi, ButtonDefinition& bDef) {
+
+	int range = 8;
+	double missFactor = 0.3;
+	int borderVThreshold = 5;
+
+	// Top right point
+	Point p = toLbPoint(rtWidth, rtHeight, bmi, bDef);
+
+	int borderFound = 0;
+	
+	// Top border
+	if (hasHorizontalBorderInRange(bmi, p.x, p.y, bDef.width, borderVThreshold, missFactor, range)) {
+		borderFound++;
+	}
+
+	// Bottom border
+	if (hasHorizontalBorderInRange(bmi, p.x, p.y - bDef.height, bDef.width, borderVThreshold, missFactor, range)) {
+		borderFound++;
+	}
+
+	// Right border
+	if (hasVerticalBorderInRange(bmi, p.x, p.y - bDef.height, bDef.height, borderVThreshold, missFactor, range)) {
+		borderFound++;
+	}
+
+	// Left border
+	if (hasVerticalBorderInRange(bmi, p.x + bDef.width, p.y - bDef.height, bDef.height, borderVThreshold, missFactor, range)) {
+		borderFound++;
+	}
+
+	return borderFound >= 2;
+ }

@@ -58,9 +58,8 @@ bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
 
 	auto wDef = vDef.wDefs[window];
 
-	bool res = true;
-
-	for (auto& bDef : wDef.bDefs) {
+	bool res = false;
+	/*for (auto& bDef : wDef.bDefs) {
 		ButtonHueDistributionCapturer capturer(vDef.wWidth, vDef.wHeight, bDef);
 
 		map<int, double> hDistr;
@@ -70,18 +69,30 @@ bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
 			res = false;
 			break;
 		}
+	}*/
+
+	if (!res) {
+		res = true;
+		for (auto& bDef : wDef.bDefs) {
+			if (!hasBorders(vDef.wWidth, vDef.wHeight, bmi, bDef)) {
+				res = false;
+				break;
+			}
+		}
 	}
 
-	if (wDef.textMaxSize > 0 && wDef.textMinSize > 0) {
-		auto length = getSystemMessageLength(bmi);
-		if (!(wDef.textMinSize <= length && length <= wDef.textMaxSize)) {
-			res = false;
+	if (res) {
+		if (wDef.textMaxSize > 0 && wDef.textMinSize > 0) {
+			auto length = getSystemMessageLength(bmi);
+			if (!(wDef.textMinSize <= length && length <= wDef.textMaxSize)) {
+				res = false;
+			}
 		}
 	}
 
 #ifdef TEST
 	for (auto& bDef : wDef.bDefs) {
-		debugDraw(bmi, vDef.wWidth, vDef.wHeight, bDef);
+		//debugDraw(bmi, vDef.wWidth, vDef.wHeight, bDef);
 	}
 #endif // TEST
 
