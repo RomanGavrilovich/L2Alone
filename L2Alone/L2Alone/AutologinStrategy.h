@@ -79,12 +79,12 @@ private:
 	InMemoryVisionCache* inMemoryVisionCache;
 	RuntimeVisionInitializer* runtimeVisionInitializer;
 
-	void doConfirmationFlow(HWND hWindow, SelectCharacterDefinition &selectCharDef);
-	void handleAccountIsUsing(HWND hWindow, SelectCharacterDefinition &selectCharDef);
+	void doConfirmationFlow(HWND hWindow, SelectCharacterDefinition& selectCharDef);
+	void handleAccountIsUsing(HWND hWindow, SelectCharacterDefinition& selectCharDef);
 
-	L2Window transitWindow(HWND hWindow, L2Window from, L2Window to, int transitionDelay, int timeoutMs);
-	L2Window transitWindow(HWND hWindow, L2Window from, vector<L2Window>& to, int transitionDelay, int timeoutMs);
-	
+	L2Window transitWindow(HWND hWindow, L2Window to);
+	L2Window transitWindow(HWND hWindow, vector<L2Window>& to);
+
 	L2Window doFastAutoLogin(HWND hWindow);
 };
 
@@ -139,7 +139,7 @@ void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passwor
 
 	if (config.fastFlowEnabled && fastFlowSupported(slot)) {
 		postCredentials(hWindow, login, password);
-		
+
 		L2Window w = doFastAutoLogin(hWindow);
 		if (w == ACCOUNT_IN_USE) {
 			logger.log("Account in use");
@@ -202,65 +202,58 @@ void AutologinStrategy::handleAccountIsUsing(HWND hWindow, SelectCharacterDefini
 
 L2Window AutologinStrategy::transitWindow(
 	HWND hWindow,
-	L2Window from, 
-	vector<L2Window>& to, 
-	int transitionDelay, 
-	int timeoutMs) {
-
-	int maxDelay = 1000;
+	vector<L2Window>& to) {
 
 	HwndVisionProvider provider(hWindow);
 
-	int currentDelay = transitionDelay;
+	int currentDelay = config.inputInitialDelay;
 
 	vector<L2Window> awaitedWindows;
-	awaitedWindows.push_back(from);
 	for (auto& w : to) {
 		awaitedWindows.push_back(w);
 	}
 
 	auto startTime = GetTickCount64();
-	auto endTime = startTime + timeoutMs;
+	auto endTime = startTime + config.inputFallbackDelay;
 
-	while (GetTickCount64() < endTime) {
+	for (int i = 0; i < config.windowTransitionRetryCount; ++i) {
 		Sleep(currentDelay);
 		postControlMessage(hWindow, VK_RETURN);
 		Sleep(currentDelay);
-		auto currentWindow = wClassifier->waitForWindows(provider, awaitedWindows, 100);
-		if (currentWindow != from) {
-			return currentWindow;
-		}
 
-		currentDelay *= 2;
-		if (currentDelay > maxDelay) {
-			currentDelay = maxDelay;
+		auto currentWindow = wClassifier->waitForWindows(provider, awaitedWindows, 1000);
+		if (currentWindow == UNKNOWN) {
+			currentDelay = config.inputFallbackDelay;
+		}
+		else {
+			return currentWindow;
 		}
 	}
 
 	return UNKNOWN;
 }
 
-L2Window AutologinStrategy::transitWindow(HWND hWindow, L2Window from, L2Window to, int transitionDelay, int timeoutMs) {
+L2Window AutologinStrategy::transitWindow(HWND hWindow, L2Window to) {
 	vector<L2Window> v;
 	v.push_back(to);
-	return transitWindow(hWindow, from, v, transitionDelay, timeoutMs);
+	return transitWindow(hWindow, v);
 }
 
 void AutologinStrategy::doConfirmationFlow(HWND hWindow, SelectCharacterDefinition& selectCharDef) {
 	logger.log("Agreement window detected");
 
-	int transitionDelay = 100;
+	int transitionDelay = 0;
 	int transitionTimeout = 3000;
 
 	HwndVisionProvider provider(hWindow);
 
 	logger.log("Wait for servers window");
-	if(transitWindow(hWindow, L2Window::AGREEMENT, L2Window::SERVERS, transitionDelay, transitionTimeout) != L2Window::SERVERS) {
+	if (transitWindow(hWindow, L2Window::SERVERS) != L2Window::SERVERS) {
 		throw exception("Can't detect servers window");
 	}
 
 	logger.log("Wait for characters window");
-	if (transitWindow(hWindow, L2Window::SERVERS, L2Window::CHARACTERS, transitionDelay, transitionTimeout) != L2Window::CHARACTERS) {
+	if (transitWindow(hWindow, L2Window::CHARACTERS) != L2Window::CHARACTERS) {
 		throw exception("Can't detect characters window");
 	}
 
@@ -351,5 +344,5 @@ L2Window AutologinStrategy::captureAuthResultWindows(HWND hWindow) {
 	windows.push_back(L2Window::ACCOUNT_IN_USE);
 
 	HwndVisionProvider provider(hWindow);
-	return wClassifier->waitForWindows(provider, windows, 5000);
+	return transitWindow(hWindow, windows);
 }

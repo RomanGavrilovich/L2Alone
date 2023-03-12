@@ -48,6 +48,11 @@ struct L2AloneConfig {
 	int visionInitTimeout = 10000;
 	bool fastFlowEnabled = true;
 
+	// Input
+	bool inputInitialDelay = 100;
+	bool inputFallbackDelay = 1000;
+	bool windowTransitionRetryCount = 3;
+
 	// Debugging
 	bool debugSaveRefScreen = false;
 	bool debugSaveWcFailures = false;

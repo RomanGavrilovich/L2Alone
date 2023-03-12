@@ -59,7 +59,7 @@ bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
 	auto wDef = vDef.wDefs[window];
 
 	bool res = false;
-	/*for (auto& bDef : wDef.bDefs) {
+	for (auto& bDef : wDef.bDefs) {
 		ButtonHueDistributionCapturer capturer(vDef.wWidth, vDef.wHeight, bDef);
 
 		map<int, double> hDistr;
@@ -69,7 +69,7 @@ bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
 			res = false;
 			break;
 		}
-	}*/
+	}
 
 	if (!res) {
 		res = true;
