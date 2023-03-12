@@ -4,16 +4,9 @@
 
 /L2Alone/.vs/L2Alone
 /.vs
-/L2Alone/L2Alone/x64/Debug
-/L2Alone/x64/Debug
-/L2Alone/L2Alone/x64/Release
-/L2Alone/x64/Release
+/L2Alone/x64/*
 /L2Alone/L2Alone/Release
 /L2Alone/Release
 /L2Alone/L2Alone/x64/Test
-/L2Alone/L2AloneTest/x64/Debug
-/L2Alone/x64/Test
-/L2Alone/L2Alone/CapturesFailure/*
-/L2Alone/L2Alone/RefCapture/*
 /L2Alone/L2Alone/Debug/*
 /L2Alone/L2Alone/TestResult/*
