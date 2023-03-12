@@ -137,34 +137,29 @@ void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passwor
 		charDef.actionTimeout = config.mouseInputSpeed;
 	}
 
+	postCredentials(hWindow, login, password);
 	if (config.fastFlowEnabled && fastFlowSupported(slot)) {
-		postCredentials(hWindow, login, password);
 
-		L2Window w = doFastAutoLogin(hWindow);
-		if (w == ACCOUNT_IN_USE) {
-			logger.log("Account in use");
-			handleAccountIsUsing(hWindow, charDef);
-		}
-		else if (w == INCORRECT_PASSWORD) {
-			throw exception("Invalid credentials entered");
-		}
-		else if (w == CHARACTERS) {
-			selectCharacter(hWindow, charDef);
-		}
-		else if (w == UNKNOWN) {
-			logger.log("Unknown window found. Complete autologin flow");
+		for (int i = 0; i < 2; ++i) {
+			L2Window w = doFastAutoLogin(hWindow);
+			if (w == ACCOUNT_IN_USE) {
+				logger.log("Account in use");
+				onAccountInUse(hWindow);
+			}
+			else if (w == INCORRECT_PASSWORD) {
+				throw exception("Invalid credentials entered");
+			}
+			else if (w == CHARACTERS) {
+				selectCharacter(hWindow, charDef);
+				break;
+			}
+			else if (w == UNKNOWN) {
+				logger.log("Unknown window found. Complete autologin flow");
+				break;
+			}
 		}
 	}
 	else {
-		HwndVisionProvider provider(hWindow);
-
-		if (wClassifier->waitForWindow(provider, L2Window::WELCOME, 3000) != L2Window::WELCOME) {
-			throw exception("Can't detect welcome window");
-		}
-
-		postCredentials(hWindow, login, password);
-		Sleep(100); // give some time to process credentials post
-
 		L2Window w = captureAuthResultWindows(hWindow);
 		logger.log("Captured auth result: ", getL2WindowName(w));
 		if (w == AGREEMENT) {
@@ -189,14 +184,10 @@ void AutologinStrategy::handleAccountIsUsing(HWND hWindow, SelectCharacterDefini
 	logger.log("Account is using");
 	onAccountInUse(hWindow);
 
-	Sleep(100);
-	postControlMessage(hWindow, VK_RETURN);
-
-	HwndVisionProvider provider(hWindow);
-	L2Window w = wClassifier->waitForWindow(provider, AGREEMENT, 5000);
-	if (w != AGREEMENT) {
+	if (transitWindow(hWindow, AGREEMENT) != AGREEMENT) {
 		throw exception("Can't find agreement screen");
 	}
+
 	doConfirmationFlow(hWindow, charDef);
 }
 
