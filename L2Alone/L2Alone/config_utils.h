@@ -15,6 +15,8 @@
 #define MOUSE_INPUT_SPEED "MouseInputSpeed"
 #define MOUSE_INPUT_DELAY "MouseInputDelay"
 #define VISION_INIT_TIMEOUT "VisionInitTimeoutMs"
+#define INPUT_INITIAL_DELAY "InputInitialDelay"
+#define INPUT_FALLBACK_DELAY "InputFallbackDelay"
 
 // Features
 #define FAST_FLOW_ENABLED "FastFlowEnabled"
@@ -141,6 +143,14 @@ L2AloneConfig loadL2AloneConfig() {
 			else if (k == MOUSE_INPUT_DELAY) {
 				config.mouseInputDelay = stoi(trim(v));
 				logger.log("Mouse input delay: ", config.mouseInputDelay);
+			}
+			else if (k == INPUT_FALLBACK_DELAY) {
+				config.inputFallbackDelay = stoi(trim(v));
+				logger.log("Input fallback delay: ", config.inputFallbackDelay);
+			}
+			else if(k == INPUT_INITIAL_DELAY) {
+				config.inputInitialDelay = stoi(trim(v));
+				logger.log("Input initial delay: ", config.inputInitialDelay);
 			}
 			else if (k == DEBUGGING_ENABLED) {
 				config.debugEnabled = stoi(trim(v));

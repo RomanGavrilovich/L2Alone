@@ -343,10 +343,8 @@ void AutologinStrategy::selectCharacter(HWND hWindow, SelectCharacterDefinition&
 L2Window AutologinStrategy::captureAuthResultWindows(HWND hWindow) {
 	std::vector<L2Window> windows;
 	windows.push_back(L2Window::AGREEMENT);
-
-	// TODO: Uncomment
-	//windows.push_back(L2Window::INCORRECT_PASSWORD);
-	//windows.push_back(L2Window::ACCOUNT_IN_USE);
+	windows.push_back(L2Window::INCORRECT_PASSWORD);
+	windows.push_back(L2Window::ACCOUNT_IN_USE);
 
 	HwndVisionProvider provider(hWindow);
 	return transitWindow(hWindow, windows);

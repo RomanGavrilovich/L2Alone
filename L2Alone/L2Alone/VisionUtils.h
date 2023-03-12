@@ -561,7 +561,7 @@ bool hasHorizontalBorder(BitMapInfo& bmi, int x, int y, int width, int borderThr
 
 	bool result = true;
 
-	int missThreshold = width * missFactor;
+	int missThreshold = (int)(width * missFactor);
 
 	for (int i = x; i < x + width; ++i) {
 		
@@ -594,7 +594,7 @@ bool hasVerticalBorder(BitMapInfo& bmi, int x, int y, int height, int borderThre
 	
 	bool result = true;
 
-	int missThreshold = height * missFactor;
+	int missThreshold = (int)(height * missFactor);
 
 	for (int i = y; i < y + height; ++i) {
 
