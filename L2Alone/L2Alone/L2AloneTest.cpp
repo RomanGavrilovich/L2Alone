@@ -85,6 +85,9 @@ void debugCollision(L2Version version, L2Window expected, L2Window collision, st
 	if (version == L2Version::C5) {
 		WindowsDefinitions::initC5WindowsDefinitions(vDef);
 	}
+	else if(version == L2Version::C2){
+		WindowsDefinitions::initC2WindowsDefinitions(vDef);
+	}
 	else {
 		throw exception("Unexpected l2 version");
 	}

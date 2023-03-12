@@ -6,6 +6,7 @@
 
 struct VisionParams {
 	map<int, double> hRef;
+	int systemMessageLength = 0;
 };
 
 class VisionInitializer {

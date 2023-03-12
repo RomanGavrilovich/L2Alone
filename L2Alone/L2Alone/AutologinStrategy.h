@@ -56,6 +56,7 @@ class AutologinStrategy {
 public:
 
 	AutologinStrategy(VisionDefinition vDef, L2AloneConfig& config);
+	~AutologinStrategy();
 
 	void doAutologin(HWND hWindow, string& login, string& password, L2CharSlot slot);
 
@@ -94,10 +95,19 @@ AutologinStrategy::AutologinStrategy(VisionDefinition vDef, L2AloneConfig& confi
 
 	auto bDef = vDef.wDefs[L2Window::WELCOME].bDefs[0];
 	capturer = new ButtonHueDistributionCapturer(vDef.wWidth, vDef.wHeight, bDef);
+
 	inMemoryVisionCache = new InMemoryVisionCache();
 	runtimeVisionInitializer = new RuntimeVisionInitializer(capturer, config.debugBmpPath);
 	vInitializer = new CachedVisionInitializer(inMemoryVisionCache, runtimeVisionInitializer);
 	wClassifier = new WindowsClassifier(vDef, config.debugBmpPath);
+}
+
+AutologinStrategy::~AutologinStrategy() {
+	delete wClassifier;
+	delete capturer;
+	delete vInitializer;
+	delete inMemoryVisionCache;
+	delete runtimeVisionInitializer;
 }
 
 bool AutologinStrategy::fastFlowSupported(L2CharSlot slot) {
@@ -109,6 +119,7 @@ bool AutologinStrategy::stopFastLogin(L2Window w) {
 }
 
 L2Window AutologinStrategy::doFastAutoLogin(HWND hWindow) {
+	
 	for (int i = 0; i < 30; ++i) {
 		for (int j = 0; j < 3; ++j) {
 			Sleep(config.inputInitialDelay);
@@ -332,8 +343,10 @@ void AutologinStrategy::selectCharacter(HWND hWindow, SelectCharacterDefinition&
 L2Window AutologinStrategy::captureAuthResultWindows(HWND hWindow) {
 	std::vector<L2Window> windows;
 	windows.push_back(L2Window::AGREEMENT);
-	windows.push_back(L2Window::INCORRECT_PASSWORD);
-	windows.push_back(L2Window::ACCOUNT_IN_USE);
+
+	// TODO: Uncomment
+	//windows.push_back(L2Window::INCORRECT_PASSWORD);
+	//windows.push_back(L2Window::ACCOUNT_IN_USE);
 
 	HwndVisionProvider provider(hWindow);
 	return transitWindow(hWindow, windows);

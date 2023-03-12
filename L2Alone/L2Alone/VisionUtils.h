@@ -5,6 +5,7 @@
 #include <map>
 
 #include "Logger.h"
+#include "WindowDefinition.h"
 
 using namespace std;
 
@@ -491,6 +492,9 @@ void initHDistribution(BitMapInfo& bitMapInfo, int x, int y, int width, int heig
 		for (int ix = x; ix < x + width; ix++) {
 			int h, s, v;
 			getPixelHsv(bitMapInfo, ix, iy, h, s, v);
+
+			// TODO: REMOVE
+			//drawPixelRgb(bitMapInfo, ix, iy, 255, 0, 0);
 
 			tmp[h] += 100.0 / total;
 		}

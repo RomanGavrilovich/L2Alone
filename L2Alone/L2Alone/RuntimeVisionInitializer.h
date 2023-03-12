@@ -37,6 +37,11 @@ VisionParams RuntimeVisionInitializer::init(VisionProvider& vp, int timeoutMs) {
 				VisionParams vp;
 				capturer->capture(bitMapInfo, vp.hRef);
 
+				int systemMessageLength = getSystemMessageLength(bitMapInfo);
+				logger.log("Welcome screen system message length: ", systemMessageLength);
+
+				vp.systemMessageLength = systemMessageLength;
+
 				if (debugFolder.size() > 0) {
 					writeBmpToFile((debugFolder + "/Ref.bmp").c_str(), bitMapInfo);
 				}

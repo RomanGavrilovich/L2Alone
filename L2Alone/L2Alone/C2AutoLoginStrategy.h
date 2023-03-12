@@ -25,7 +25,9 @@ C2AutologinStrategy::C2AutologinStrategy(L2AloneConfig &config) : AutologinStrat
 }
 
 bool C2AutologinStrategy::fastFlowSupported(L2CharSlot slot) {
-	return true;
+
+	// TODO: Replace to 'true'
+	return false;
 }
 
 bool C2AutologinStrategy::stopFastLogin(L2Window w) {

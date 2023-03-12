@@ -49,9 +49,9 @@ struct L2AloneConfig {
 	bool fastFlowEnabled = true;
 
 	// Input
-	bool inputInitialDelay = 100;
-	bool inputFallbackDelay = 1000;
-	bool windowTransitionRetryCount = 3;
+	int inputInitialDelay = 100;
+	int inputFallbackDelay = 1000;
+	int windowTransitionRetryCount = 3;
 
 	// Debugging
 	bool debugSaveRefScreen = false;

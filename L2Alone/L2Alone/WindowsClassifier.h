@@ -19,6 +19,9 @@
 
 using namespace std;
 
+// TODO: Move to parameters
+bool TRACE_CAPTURES = false;
+
 
 class WindowsClassifier {
 
@@ -49,6 +52,8 @@ WindowsClassifier::WindowsClassifier(VisionDefinition& vDef, string saveFailureP
 
 void WindowsClassifier::init(VisionParams& vParams) {
 	this->vParams = vParams;
+	vDef.wDefs[L2Window::WELCOME].textMaxSize = vParams.systemMessageLength + 5;
+	vDef.wDefs[L2Window::WELCOME].textMinSize = vParams.systemMessageLength - 5;
 }
 
 WindowsClassifier::~WindowsClassifier() {
@@ -58,7 +63,7 @@ bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
 
 	auto wDef = vDef.wDefs[window];
 
-	bool res = false;
+	bool res = true;
 	for (auto& bDef : wDef.bDefs) {
 		ButtonHueDistributionCapturer capturer(vDef.wWidth, vDef.wHeight, bDef);
 
@@ -92,13 +97,14 @@ bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
 
 #ifdef TEST
 	for (auto& bDef : wDef.bDefs) {
-		//debugDraw(bmi, vDef.wWidth, vDef.wHeight, bDef);
+		debugDraw(bmi, vDef.wWidth, vDef.wHeight, bDef);
 	}
 #endif // TEST
 
 	return res;
 }
 
+int k = 0;
 L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>& windows, int timeoutMs) {
 
 	int sleepTime = 100;
@@ -133,28 +139,49 @@ L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>&
 
 				if (w != UNKNOWN) {
 					logger.log("Capture window result: ", getL2WindowName(w));
+
+					if (TRACE_CAPTURES) {
+						stringstream ssOut;
+						ssOut << saveFailurePath << "/" << k << "_S_" << ss.str() << "_" << getL2WindowName(w) << ".bmp";
+
+						logger.log("Capture window found ", k);
+						writeBmpToFile(ssOut.str().c_str(), bitMapInfo);
+					}
+
 					break;
 				}
-				else if (
-					saveFailurePath.size() > 0
-					&& !failureSaved
-					&& GetTickCount64() > endTick - 2 * sleepTime) {
-					
-					logger.log("Capture window failure");
-					
-					failureSaved = true;
+				else {
 
-					string debugFile = saveFailurePath + "/" + ss.str() + ".bmp";
-					writeBmpToFile(debugFile.c_str(), bitMapInfo);
+					if (TRACE_CAPTURES) {
+						stringstream ssOut;
+						ssOut << saveFailurePath << "/" << k << "_F_" << ss.str() << ".bmp";
+
+						logger.log("Capture window failure ", k);
+						writeBmpToFile(ssOut.str().c_str(), bitMapInfo);
+						k++;
+					}
+					else {
+						if (saveFailurePath.size() > 0
+							&& !failureSaved
+							&& GetTickCount64() > endTick - 2 * sleepTime) {
+
+							logger.log("Capture window failure");
+
+							failureSaved = true;
+
+							string debugFile = saveFailurePath + "/" + ss.str() + ".bmp";
+							writeBmpToFile(debugFile.c_str(), bitMapInfo);
+						}
+					}
 				}
 
 				vp.dispose(bitMapInfo);
-			}
 
-			Sleep(sleepTime);
-			sleepTime = sleepTime * 2;
-			if (sleepTime > maxSleepTime) {
-				sleepTime = maxSleepTime;
+				Sleep(sleepTime);
+				sleepTime = sleepTime * 2;
+				if (sleepTime > maxSleepTime) {
+					sleepTime = maxSleepTime;
+				}
 			}
 		}
 		catch (exception e) {
@@ -175,6 +202,7 @@ L2Window WindowsClassifier::waitForWindow(VisionProvider& vp, L2Window window, i
 L2Window WindowsClassifier::waitForWindow(VisionProvider& vp, int timeoutMs) {
 	vector<L2Window> v;
 
+	v.push_back(L2Window::WELCOME);
 	v.push_back(L2Window::AGREEMENT);
 	v.push_back(L2Window::INCORRECT_PASSWORD);
 	v.push_back(L2Window::ACCOUNT_IN_USE);
