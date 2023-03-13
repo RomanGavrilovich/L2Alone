@@ -174,19 +174,19 @@ int autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& c
 		L2WindowCreatedEvent d = waitL2WindowCreated(pi.dwProcessId);
 
 		auto hotKeyHandler = shared_ptr<L2QuitKeyHandler>(new L2QuitKeyHandler(d.processId, &config.accountHotKeys));
-		eventService.setKeyboardHandler(d.hWindow, hotKeyHandler);
+		eventService.setKeyboardHandler(pi.dwProcessId, hotKeyHandler);
 
 		auto pvpHandler = shared_ptr<L2PvpModeHandler>(new L2PvpModeHandler());
-		eventService.setKeyboardHandler(d.hWindow, pvpHandler);
-		eventService.setFocusHandler(d.hWindow, pvpHandler);
+		eventService.setKeyboardHandler(pi.dwProcessId, pvpHandler);
+		eventService.setFocusHandler(pi.dwProcessId, pvpHandler);
 
 		autologinStrategy->doAutologin((HWND)d.hWindow, login, password, slot);
 
 		WaitForSingleObject(pi.hProcess, INFINITE);
 
-		eventService.removeKeyboardHandler(d.hWindow, hotKeyHandler);
-		eventService.removeKeyboardHandler(d.hWindow, pvpHandler);
-		eventService.removeFocusHandler(d.hWindow, pvpHandler);
+		eventService.removeKeyboardHandler(pi.dwProcessId, hotKeyHandler);
+		eventService.removeKeyboardHandler(pi.dwProcessId, pvpHandler);
+		eventService.removeFocusHandler(pi.dwProcessId, pvpHandler);
 
 		DWORD exitCode;
 		if (!GetExitCodeProcess(pi.hProcess, &exitCode)) {

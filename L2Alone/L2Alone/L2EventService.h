@@ -27,11 +27,11 @@ public:
 	bool publishKeyboard(KBDLLHOOKSTRUCT* kbdll, bool keyDown);
 	bool publishMouse(WPARAM wParam, MSLLHOOKSTRUCT* msll);
 
-	void setKeyboardHandler(HWND hWindow, shared_ptr<L2KeyboardEventHandler> handler);
-	void removeKeyboardHandler(HWND hWindow, shared_ptr<L2KeyboardEventHandler> handler);
+	void setKeyboardHandler(DWORD dwProcessId, shared_ptr<L2KeyboardEventHandler> handler);
+	void removeKeyboardHandler(DWORD dwProcessId, shared_ptr<L2KeyboardEventHandler> handler);
 
-	void setFocusHandler(HWND hWindow, shared_ptr<L2FocusEventHandler> handler);
-	void removeFocusHandler(HWND hWindow, shared_ptr<L2FocusEventHandler> handler);
+	void setFocusHandler(DWORD dwProcessId, shared_ptr<L2FocusEventHandler> handler);
+	void removeFocusHandler(DWORD dwProcessId, shared_ptr<L2FocusEventHandler> handler);
 
 	bool waitMutex();
 	void releaseMutex();
@@ -41,13 +41,13 @@ public:
 
 private:
 	map<DWORD, shared_ptr<promise<L2WindowCreatedEvent>>> waitL2WindowPromises;
-	map<HWND, vector<shared_ptr<L2KeyboardEventHandler>>> windowKeyHandlers;
-	map<HWND, vector<shared_ptr<L2FocusEventHandler>>> windowFocusHandlers;
+	map<DWORD, vector<shared_ptr<L2KeyboardEventHandler>>> windowKeyHandlers;
+	map<DWORD, vector<shared_ptr<L2FocusEventHandler>>> windowFocusHandlers;
 
 	DWORD tEventLoopNativeId;
 	thread* tEventLoop;
 
-	HWND activeHwnd;
+	DWORD dwActiveProcessId;
 
 	HANDLE hEventLockMutex;
 	vector<L2EventLockData> eventLockData;
@@ -312,38 +312,44 @@ void L2EventService::publishEventObjCreate(HWND hWnd, DWORD dwEventThread) {
 }
 
 void L2EventService::publishForegroundWindowChanged(HWND hWindow, DWORD dwEventThread) {
-	activeHwnd = hWindow;
 
-	for (auto& pair : windowFocusHandlers) {
-		if (pair.first == activeHwnd) {
-			for (auto& handler : pair.second) {
-				handler->onFocusReceived();
+	DWORD windowProcessId;
+	GetWindowThreadProcessId(hWindow, &windowProcessId);
+
+	if (windowProcessId != dwActiveProcessId) {
+		dwActiveProcessId = windowProcessId;
+
+		for (auto& pair : windowFocusHandlers) {
+			if (pair.first == dwActiveProcessId) {
+				for (auto& handler : pair.second) {
+					handler->onFocusReceived();
+				}
 			}
-		}
-		else {
-			for (auto& handler : pair.second) {
-				handler->onFocusLost();
+			else {
+				for (auto& handler : pair.second) {
+					handler->onFocusLost();
+				}
 			}
 		}
 	}
 }
 
-void L2EventService::setKeyboardHandler(HWND hWindow, shared_ptr<L2KeyboardEventHandler> handler) {
+void L2EventService::setKeyboardHandler(DWORD dwProcessId, shared_ptr<L2KeyboardEventHandler> handler) {
 
 	if (windowKeyHandlers.size() == 0) {
 		PostThreadMessage(tEventLoopNativeId, L2WM_KEY_LL_HOOK, 1, 0);
 	}
 
-	windowKeyHandlers[hWindow].push_back(handler);
+	windowKeyHandlers[dwProcessId].push_back(handler);
 }
 
-void L2EventService::removeKeyboardHandler(HWND hWindow, shared_ptr<L2KeyboardEventHandler> handler) {
+void L2EventService::removeKeyboardHandler(DWORD dwProcessId, shared_ptr<L2KeyboardEventHandler> handler) {
 
-if (windowKeyHandlers.count(hWindow) == 0) {
-	logger.warn("There is no key handlers for window ", hWindow);
+if (windowKeyHandlers.count(dwProcessId) == 0) {
+	logger.warn("There is no key handlers for process ", dwProcessId);
 }
 
-auto& handlers = windowKeyHandlers[hWindow];
+auto& handlers = windowKeyHandlers[dwProcessId];
 auto pErase = handlers.erase(remove_if(
 	handlers.begin(),
 	handlers.end(),
@@ -351,13 +357,13 @@ auto pErase = handlers.erase(remove_if(
 );
 
 if (handlers.size() == 0) {
-	windowKeyHandlers.erase(hWindow);
+	windowKeyHandlers.erase(dwProcessId);
 }
 }
 
-void L2EventService::setFocusHandler(HWND hWindow, shared_ptr<L2FocusEventHandler> handler) {
-	windowFocusHandlers[hWindow].push_back(handler);
-	if (hWindow != activeHwnd) {
+void L2EventService::setFocusHandler(DWORD dwProcessId, shared_ptr<L2FocusEventHandler> handler) {
+	windowFocusHandlers[dwProcessId].push_back(handler);
+	if (dwProcessId != dwActiveProcessId) {
 		handler->onFocusLost();
 	}
 	else {
@@ -365,13 +371,13 @@ void L2EventService::setFocusHandler(HWND hWindow, shared_ptr<L2FocusEventHandle
 	}
 }
 
-void L2EventService::removeFocusHandler(HWND hWindow, shared_ptr<L2FocusEventHandler> handler) {
+void L2EventService::removeFocusHandler(DWORD dwProcessId, shared_ptr<L2FocusEventHandler> handler) {
 
-	if (windowFocusHandlers.count(hWindow) == 0) {
-		logger.warn("There is no focus handlers for window ", hWindow);
+	if (windowFocusHandlers.count(dwProcessId) == 0) {
+		logger.warn("There is no focus handlers for process ", dwProcessId);
 	}
 
-	auto& handlers = windowFocusHandlers[hWindow];
+	auto& handlers = windowFocusHandlers[dwProcessId];
 	auto pErase = handlers.erase(remove_if(
 		handlers.begin(),
 		handlers.end(),
@@ -379,7 +385,7 @@ void L2EventService::removeFocusHandler(HWND hWindow, shared_ptr<L2FocusEventHan
 	);
 
 	if (handlers.size() == 0) {
-		windowFocusHandlers.erase(hWindow);
+		windowFocusHandlers.erase(dwProcessId);
 	}
 }
 
@@ -391,8 +397,8 @@ bool L2EventService::publishKeyboard(KBDLLHOOKSTRUCT* kbdll, bool keyDown) {
 	}
 
 	bool propagate = true;
-	if (windowKeyHandlers.count(activeHwnd) > 0) {
-		auto& handlers = windowKeyHandlers[activeHwnd];
+	if (windowKeyHandlers.count(dwActiveProcessId) > 0) {
+		auto& handlers = windowKeyHandlers[dwActiveProcessId];
 		for (auto& handler : handlers) {
 			if (keyDown) {
 				if (!handler->onKeyDown(kbdll)) {
