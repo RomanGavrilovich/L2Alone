@@ -26,7 +26,7 @@ public:
 					HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, l2ProcessId);
 					TerminateProcess(hProcess, (UINT)exitCode);
 					CloseHandle(hProcess);
-					return true;
+					return false;
 				}
 
 				index++;
