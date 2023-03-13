@@ -201,12 +201,14 @@
     <ClInclude Include="config_utils.h" />
     <ClInclude Include="HwndVisionProvider.h" />
     <ClInclude Include="InMemoryVisionCache.h" />
+    <ClInclude Include="L2EventHandlers.h" />
     <ClInclude Include="L2FocusEventHandler.h" />
     <ClInclude Include="L2PvpModeHandler.h" />
     <ClInclude Include="L2QuitKeyHandler.h" />
     <ClInclude Include="L2EventService.h" />
     <ClInclude Include="L2KeyboardEventHandler.h" />
     <ClInclude Include="L2Events.h" />
+    <ClInclude Include="LayoutManager.h" />
     <ClInclude Include="RuntimeVisionInitializer.h" />
     <ClInclude Include="VisionInitializer.h" />
     <ClInclude Include="VisionProvider.h" />

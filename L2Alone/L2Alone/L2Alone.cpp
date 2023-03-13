@@ -23,6 +23,7 @@
 #include "AutologinStrategy.h"
 #include "C5AutologinStrategy.h"
 #include "C2AutoLoginStrategy.h"
+#include "LayoutManager.h"
 
 using namespace std;
 
@@ -40,6 +41,8 @@ int autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& c
 void showMessage(string message);
 bool isRunnedFromExe(string process);
 L2WindowCreatedEvent waitL2WindowCreated(int processId);
+
+shared_ptr<LayoutManager> layoutManager(new LayoutManager());
 
 int main(int argc, char* argv[])
 {
@@ -180,13 +183,26 @@ int autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& c
 		eventService.setKeyboardHandler(pi.dwProcessId, pvpHandler);
 		eventService.setFocusHandler(pi.dwProcessId, pvpHandler);
 
-		autologinStrategy->doAutologin((HWND)d.hWindow, login, password, slot);
+		autologinStrategy->doAutologin(d.hWindow, login, password, slot);
+
+		RECT layout;
+		if (layoutManager->getWindowLayout(layout)) {
+			WINDOWPLACEMENT wp;
+			wp.length = sizeof(WINDOWPLACEMENT);
+			GetWindowPlacement(d.hWindow, &wp);
+
+			wp.rcNormalPosition = layout;
+			SetWindowPlacement(d.hWindow, &wp);
+		}
+
+		eventService.setWindowRectChangeHandler(d.hWindow, layoutManager);
 
 		WaitForSingleObject(pi.hProcess, INFINITE);
 
 		eventService.removeKeyboardHandler(pi.dwProcessId, hotKeyHandler);
 		eventService.removeKeyboardHandler(pi.dwProcessId, pvpHandler);
 		eventService.removeFocusHandler(pi.dwProcessId, pvpHandler);
+		eventService.removeWindowRectChange(d.hWindow, layoutManager);
 
 		DWORD exitCode;
 		if (!GetExitCodeProcess(pi.hProcess, &exitCode)) {
