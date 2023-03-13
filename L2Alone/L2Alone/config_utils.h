@@ -21,6 +21,7 @@
 
 // Features
 #define FAST_FLOW_ENABLED "FastFlowEnabled"
+#define LAYOUT_MANAGER "LayoutManagerEnabled"
 #define ACCOUNT_KEY "Account."
 
 // Debugging options
@@ -50,6 +51,7 @@ struct L2AloneConfig {
 	int mouseInputDelay = 0;
 	int visionInitTimeout = 10000;
 	bool fastFlowEnabled = true;
+	bool layoutManager = false;
 
 	// Input
 	int inputInitialDelay = 100;
@@ -161,6 +163,10 @@ L2AloneConfig loadL2AloneConfig() {
 			else if (k == ACCOUNT_IN_USE_DELAY) {
 				config.accountInUseDelay = stoi(trim(v));
 				logger.log("Account in use delay: ", config.accountInUseDelay);
+			}
+			else if (k == LAYOUT_MANAGER) {
+				config.layoutManager = stoi(trim(v));
+				logger.log("Layout manager: ", config.layoutManager);
 			}
 		}
 	}

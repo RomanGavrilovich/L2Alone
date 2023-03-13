@@ -42,7 +42,6 @@ int getPixelIndex(BitMapInfo& bitMapInfo, int x, int y);
 void rgbToHsv(int R, int G, int B, int& H, int& S, int& V);
 void drawPixelRgb(BitMapInfo& bitMapInfo, int x, int y, int r, int g, int hasHorizontalBorder);
 void getPixelHsv(BitMapInfo& info, int x, int y, int& h, int& s, int& v);
-bool isTextPixel(BitMapInfo& info, int x, int y);
 
 void writeBmpToFile(const char* filename, BitMapInfo& info);
 void drawRect(int startX, int startY, int width, int height, BitMapInfo& info);
@@ -52,20 +51,6 @@ void getPixelHsv(BitMapInfo& info, int x, int y, int& h, int& s, int& v) {
 
 	getPixelRgb(info, x, y, r, g, hasHorizontalBorder);
 	rgbToHsv(r, g, hasHorizontalBorder, h, s, v);
-}
-
-bool isTextPixel(BitMapInfo& info, int x, int y) {
-
-	int expectedH = 300;
-
-	int h, s, v;
-	getPixelHsv(info, x, y, h, s, v);
-
-	if (h == expectedH) {
-		return true;
-	}
-
-	return false;
 }
 
 BitMapInfo createBitMapInfo(HBITMAP hBitmap) {
@@ -252,49 +237,6 @@ string getL2WindowName(L2Window window) {
 	if (window == SERVERS) return "SERVERS";
 	if (window == CHARACTERS) return "CHARACTERS";
 	return "UNDEFINED";
-}
-
-bool hasTextVertical(BitMapInfo& bitMapInfo, int x) {
-
-	int offset = 20;
-	int height = 10;
-
-	for (int i = offset; i < offset + height; ++i) {
-		if (isTextPixel(bitMapInfo, x, i)) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-int getSystemMessageLength(BitMapInfo& bitMapInfo) {
-
-	int centerX = bitMapInfo.width / 2;
-	int maxNoTextPixelCount = 10;
-
-	int noTextPixelCount = 0;
-	int startPixelX = -1;
-	for (int i = centerX; i >= 0; --i) {
-
-		if (hasTextVertical(bitMapInfo, i)) {
-			startPixelX = i;
-			noTextPixelCount = 0;
-		}
-		else {
-			noTextPixelCount++;
-		}
-
-		if (noTextPixelCount == maxNoTextPixelCount) {
-			noTextPixelCount = 0;
-			break;
-		}
-	}
-	if (startPixelX == -1) {
-		return 0;
-	}
-
-	return (centerX - startPixelX) * 2;
 }
 
 Point toLbViaCenterOffset(int rtWidth, int rtHeight, int lbWidth, int lbHeight, int rtX, int rtY) {
@@ -693,3 +635,121 @@ bool hasBorders(int rtWidth, int rtHeight, BitMapInfo& bmi, ButtonDefinition& bD
 
 	return borderFound >= 2;
  }
+
+// Text
+
+struct SystemTextCapture {
+	int h;
+	int s;
+	int v;
+	int length;
+};
+
+struct HsvComparator {
+
+	bool operator()(const HSV& k1, const HSV& k2) const {
+
+		if (k1.h != k2.h) {
+			return k1.h > k2.h;
+		}
+
+		if (k1.s != k2.s) {
+			return k1.s > k2.s;
+		}
+
+		return k1.v > k2.v;
+	}
+};
+
+bool isTextPixel(BitMapInfo& info, int x, int y, HSV& color) {
+
+	int h, s, v;
+	getPixelHsv(info, x, y, h, s, v);
+
+	if (h == color.h && s == color.s && v == color.v) {
+		return true;
+	}
+
+	return false;
+}
+
+bool getTextPixelVertical(BitMapInfo& bitMapInfo, int x, HSV& color) {
+
+	int offset = 22;
+	int height = 10;
+
+	for (int i = offset; i < offset + height; ++i) {
+		if (isTextPixel(bitMapInfo, x, i, color)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+int getSystemMessageLength(BitMapInfo& bitMapInfo, HSV& color) {
+
+	int centerX = bitMapInfo.width / 2;
+	int maxNoTextPixelCount = 10;
+
+	int noTextPixelCount = 0;
+	int startPixelX = -1;
+
+	for (int i = centerX; i >= 0; --i) {
+
+		if (getTextPixelVertical(bitMapInfo, i, color)) {
+
+			startPixelX = i;
+			noTextPixelCount = 0;
+		}
+		else {
+			noTextPixelCount++;
+		}
+
+		if (noTextPixelCount == maxNoTextPixelCount) {
+			noTextPixelCount = 0;
+			break;
+		}
+	}
+	if (startPixelX == -1) {
+		return 0;
+	}
+
+	return (centerX - startPixelX) * 2;
+}
+
+
+void captureTextReferenceColor(BitMapInfo& bmi, HSV &textColor) {
+
+	int textHeight = 10;
+	int textOffset = 22;
+
+	int captureWidth = 30;
+
+	int textY = bmi.height - textOffset;
+	int centerX = bmi.width / 2;
+
+	int startX = centerX - captureWidth / 2;
+
+	map<HSV, int, HsvComparator> hsvCountMap;
+
+	for(int x = startX; x < startX + captureWidth; ++x) {
+		for (int y = textOffset; y < textOffset + textHeight; ++y) {
+			HSV hsv;
+			getPixelHsv(bmi, x, y, hsv.h, hsv.s, hsv.v);
+
+			hsvCountMap[hsv] += 1;
+		}
+	}
+
+	HSV maxHsv;
+	int maxHsvCount = 0;
+	for (auto& pairToCount : hsvCountMap) {
+		if (pairToCount.second > maxHsvCount) {
+			maxHsvCount = pairToCount.second;
+			maxHsv = pairToCount.first;
+		}
+	}
+
+	textColor = maxHsv;
+}

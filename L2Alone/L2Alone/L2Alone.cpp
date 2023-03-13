@@ -185,24 +185,31 @@ int autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& c
 
 		autologinStrategy->doAutologin(d.hWindow, login, password, slot);
 
-		RECT layout;
-		if (layoutManager->getWindowLayout(layout)) {
-			WINDOWPLACEMENT wp;
-			wp.length = sizeof(WINDOWPLACEMENT);
-			GetWindowPlacement(d.hWindow, &wp);
+		if (layoutManager) {
+			RECT layout;
+			if (layoutManager->getWindowLayout(layout)) {
+				WINDOWPLACEMENT wp;
+				wp.length = sizeof(WINDOWPLACEMENT);
+				GetWindowPlacement(d.hWindow, &wp);
 
-			wp.rcNormalPosition = layout;
-			SetWindowPlacement(d.hWindow, &wp);
+				wp.rcNormalPosition = layout;
+				SetWindowPlacement(d.hWindow, &wp);
+			}
 		}
 
-		eventService.setWindowRectChangeHandler(d.hWindow, layoutManager);
+		if (config.layoutManager) {
+			eventService.setWindowRectChangeHandler(d.hWindow, layoutManager);
+		}
 
 		WaitForSingleObject(pi.hProcess, INFINITE);
+
+		if (config.layoutManager) {
+			eventService.removeWindowRectChange(d.hWindow, layoutManager);
+		}
 
 		eventService.removeKeyboardHandler(pi.dwProcessId, hotKeyHandler);
 		eventService.removeKeyboardHandler(pi.dwProcessId, pvpHandler);
 		eventService.removeFocusHandler(pi.dwProcessId, pvpHandler);
-		eventService.removeWindowRectChange(d.hWindow, layoutManager);
 
 		DWORD exitCode;
 		if (!GetExitCodeProcess(pi.hProcess, &exitCode)) {

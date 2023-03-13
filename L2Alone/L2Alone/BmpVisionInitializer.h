@@ -16,13 +16,18 @@ public:
 	}
 
 	VisionParams init(VisionProvider& provider, int timeoutMs) override {
+		
+		VisionParams vp;
+		
 		BitMapInfo bmi;
 		provider.capture(bmi);
 
-		map<int, double> distr;
-		capturer->capture(bmi, distr);
+		capturer->capture(bmi, vp.hRef);
 
-		return VisionParams{ distr, getSystemMessageLength(bmi)};
+		captureTextReferenceColor(bmi, vp.textColor);
+		vp.systemMessageLength = getSystemMessageLength(bmi, vp.textColor);
+
+		return vp;
 	}
 
 private:

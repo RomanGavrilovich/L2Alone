@@ -79,7 +79,7 @@ L2Window testL2WindowClassifier(string& pathToTestBmp, L2Window expected, Window
 
 void debugCollision(L2Version version, L2Window expected, L2Window collision, string pathToSuit) {
 
-	string referenceImage = pathToSuit + "/WELCOME.bmp";
+	string referenceImage = pathToSuit + "/REF.bmp";
 
 	VisionDefinition vDef;
 	if (version == L2Version::C5) {
@@ -132,13 +132,14 @@ void debugCollision(L2Version version, L2Window expected, L2Window collision, st
 void testL2VersionSuite(L2Version version, string& pathToSuit, TestL2VersionReport& report) {
 
 	vector<L2Window> windowsToTest;
+	windowsToTest.push_back(L2Window::WELCOME);
 	windowsToTest.push_back(L2Window::AGREEMENT);
 	windowsToTest.push_back(L2Window::ACCOUNT_IN_USE);
 	windowsToTest.push_back(L2Window::INCORRECT_PASSWORD);
 	windowsToTest.push_back(L2Window::SERVERS);
 	windowsToTest.push_back(L2Window::CHARACTERS);
 
-	string referenceImage = pathToSuit + "/WELCOME.bmp";
+	string referenceImage = pathToSuit + "/REF.bmp";
 
 	VisionDefinition vDef;
 	if (version == L2Version::C5) {
@@ -192,6 +193,8 @@ void testL2Version(TestL2VersionReport& report) {
 int main(int argc, char* argv[])
 {
 	CAPTURE_ALL_WINDOWS = false;
+
+	//debugCollision(L2Version::C5, L2Window::WELCOME, L2Window::WELCOME, "TestResources/Vision/C5/1564x837");
 
 	vector<TestL2VersionReport> reports;
 	reports.push_back(TestL2VersionReport{ L2Version::C5 });

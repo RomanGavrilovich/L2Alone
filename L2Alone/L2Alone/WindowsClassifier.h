@@ -88,7 +88,7 @@ bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
 
 	if (res) {
 		if (wDef.textMaxSize > 0 && wDef.textMinSize > 0) {
-			auto length = getSystemMessageLength(bmi);
+			auto length = getSystemMessageLength(bmi, vParams.textColor);
 			if (!(wDef.textMinSize <= length && length <= wDef.textMaxSize)) {
 				res = false;
 			}
@@ -98,6 +98,14 @@ bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
 #ifdef TEST
 	for (auto& bDef : wDef.bDefs) {
 		debugDraw(bmi, vDef.wWidth, vDef.wHeight, bDef);
+	}
+
+	if (wDef.textMaxSize > 0 && wDef.textMinSize > 0) {
+		auto length = getSystemMessageLength(bmi, vParams.textColor);
+		int centerX = bmi.width / 2;
+		centerX -= length / 2;
+
+		drawRect(centerX, 0, length, 50, bmi);
 	}
 #endif // TEST
 

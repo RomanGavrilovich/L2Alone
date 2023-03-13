@@ -37,7 +37,9 @@ VisionParams RuntimeVisionInitializer::init(VisionProvider& vp, int timeoutMs) {
 				VisionParams vp;
 				capturer->capture(bitMapInfo, vp.hRef);
 
-				int systemMessageLength = getSystemMessageLength(bitMapInfo);
+				captureTextReferenceColor(bitMapInfo, vp.textColor);
+				
+				int systemMessageLength = getSystemMessageLength(bitMapInfo, vp.textColor);
 				logger.log("Welcome screen system message length: ", systemMessageLength);
 
 				vp.systemMessageLength = systemMessageLength;
