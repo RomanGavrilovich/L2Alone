@@ -21,7 +21,7 @@
 
 // Features
 #define FAST_FLOW_ENABLED "FastFlowEnabled"
-#define ACCOUNT_KEY "Account"
+#define ACCOUNT_KEY "Account."
 
 // Debugging options
 #define DEBUGGING_ENABLED "DebugEnabled"
