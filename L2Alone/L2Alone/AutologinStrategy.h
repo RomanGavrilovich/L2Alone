@@ -87,7 +87,7 @@ private:
 	L2Window transitWindow(HWND hWindow, L2Window to);
 	L2Window transitWindow(HWND hWindow, vector<L2Window>& to);
 
-	L2Window doFastAutoLogin(HWND hWindow);
+	L2Window doFastAutoLogin(HWND hWindow, bool fromAccountInUse);
 };
 
 AutologinStrategy::AutologinStrategy(VisionDefinition vDef, L2AloneConfig& config) {
@@ -118,16 +118,19 @@ bool AutologinStrategy::stopFastLogin(L2Window w) {
 	return false;
 }
 
-L2Window AutologinStrategy::doFastAutoLogin(HWND hWindow) {
+L2Window AutologinStrategy::doFastAutoLogin(HWND hWindow, bool fromAccountInUse) {
 	
-	for (int i = 0; i < 30; ++i) {
-		for (int j = 0; j < 3; ++j) {
-			Sleep(config.inputInitialDelay);
-			postControlMessage(hWindow, VK_RETURN);
-		}
+	for (int i = 0; i < 50; ++i) {
+		Sleep(config.inputInitialDelay);
+		postControlMessage(hWindow, VK_RETURN);
 
 		HwndVisionProvider provider(hWindow);
 		auto w = wClassifier->waitForWindow(provider, 100);
+
+		if (w == ACCOUNT_IN_USE && fromAccountInUse) {
+			continue;
+		}
+
 		if (w == L2Window::ACCOUNT_IN_USE || w == L2Window::INCORRECT_PASSWORD || w == L2Window::UNKNOWN || stopFastLogin(w)) {
 			return w;
 		}
@@ -152,11 +155,13 @@ void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passwor
 	postCredentials(hWindow, login, password);
 	if (config.fastFlowEnabled && fastFlowSupported(slot)) {
 
+		bool fromAccountInUse = false;
 		for (int i = 0; i < 2; ++i) {
-			L2Window w = doFastAutoLogin(hWindow);
+			L2Window w = doFastAutoLogin(hWindow, fromAccountInUse);
 			if (w == ACCOUNT_IN_USE) {
 				logger.log("Account in use");
 				onAccountInUse(hWindow);
+				fromAccountInUse = true;
 			}
 			else if (w == INCORRECT_PASSWORD) {
 				throw exception("Invalid credentials entered");
