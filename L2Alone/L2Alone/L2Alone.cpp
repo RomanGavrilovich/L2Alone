@@ -36,7 +36,7 @@ struct FindL2WindowParams {
 #define L2_ALONE_CONFIG_FILE_NAME "L2Alone.config"
 
 string getLogFilePath(string absFilePath);
-int autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& config, AutologinStrategy* s);
+void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& config, AutologinStrategy* s);
 
 void showMessage(string message);
 bool isRunnedFromExe(string process);
@@ -117,11 +117,7 @@ int main(int argc, char* argv[])
 			throw exception("Unsupported L2 version");
 		}
 
-		int nextAutoLoginIndex = autoLoginL2(account, password, slot, config, autologinStrategy);
-		while (nextAutoLoginIndex >= 0) {
-			L2AccountHotKey nextConfig = config.accountHotKeys[nextAutoLoginIndex];
-			nextAutoLoginIndex = autoLoginL2(nextConfig.login, nextConfig.password, nextConfig.slot, config, autologinStrategy);
-		}
+		autoLoginL2(account, password, slot, config, autologinStrategy);
 
 		return 0;
 	}
@@ -139,99 +135,97 @@ void showMessage(string message) {
 	MessageBoxA(NULL, message.c_str(), APP_NAME, MB_OK);
 }
 
-int autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& config, AutologinStrategy *autologinStrategy) {
+void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& config, AutologinStrategy *autologinStrategy) {
 
-	STARTUPINFOA si;
-	PROCESS_INFORMATION pi;
-	ZeroMemory(&si, sizeof(si));
-	si.cb = sizeof(si);
-	ZeroMemory(&pi, sizeof(pi));
+	auto lastFailureTime = GetTickCount64();
+	int minDelayBetweenRecovery = 60000; // 1 min
 
-	string pathToExe = config.pathToL2;
-	string folder = pathToExe.substr(0, pathToExe.length() - 6);
+	while (true) {
+		HANDLE hProcess;
+		DWORD dwProcessId;
+		startProcess(config.pathToL2, hProcess, dwProcessId);
 
-	logger.log("Create L2 process from file: ", config.pathToL2);
+		try {
+			logger.log("L2 process started with id: ", dwProcessId);
 
-	auto r = CreateProcessA(
-		pathToExe.c_str(),   // the path
-		NULL,           // Command line
-		NULL,           // Process handle not inheritable
-		NULL,           // Thread handle not inheritable
-		FALSE,          // Set handle inheritance to FALSE
-		0,              // No creation flags
-		NULL,           // Use parent's environment block
-		folder.c_str(), // Use parent's starting directory 
-		&si,            // Pointer to STARTUPINFO structure
-		&pi             // Pointer to PROCESS_INFORMATION structure (removed extra parentheses)
-	);
+			L2WindowCreatedEvent d = waitL2WindowCreated(dwProcessId);
 
-	if (r == NULL) {
-		stringstream ss;
-		ss << "Can't start L2 process with path " << config.pathToL2.c_str();
-		throw exception(ss.str().c_str());
-	}
+			auto hotKeyHandler = shared_ptr<L2QuitKeyHandler>(new L2QuitKeyHandler(d.processId, &config.accountHotKeys));
+			eventService.setKeyboardHandler(d.hWindow, hotKeyHandler);
 
-	try {
-		logger.log("L2 process started with id: ", pi.dwProcessId);
+			auto pvpHandler = shared_ptr<L2PvpModeHandler>(new L2PvpModeHandler());
+			eventService.setKeyboardHandler(d.hWindow, pvpHandler);
+			eventService.setFocusHandler(d.hWindow, pvpHandler);
 
-		L2WindowCreatedEvent d = waitL2WindowCreated(pi.dwProcessId);
+			autologinStrategy->doAutologin(d.hWindow, login, password, slot);
 
-		auto hotKeyHandler = shared_ptr<L2QuitKeyHandler>(new L2QuitKeyHandler(d.processId, &config.accountHotKeys));
-		eventService.setKeyboardHandler(pi.dwProcessId, hotKeyHandler);
+			if (layoutManager) {
+				RECT layout;
+				if (layoutManager->getWindowLayout(layout)) {
+					WINDOWPLACEMENT wp;
+					wp.length = sizeof(WINDOWPLACEMENT);
+					GetWindowPlacement(d.hWindow, &wp);
 
-		auto pvpHandler = shared_ptr<L2PvpModeHandler>(new L2PvpModeHandler());
-		eventService.setKeyboardHandler(pi.dwProcessId, pvpHandler);
-		eventService.setFocusHandler(pi.dwProcessId, pvpHandler);
-
-		autologinStrategy->doAutologin(d.hWindow, login, password, slot);
-
-		if (layoutManager) {
-			RECT layout;
-			if (layoutManager->getWindowLayout(layout)) {
-				WINDOWPLACEMENT wp;
-				wp.length = sizeof(WINDOWPLACEMENT);
-				GetWindowPlacement(d.hWindow, &wp);
-
-				wp.rcNormalPosition = layout;
-				SetWindowPlacement(d.hWindow, &wp);
+					wp.rcNormalPosition = layout;
+					SetWindowPlacement(d.hWindow, &wp);
+				}
 			}
+
+			if (config.layoutManager) {
+				eventService.setWindowRectChangeHandler(d.hWindow, layoutManager);
+			}
+
+			WaitForSingleObject(hProcess, INFINITE);
+
+			if (config.layoutManager) {
+				eventService.removeWindowRectChange(d.hWindow, layoutManager);
+			}
+
+			eventService.removeKeyboardHandler(d.hWindow, hotKeyHandler);
+			eventService.removeKeyboardHandler(d.hWindow, pvpHandler);
+			eventService.removeFocusHandler(d.hWindow, pvpHandler);
+
+			DWORD exitCode;
+			if (!GetExitCodeProcess(hProcess, &exitCode)) {
+				throw exception("Can't run new window on hot key, because can't get previous process exit code");
+			}
+
+			if (config.crashRecoveryEnabled) {
+				if (exitCode == 1) {
+					if (GetTickCount64() - lastFailureTime > minDelayBetweenRecovery) {
+						logger.log("Recovery on crash");
+						lastFailureTime = GetTickCount64();
+						continue;
+					}
+					else {
+						throw exception("L2 client has issue leading to permanent crashes");
+					}
+				}
+			}
+
+			if (isExitHotKeyCode(exitCode)) {
+				logger.log("Swap L2 window");
+
+				int nextCharIndex = getNextHotKeyIndex(exitCode);
+				auto nextConfig = config.accountHotKeys[nextCharIndex];
+				login = nextConfig.login;
+				password = nextConfig.password;
+				slot = nextConfig.slot;
+				CloseHandle(hProcess);
+				continue;
+			}
+
+			logger.log("Close L2 Alone on L2.exe completion");
+		}
+		catch (exception e) {
+			logger.log("Auto login failure: ", e.what());
+			showMessage(e.what());
+			TerminateProcess(hProcess, 0);
 		}
 
-		if (config.layoutManager) {
-			eventService.setWindowRectChangeHandler(d.hWindow, layoutManager);
-		}
-
-		WaitForSingleObject(pi.hProcess, INFINITE);
-
-		if (config.layoutManager) {
-			eventService.removeWindowRectChange(d.hWindow, layoutManager);
-		}
-
-		eventService.removeKeyboardHandler(pi.dwProcessId, hotKeyHandler);
-		eventService.removeKeyboardHandler(pi.dwProcessId, pvpHandler);
-		eventService.removeFocusHandler(pi.dwProcessId, pvpHandler);
-
-		DWORD exitCode;
-		if (!GetExitCodeProcess(pi.hProcess, &exitCode)) {
-			throw exception("Can't run new window on hot key, because can't get previous process exit code");
-		}
-
-		if (isExitHotKeyCode(exitCode)) {
-			return getNextHotKeyIndex(exitCode);
-		}
-
-		logger.log("Close L2 Alone on L2.exe completion");
+		CloseHandle(hProcess);
+		return;
 	}
-	catch (exception e) {
-		logger.log("Auto login failure: ", e.what());
-		showMessage(e.what());
-		TerminateProcess(pi.hProcess, 0);
-	}
-
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);
-
-	return -1;
 }
 
 L2WindowCreatedEvent waitL2WindowCreated(int processId) {

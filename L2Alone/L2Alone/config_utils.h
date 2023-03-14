@@ -23,6 +23,7 @@
 #define FAST_FLOW_ENABLED "FastFlowEnabled"
 #define LAYOUT_MANAGER "LayoutManagerEnabled"
 #define ACCOUNT_KEY "Account."
+#define CRASH_RECOVERY_ENABLED "CrashRecoveryEnabled"
 
 // Debugging options
 #define DEBUGGING_ENABLED "DebugEnabled"
@@ -52,6 +53,7 @@ struct L2AloneConfig {
 	int visionInitTimeout = 10000;
 	bool fastFlowEnabled = true;
 	bool layoutManager = false;
+	bool crashRecoveryEnabled = false;
 
 	// Input
 	int inputInitialDelay = 100;
@@ -167,6 +169,10 @@ L2AloneConfig loadL2AloneConfig() {
 			else if (k == LAYOUT_MANAGER) {
 				config.layoutManager = stoi(trim(v));
 				logger.log("Layout manager: ", config.layoutManager);
+			}
+			else if (k == CRASH_RECOVERY_ENABLED) {
+				config.crashRecoveryEnabled = stoi(trim(v));
+				logger.log("Crash recovery: ", config.crashRecoveryEnabled);
 			}
 		}
 	}

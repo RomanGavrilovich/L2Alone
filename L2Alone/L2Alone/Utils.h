@@ -100,3 +100,40 @@ void doClick(HWND hWindow, int globalX, int globalY, int timeout) {
 	sendLowLevelMouseEvent(hWindow, globalX, globalY, MOUSEEVENTF_LEFTUP);
 	Sleep(timeout);
 }
+
+void startProcess(string &pathToExe, HANDLE& hProcess, DWORD& dwProcessId) {
+
+	STARTUPINFOA si;
+	PROCESS_INFORMATION pi;
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	ZeroMemory(&pi, sizeof(pi));
+
+	string folder = pathToExe.substr(0, pathToExe.length() - 6);
+
+	logger.log("Create L2 process from file: ", pathToExe);
+
+	auto r = CreateProcessA(
+		pathToExe.c_str(),   // the path
+		NULL,           // Command line
+		NULL,           // Process handle not inheritable
+		NULL,           // Thread handle not inheritable
+		FALSE,          // Set handle inheritance to FALSE
+		0,              // No creation flags
+		NULL,           // Use parent's environment block
+		folder.c_str(), // Use parent's starting directory 
+		&si,            // Pointer to STARTUPINFO structure
+		&pi             // Pointer to PROCESS_INFORMATION structure (removed extra parentheses)
+	);
+
+	if (!r) {
+		stringstream ss;
+		ss << "Can't start L2 process with path: " + pathToExe;
+		throw exception(ss.str().c_str());
+	}
+
+	hProcess = pi.hProcess;
+	dwProcessId = pi.dwProcessId;
+
+	CloseHandle(pi.hThread);
+}
