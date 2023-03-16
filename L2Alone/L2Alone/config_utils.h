@@ -24,6 +24,7 @@
 #define LAYOUT_MANAGER "LayoutManagerEnabled"
 #define ACCOUNT_KEY "Account."
 #define CRASH_RECOVERY_ENABLED "CrashRecoveryEnabled"
+#define QUIT_ENABLED "QuitEnabled"
 
 // Debugging options
 #define DEBUGGING_ENABLED "DebugEnabled"
@@ -54,6 +55,7 @@ struct L2AloneConfig {
 	bool fastFlowEnabled = true;
 	bool layoutManager = false;
 	bool crashRecoveryEnabled = false;
+	bool quitEnabled = true;
 
 	// Input
 	int inputInitialDelay = 100;
@@ -173,6 +175,10 @@ L2AloneConfig loadL2AloneConfig() {
 			else if (k == CRASH_RECOVERY_ENABLED) {
 				config.crashRecoveryEnabled = stoi(trim(v));
 				logger.log("Crash recovery: ", config.crashRecoveryEnabled);
+			}
+			else if (k == QUIT_ENABLED) {
+				config.quitEnabled = stoi(trim(v));
+				logger.log("quit enabled: ", config.quitEnabled);
 			}
 		}
 	}

@@ -151,7 +151,9 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 			L2WindowCreatedEvent d = waitL2WindowCreated(dwProcessId);
 
 			auto hotKeyHandler = shared_ptr<L2QuitKeyHandler>(new L2QuitKeyHandler(d.processId, &config.accountHotKeys));
-			eventService.setKeyboardHandler(d.hWindow, hotKeyHandler);
+			if (config.quitEnabled) {
+				eventService.setKeyboardHandler(d.hWindow, hotKeyHandler);
+			}
 
 			auto pvpHandler = shared_ptr<L2PvpModeHandler>(new L2PvpModeHandler());
 			eventService.setKeyboardHandler(d.hWindow, pvpHandler);
@@ -181,7 +183,9 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 				eventService.removeWindowRectChange(d.hWindow, layoutManager);
 			}
 
-			eventService.removeKeyboardHandler(d.hWindow, hotKeyHandler);
+			if (config.quitEnabled) {
+				eventService.removeKeyboardHandler(d.hWindow, hotKeyHandler);
+			}
 			eventService.removeKeyboardHandler(d.hWindow, pvpHandler);
 			eventService.removeFocusHandler(d.hWindow, pvpHandler);
 
