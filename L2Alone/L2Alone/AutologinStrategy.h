@@ -148,8 +148,8 @@ void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passwor
 	SelectCharacterDefinition charDef;
 	charDef.slot = slot;
 	initSelectCharDefinition(charDef);
-	if (config.mouseInputSpeed > 0) {
-		charDef.actionTimeout = config.mouseInputSpeed;
+	if (config.mouseClickDelay >= 0) {
+		charDef.actionTimeout = config.mouseClickDelay;
 	}
 
 	postCredentials(hWindow, login, password);
@@ -325,11 +325,11 @@ void AutologinStrategy::selectCharacter(HWND hWindow, SelectCharacterDefinition&
 		SetForegroundWindow(hWindow);
 		SetFocus(hWindow);
 
-		doClick(hWindow, dropdownClickX, dropdownClickY, config.mouseInputDelay);
-		doClick(hWindow, dropdownClickX, dropdownClickY, config.mouseInputDelay);
+		doClick(hWindow, dropdownClickX, dropdownClickY, config.mouseEventsDelay);
+		doClick(hWindow, dropdownClickX, dropdownClickY, config.mouseEventsDelay);
 		Sleep(def.actionTimeout);
 
-		doClick(hWindow, charSlotClickX, charSlotClickY, config.mouseInputDelay);
+		doClick(hWindow, charSlotClickX, charSlotClickY, config.mouseEventsDelay);
 		Sleep(def.actionTimeout);
 
 		doClick(hWindow, targetX, targetY, def.actionTimeout);

@@ -12,8 +12,8 @@
 
 #define L2_FILE_CONFIG_KEY "PathToL2exe"
 #define L2_VERSION "L2Version"
-#define MOUSE_INPUT_SPEED "MouseInputSpeed"
-#define MOUSE_INPUT_DELAY "MouseInputDelay"
+#define MOUSE_CLICK_DELAY "MouseClickDelay"
+#define MOUSE_EVENTS_DELAY "MouseEventsDelay"
 #define VISION_INIT_TIMEOUT "VisionInitTimeoutMs"
 #define INPUT_INITIAL_DELAY "InputInitialDelay"
 #define INPUT_FALLBACK_DELAY "InputFallbackDelay"
@@ -49,8 +49,8 @@ struct L2AloneConfig {
 	L2Version version = L2Version::NONE;
 	string pathToL2 = "";
 	vector<L2AccountHotKey> accountHotKeys;
-	int mouseInputSpeed = -1;
-	int mouseInputDelay = 0;
+	int mouseClickDelay = -1;
+	int mouseEventsDelay = 0;
 	int visionInitTimeout = 10000;
 	bool fastFlowEnabled = true;
 	bool layoutManager = false;
@@ -124,9 +124,13 @@ L2AloneConfig loadL2AloneConfig() {
 				config.version = toL2Version(v);
 				logger.log("L2 version: ", config.version);
 			}
-			else if (k == MOUSE_INPUT_SPEED) {
-				config.mouseInputSpeed = stoi(trim(v));
-				logger.log("Mouse input speed: ", config.mouseInputSpeed);
+			else if (k == MOUSE_CLICK_DELAY) {
+				config.mouseClickDelay = stoi(trim(v));
+				logger.log("Mouse input speed: ", config.mouseClickDelay);
+			}
+			else if (k == MOUSE_EVENTS_DELAY) {
+				config.mouseEventsDelay = stoi(trim(v));
+				logger.log("Mouse input delay: ", config.mouseEventsDelay);
 			}
 			else if (k == VISION_INIT_TIMEOUT) {
 				config.visionInitTimeout = stoi(trim(v));
@@ -147,10 +151,6 @@ L2AloneConfig loadL2AloneConfig() {
 			else if (k == FAST_FLOW_ENABLED) {
 				config.fastFlowEnabled = (bool)stoi(trim(v));
 				logger.log("Fast flow enabled: ", config.fastFlowEnabled);
-			}
-			else if (k == MOUSE_INPUT_DELAY) {
-				config.mouseInputDelay = stoi(trim(v));
-				logger.log("Mouse input delay: ", config.mouseInputDelay);
 			}
 			else if (k == INPUT_FALLBACK_DELAY) {
 				config.inputFallbackDelay = stoi(trim(v));
