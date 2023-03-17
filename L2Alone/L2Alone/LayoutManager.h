@@ -5,11 +5,11 @@
 
 #include <Windows.h>
 
-class LayoutManager : public L2WindowRectChangeHandler {
+class LayoutManager {
 
 public:
 	
-	void onWindowChange(RECT r) override {
+	void setWindowLayout(RECT r) {
 		logger.log("Window position changed");
 
 		this->layout = r;

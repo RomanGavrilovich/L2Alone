@@ -54,7 +54,7 @@ struct L2AloneConfig {
 	int mouseEventsDelay = 0;
 	int visionInitTimeout = 10000;
 	bool fastFlowEnabled = true;
-	bool layoutManager = false;
+	bool layoutManagerEnabled = false;
 	bool crashRecoveryEnabled = false;
 	bool quitEnabled = true;
 	bool centerWindow = true;
@@ -171,8 +171,8 @@ L2AloneConfig loadL2AloneConfig() {
 				logger.log("Account in use delay: ", config.accountInUseDelay);
 			}
 			else if (k == LAYOUT_MANAGER) {
-				config.layoutManager = stoi(trim(v));
-				logger.log("Layout manager: ", config.layoutManager);
+				config.layoutManagerEnabled = stoi(trim(v));
+				logger.log("Layout manager: ", config.layoutManagerEnabled);
 			}
 			else if (k == CRASH_RECOVERY_ENABLED) {
 				config.crashRecoveryEnabled = stoi(trim(v));

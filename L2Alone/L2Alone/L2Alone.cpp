@@ -24,6 +24,7 @@
 #include "C5AutologinStrategy.h"
 #include "C2AutoLoginStrategy.h"
 #include "LayoutManager.h"
+#include "LayoutManagerUpdateHandler.h"
 
 using namespace std;
 
@@ -41,8 +42,6 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 void showMessage(string message);
 bool isRunnedFromExe(string process);
 L2WindowCreatedEvent waitL2WindowCreated(int processId, int timeoutMs);
-
-shared_ptr<LayoutManager> layoutManager(new LayoutManager());
 
 int main(int argc, char* argv[])
 {
@@ -137,6 +136,8 @@ void showMessage(string message) {
 
 void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& config, AutologinStrategy *autologinStrategy) {
 
+	shared_ptr<LayoutManager> layoutManager(new LayoutManager());
+
 	auto lastFailureTime = GetTickCount64();
 	int minDelayBetweenRecovery = 60000; // 1 min
 
@@ -162,7 +163,9 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 
 			autologinStrategy->doAutologin(d.hWindow, login, password, slot);
 
-			if (layoutManager) {
+			auto layoutManagerUpdater = shared_ptr<L2WindowRectChangeHandler>(new LayoutManagerUpdateHandler(layoutManager));
+
+			if (config.layoutManagerEnabled) {
 				RECT layout;
 				if (layoutManager->getWindowLayout(layout)) {
 					WINDOWPLACEMENT wp;
@@ -174,14 +177,14 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 				}
 			}
 
-			if (config.layoutManager) {
-				eventService.setWindowRectChangeHandler(d.hWindow, layoutManager);
+			if (config.layoutManagerEnabled) {
+				eventService.setWindowRectChangeHandler(d.hWindow, layoutManagerUpdater);
 			}
 
 			WaitForSingleObject(hProcess, INFINITE);
 
-			if (config.layoutManager) {
-				eventService.removeWindowRectChange(d.hWindow, layoutManager);
+			if (config.layoutManagerEnabled) {
+				eventService.removeWindowRectChange(d.hWindow, layoutManagerUpdater);
 			}
 
 			eventService.removeKeyboardHandler(d.processId, hotKeyHandler);

@@ -34,6 +34,12 @@
     <Filter Include="Resource Files\Test\Vision">
       <UniqueIdentifier>{1624e0e6-1fbc-44b3-b730-b590f5bd8e98}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Layout">
+      <UniqueIdentifier>{4c79f115-9b47-448d-884e-f272089bb7a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Context">
+      <UniqueIdentifier>{c6e39a21-c6ee-4334-a67e-dcde9e0d38cc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="L2Alone.cpp">
@@ -132,7 +138,10 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LayoutManager.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Layout</Filter>
+    </ClInclude>
+    <ClInclude Include="LayoutManagerUpdateHandler.h">
+      <Filter>Header Files\Layout</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
