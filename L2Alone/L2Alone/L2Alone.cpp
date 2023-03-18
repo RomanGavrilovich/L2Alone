@@ -26,6 +26,7 @@
 #include "LayoutManager.h"
 #include "LayoutManagerUpdateHandler.h"
 #include "GlobalFileLayoutCache.h"
+#include "InMemoryLayoutCache.h"
 
 using namespace std;
 
@@ -137,7 +138,8 @@ void showMessage(string message) {
 
 void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& config, AutologinStrategy *autologinStrategy) {
 
-	shared_ptr<LayoutCache> layoutCache(new GlobalFileLayoutCache());
+	shared_ptr<LayoutCache> fileCache(new GlobalFileLayoutCache());
+	shared_ptr<LayoutCache> layoutCache(new InMemoryLayoutCache(fileCache));
 	shared_ptr<LayoutManager> layoutManager(new LayoutManager(layoutCache));
 
 	auto lastFailureTime = GetTickCount64();

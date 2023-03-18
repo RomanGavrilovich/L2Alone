@@ -201,6 +201,7 @@
     <ClInclude Include="config_utils.h" />
     <ClInclude Include="GlobalFileLayoutCache.h" />
     <ClInclude Include="HwndVisionProvider.h" />
+    <ClInclude Include="InMemoryLayoutCache.h" />
     <ClInclude Include="InMemoryVisionCache.h" />
     <ClInclude Include="L2EventHandlers.h" />
     <ClInclude Include="L2FocusEventHandler.h" />

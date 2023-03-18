@@ -149,6 +149,9 @@
     <ClInclude Include="GlobalFileLayoutCache.h">
       <Filter>Header Files\Layout</Filter>
     </ClInclude>
+    <ClInclude Include="InMemoryLayoutCache.h">
+      <Filter>Header Files\Layout</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="L2Alone.rc">
