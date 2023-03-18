@@ -294,17 +294,20 @@ void L2EventService::publishEventObjCreate(HWND hWnd, DWORD dwEventThread) {
 					GetClientRect(hWnd, &rcClient);
 					int wWidth = rcClient.right - rcClient.left;
 					if (wWidth < 650) {
+						postControlMessage(hWnd, VK_RETURN);
 						break;
 					}
 
 					int wHeight = rcClient.bottom - rcClient.top;
 					if (wHeight < 400) {
+						postControlMessage(hWnd, VK_RETURN);
 						break;
 					}
 
 					char szWindowText[256];
 					int nLength = GetWindowTextA(hWnd, szWindowText, sizeof(szWindowText));
 					if (nLength == 0) {
+						postControlMessage(hWnd, VK_RETURN);
 						break;
 					}
 
