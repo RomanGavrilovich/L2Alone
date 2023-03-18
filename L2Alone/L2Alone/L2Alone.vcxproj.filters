@@ -37,9 +37,6 @@
     <Filter Include="Header Files\Layout">
       <UniqueIdentifier>{4c79f115-9b47-448d-884e-f272089bb7a3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Context">
-      <UniqueIdentifier>{c6e39a21-c6ee-4334-a67e-dcde9e0d38cc}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="L2Alone.cpp">
@@ -141,6 +138,15 @@
       <Filter>Header Files\Layout</Filter>
     </ClInclude>
     <ClInclude Include="LayoutManagerUpdateHandler.h">
+      <Filter>Header Files\Layout</Filter>
+    </ClInclude>
+    <ClInclude Include="LayoutConfig.h">
+      <Filter>Header Files\Layout</Filter>
+    </ClInclude>
+    <ClInclude Include="LayoutCache.h">
+      <Filter>Header Files\Layout</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalFileLayoutCache.h">
       <Filter>Header Files\Layout</Filter>
     </ClInclude>
   </ItemGroup>

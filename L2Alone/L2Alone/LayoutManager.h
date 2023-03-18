@@ -2,30 +2,34 @@
 
 #include "L2EventHandlers.h"
 #include "Logger.h"
+#include "LayoutCache.h"
 
 #include <Windows.h>
 
 class LayoutManager {
 
 public:
+
+	LayoutManager(shared_ptr<LayoutCache> pLayoutCache) {
+		this->pLayoutCache = pLayoutCache;
+	}
 	
 	void setWindowLayout(RECT r) {
-		logger.log("Window position changed");
-
-		this->layout = r;
-		initialized = true;
+		auto cacheEntity = LayoutCacheEntity{ r };
+		this->pLayoutCache->save(cacheEntity);
 	}
 
 	bool getWindowLayout(RECT& r) {
+		LayoutCacheEntity cacheEntity;
+		bool loaded = this->pLayoutCache->load(cacheEntity);
 
-		if (initialized) {
-			r = this->layout;
+		if (loaded) {
+			r = cacheEntity.r;
 		}
-		
-		return initialized;
+
+		return loaded;
 	}
 
 private:
-	RECT layout;
-	bool initialized = false;
+	shared_ptr<LayoutCache> pLayoutCache;
 };

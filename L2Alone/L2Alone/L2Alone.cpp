@@ -25,6 +25,7 @@
 #include "C2AutoLoginStrategy.h"
 #include "LayoutManager.h"
 #include "LayoutManagerUpdateHandler.h"
+#include "GlobalFileLayoutCache.h"
 
 using namespace std;
 
@@ -136,7 +137,8 @@ void showMessage(string message) {
 
 void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& config, AutologinStrategy *autologinStrategy) {
 
-	shared_ptr<LayoutManager> layoutManager(new LayoutManager());
+	shared_ptr<LayoutCache> layoutCache(new GlobalFileLayoutCache());
+	shared_ptr<LayoutManager> layoutManager(new LayoutManager(layoutCache));
 
 	auto lastFailureTime = GetTickCount64();
 	int minDelayBetweenRecovery = 60000; // 1 min

@@ -199,6 +199,7 @@
     <ClInclude Include="C5AutologinStrategy.h" />
     <ClInclude Include="CachedVisionInitializer.h" />
     <ClInclude Include="config_utils.h" />
+    <ClInclude Include="GlobalFileLayoutCache.h" />
     <ClInclude Include="HwndVisionProvider.h" />
     <ClInclude Include="InMemoryVisionCache.h" />
     <ClInclude Include="L2EventHandlers.h" />
@@ -208,8 +209,10 @@
     <ClInclude Include="L2EventService.h" />
     <ClInclude Include="L2KeyboardEventHandler.h" />
     <ClInclude Include="L2Events.h" />
+    <ClInclude Include="LayoutConfig.h" />
     <ClInclude Include="LayoutManager.h" />
     <ClInclude Include="LayoutManagerUpdateHandler.h" />
+    <ClInclude Include="LayoutCache.h" />
     <ClInclude Include="RuntimeVisionInitializer.h" />
     <ClInclude Include="VisionInitializer.h" />
     <ClInclude Include="VisionProvider.h" />

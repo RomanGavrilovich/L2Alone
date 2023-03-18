@@ -399,6 +399,10 @@ void L2EventService::removeWindowRectChange(HWND hWindow, shared_ptr<L2WindowRec
 	if (handlers.size() == 0) {
 		windowRectChangeHandlers.erase(hWindow);
 	}
+
+	if (windowRectChangeHandlers.size() == 0) {
+		PostThreadMessage(tEventLoopNativeId, L2WM_WIN_PCHANGE_HOOK, 0, 0);
+	}
 }
 
 void L2EventService::setKeyboardHandler(DWORD processId, shared_ptr<L2KeyboardEventHandler> handler) {
