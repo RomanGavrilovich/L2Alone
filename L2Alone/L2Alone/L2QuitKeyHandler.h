@@ -8,9 +8,10 @@
 class L2QuitKeyHandler : public L2KeyboardEventHandler {
 public:
 
-	L2QuitKeyHandler(DWORD l2ProcessId, vector<L2AccountHotKey>* accountHotKeys) {
+	L2QuitKeyHandler(DWORD l2ProcessId, bool quitEnabled, vector<L2AccountHotKey>* accountHotKeys) {
 		this->l2ProcessId = l2ProcessId;
 		this->accountHotKeys = accountHotKeys;
+		this->quitEnabled = quitEnabled;
 	}
 
 	bool onKeyDown(KBDLLHOOKSTRUCT* kbdll) override {
@@ -35,11 +36,13 @@ public:
 			logger.log("Hot key not found for F", fKey);
 		}
 
-		if (kbdll->vkCode == VK_LMENU && isKeyPressed(VK_ESCAPE)) {
-			HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, l2ProcessId);
-			TerminateProcess(hProcess, 0);
-			CloseHandle(hProcess);
-			return false;
+		if (quitEnabled) {
+			if (kbdll->vkCode == VK_LMENU && isKeyPressed(VK_ESCAPE)) {
+				HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, l2ProcessId);
+				TerminateProcess(hProcess, 0);
+				CloseHandle(hProcess);
+				return false;
+			}
 		}
 
 		return true;
@@ -59,4 +62,5 @@ private:
 	int escapeCount = 0;
 	DWORD l2ProcessId;
 	vector<L2AccountHotKey>* accountHotKeys;
+	bool quitEnabled = false;
 };
