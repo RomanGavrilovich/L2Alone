@@ -151,11 +151,11 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 			L2WindowCreatedEvent d = waitL2WindowCreated(dwProcessId);
 
 			auto hotKeyHandler = shared_ptr<L2QuitKeyHandler>(new L2QuitKeyHandler(d.processId, config.quitEnabled, &config.accountHotKeys));
-			eventService.setKeyboardHandler(d.hWindow, hotKeyHandler);
+			eventService.setKeyboardHandler(d.processId, hotKeyHandler);
 
 			auto pvpHandler = shared_ptr<L2PvpModeHandler>(new L2PvpModeHandler());
-			eventService.setKeyboardHandler(d.hWindow, pvpHandler);
-			eventService.setFocusHandler(d.hWindow, pvpHandler);
+			eventService.setKeyboardHandler(d.processId, pvpHandler);
+			eventService.setFocusHandler(d.processId, pvpHandler);
 
 			autologinStrategy->doAutologin(d.hWindow, login, password, slot);
 
@@ -181,9 +181,9 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 				eventService.removeWindowRectChange(d.hWindow, layoutManager);
 			}
 
-			eventService.removeKeyboardHandler(d.hWindow, hotKeyHandler);
-			eventService.removeKeyboardHandler(d.hWindow, pvpHandler);
-			eventService.removeFocusHandler(d.hWindow, pvpHandler);
+			eventService.removeKeyboardHandler(d.processId, hotKeyHandler);
+			eventService.removeKeyboardHandler(d.processId, pvpHandler);
+			eventService.removeFocusHandler(d.processId, pvpHandler);
 
 			DWORD exitCode;
 			if (!GetExitCodeProcess(hProcess, &exitCode)) {
