@@ -210,7 +210,6 @@
     <ClInclude Include="L2EventService.h" />
     <ClInclude Include="L2KeyboardEventHandler.h" />
     <ClInclude Include="L2Events.h" />
-    <ClInclude Include="LayoutConfig.h" />
     <ClInclude Include="LayoutManager.h" />
     <ClInclude Include="LayoutManagerUpdateHandler.h" />
     <ClInclude Include="LayoutCache.h" />

@@ -140,9 +140,6 @@
     <ClInclude Include="LayoutManagerUpdateHandler.h">
       <Filter>Header Files\Layout</Filter>
     </ClInclude>
-    <ClInclude Include="LayoutConfig.h">
-      <Filter>Header Files\Layout</Filter>
-    </ClInclude>
     <ClInclude Include="LayoutCache.h">
       <Filter>Header Files\Layout</Filter>
     </ClInclude>

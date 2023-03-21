@@ -46,6 +46,19 @@ struct L2AccountHotKey {
 	L2CharSlot slot;
 };
 
+struct WindowLayoutConfig {
+	int monitor;
+	bool fullScreen;
+	int x;
+	int y;
+	int width;
+	int height;
+};
+
+struct LayoutConfig {
+	vector<WindowLayoutConfig> windowConfigs;
+};
+
 struct L2AloneConfig {
 	L2Version version = L2Version::NONE;
 	string pathToL2 = "";
