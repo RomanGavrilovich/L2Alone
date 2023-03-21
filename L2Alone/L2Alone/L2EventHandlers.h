@@ -6,4 +6,4 @@ class L2WindowRectChangeHandler {
 
 public:
 	virtual void onWindowChange(RECT r) = 0;
-};
+};	

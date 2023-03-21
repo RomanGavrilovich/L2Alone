@@ -25,6 +25,7 @@
 #define ACCOUNT_KEY "Account."
 #define CRASH_RECOVERY_ENABLED "CrashRecoveryEnabled"
 #define QUIT_ENABLED "QuitEnabled"
+#define CENTER_WINDOW_ENABLED "CenterWindowEnabled"
 
 // Debugging options
 #define DEBUGGING_ENABLED "DebugEnabled"
@@ -56,6 +57,7 @@ struct L2AloneConfig {
 	bool layoutManager = false;
 	bool crashRecoveryEnabled = false;
 	bool quitEnabled = true;
+	bool centerWindow = true;
 
 	// Input
 	int inputInitialDelay = 100;
@@ -178,7 +180,11 @@ L2AloneConfig loadL2AloneConfig() {
 			}
 			else if (k == QUIT_ENABLED) {
 				config.quitEnabled = stoi(trim(v));
-				logger.log("quit enabled: ", config.quitEnabled);
+				logger.log("Quit enabled: ", config.quitEnabled);
+			}
+			else if (k == CENTER_WINDOW_ENABLED) {
+				config.centerWindow = stoi(trim(v));
+				logger.log("Center window: ", config.centerWindow);
 			}
 		}
 	}

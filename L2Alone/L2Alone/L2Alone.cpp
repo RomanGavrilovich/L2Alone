@@ -149,6 +149,9 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 			logger.log("L2 process started with id: ", dwProcessId);
 
 			L2WindowCreatedEvent d = waitL2WindowCreated(dwProcessId, config.visionInitTimeout);
+			if (config.centerWindow) {
+				centerWindow(d.hWindow);
+			}
 
 			auto hotKeyHandler = shared_ptr<L2QuitKeyHandler>(new L2QuitKeyHandler(d.processId, config.quitEnabled, &config.accountHotKeys));
 			eventService.setKeyboardHandler(d.processId, hotKeyHandler);

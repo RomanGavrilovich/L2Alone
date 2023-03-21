@@ -375,6 +375,13 @@ bool captureDcBmp(HWND hWnd, BitMapInfo& bitMapInfo) {
 	HDC hMemDC = CreateCompatibleDC(hWindowDC);
 	RECT rcClient;
 	GetClientRect(hWnd, &rcClient);
+
+	int dpi = GetDpiForWindow(hWnd);
+	rcClient.left = MulDiv(rcClient.left, dpi, USER_DEFAULT_SCREEN_DPI);
+	rcClient.right = MulDiv(rcClient.right, dpi, USER_DEFAULT_SCREEN_DPI);
+	rcClient.top = MulDiv(rcClient.top, dpi, USER_DEFAULT_SCREEN_DPI);
+	rcClient.bottom = MulDiv(rcClient.bottom, dpi, USER_DEFAULT_SCREEN_DPI);
+
 	HBITMAP hBitmap = CreateCompatibleBitmap(hWindowDC, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top);
 	HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
 
@@ -752,4 +759,45 @@ void captureTextReferenceColor(BitMapInfo& bmi, HSV &textColor) {
 	}
 
 	textColor = maxHsv;
+}
+
+void centerWindow(HWND hWnd) {
+	HWND desktopHwnd = GetDesktopWindow();
+	RECT desktopRect;
+	GetWindowRect(desktopHwnd, &desktopRect);
+
+	RECT appRect;
+	GetWindowRect(hWnd, &appRect);
+
+	int wDesk = desktopRect.right - desktopRect.left;
+	int hDesk = desktopRect.bottom - desktopRect.top;
+
+	int wApp = appRect.right - appRect.left;
+	int hApp = appRect.bottom - appRect.top;
+
+	if (wDesk < wApp) {
+		logger.warn("Application width greater than desktop width");
+		return;
+	}
+
+	if (hDesk < hApp) {
+		logger.warn("Application height greater than desktop height");
+		return;
+	}
+
+	int offsetX = (wDesk - wApp) / 2;
+	int offsetY = (hDesk - hApp) / 2;
+
+	RECT moveAppRect;
+	moveAppRect.left = desktopRect.left + offsetX;
+	moveAppRect.top = desktopRect.top + offsetY;
+	moveAppRect.right = moveAppRect.left + wApp;
+	moveAppRect.bottom = moveAppRect.top + hApp;
+
+	WINDOWPLACEMENT wp;
+	wp.length = sizeof(WINDOWPLACEMENT);
+	GetWindowPlacement(hWnd, &wp);
+
+	wp.rcNormalPosition = moveAppRect;
+	SetWindowPlacement(hWnd, &wp);
 }
