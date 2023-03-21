@@ -40,7 +40,7 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 
 void showMessage(string message);
 bool isRunnedFromExe(string process);
-L2WindowCreatedEvent waitL2WindowCreated(int processId);
+L2WindowCreatedEvent waitL2WindowCreated(int processId, int timeoutMs);
 
 shared_ptr<LayoutManager> layoutManager(new LayoutManager());
 
@@ -148,7 +148,7 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 		try {
 			logger.log("L2 process started with id: ", dwProcessId);
 
-			L2WindowCreatedEvent d = waitL2WindowCreated(dwProcessId);
+			L2WindowCreatedEvent d = waitL2WindowCreated(dwProcessId, config.visionInitTimeout);
 
 			auto hotKeyHandler = shared_ptr<L2QuitKeyHandler>(new L2QuitKeyHandler(d.processId, config.quitEnabled, &config.accountHotKeys));
 			eventService.setKeyboardHandler(d.processId, hotKeyHandler);
@@ -228,15 +228,17 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 	}
 }
 
-L2WindowCreatedEvent waitL2WindowCreated(int processId) {
+L2WindowCreatedEvent waitL2WindowCreated(int processId, int timeoutMs) {
 
 	auto futurePtr = eventService.waitForL2Window(processId);
 	auto l2WindowFuture = futurePtr->get_future();
-	std::future_status status = l2WindowFuture.wait_for(std::chrono::seconds(10));
+	std::future_status status = l2WindowFuture.wait_for(std::chrono::milliseconds(timeoutMs));
 
 	if (status != std::future_status::ready)
 	{
-		throw exception("Can't find L2 window in 10 seconds");
+		stringstream ss;
+		ss << "Can't find L2 window in " << timeoutMs << " milliseconds";
+		throw exception(ss.str().c_str());
 	}
 
 	return l2WindowFuture.get();
