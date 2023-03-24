@@ -311,7 +311,7 @@ void L2EventService::publishEventObjCreate(HWND hWnd, DWORD dwEventThread) {
 						break;
 					}
 
-					logger.log("Window found");
+					logger.log("L2 Main window found: ", hWnd);
 					pair.second->set_value(L2WindowCreatedEvent{ hWnd, createdWindowPid, dwEventThread });
 					windowFound = true;
 					break;
@@ -321,9 +321,7 @@ void L2EventService::publishEventObjCreate(HWND hWnd, DWORD dwEventThread) {
 			CloseHandle(hThread);
 
 			if (windowFound) {
-				logger.log("L2 window found: ", hWnd);
 				waitL2WindowPromises.erase(createdWindowPid);
-
 				PostThreadMessage(tEventLoopNativeId, L2WM_WIN_HOOK, 0, 0);
 			}
 		}
@@ -355,8 +353,12 @@ void L2EventService::publishForegroundWindowChanged(HWND hWindow, DWORD dwEventT
 	DWORD dwFocusProcess;
 	GetWindowThreadProcessId(hWindow, &dwFocusProcess);
 
+	logger.log("Foreground window changed: ", hWindow, ". Of process ", dwFocusProcess);
+
 	if (dwFocusProcess != dwActiveProcess) {
 		dwActiveProcess = dwFocusProcess;
+
+		logger.log("dwActiveProcess updated ", dwActiveProcess);
 
 		for (auto& pair : windowFocusHandlers) {
 			if (pair.first == dwActiveProcess) {

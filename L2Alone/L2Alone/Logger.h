@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <chrono>
+#include <ctime>
 
 class Logger {
 public:
@@ -34,6 +36,18 @@ private:
         ss << t;
         expand(ss, args...);
     }
+
+    void appendTime(std::stringstream& ss) {
+        auto now = std::chrono::system_clock::now();
+        std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+        struct tm tm_now;
+        localtime_s(&tm_now, &now_c);
+        char now_str[24];
+        std::strftime(now_str, sizeof(now_str), "%Y-%m-%d %H:%M:%S.", &tm_now);
+        int ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % 1000;
+        sprintf_s(now_str + 20, sizeof(now_str) - 20, "%03d", ms);
+        ss << "["<< now_str << "] " << "[" << GetCurrentThreadId() << "] ";
+    }
 };
 
 Logger logger;
@@ -41,6 +55,7 @@ Logger logger;
 template<typename... Args>
 void Logger::log(const std::string& message, Args... args) {
     std::stringstream ss;
+    appendTime(ss);
     expand(ss, message, args...);
     auto s = ss.str();
 
@@ -53,6 +68,7 @@ void Logger::log(const std::string& message, Args... args) {
 template<typename... Args>
 void Logger::warn(const std::string& message, Args... args) {
     std::stringstream ss;
+    appendTime(ss);
     expand(ss, message, args...);
     auto s = ss.str();
 
@@ -65,6 +81,7 @@ void Logger::warn(const std::string& message, Args... args) {
 template<typename... Args>
 void Logger::error(const std::string& message, Args... args) {
     std::stringstream ss;
+    appendTime(ss);
     expand(ss, message, args...);
     auto s = ss.str();
 
