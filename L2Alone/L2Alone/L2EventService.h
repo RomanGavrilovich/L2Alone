@@ -44,6 +44,7 @@ public:
 
 	void lockForEvents(vector<L2EventLockData>& enabledEvents);
 	void releaseLockForEvents();
+	void l2EventServiceEventLoop();
 
 private:
 	map<DWORD, shared_ptr<promise<L2WindowCreatedEvent>>> waitL2WindowPromises;
@@ -58,9 +59,10 @@ private:
 
 	HANDLE hEventLockMutex;
 	vector<L2EventLockData> eventLockData;
+
+	promise<bool> startCompleted;
 };
 
-int l2EventServiceEventLoop();
 void CALLBACK l2EventServiceEventObjCreateHandler(HWINEVENTHOOK hEventHook, DWORD dwEvent, HWND hWnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime);
 LRESULT CALLBACK l2EventServiceLowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK l2EventServiceLowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam);
@@ -128,8 +130,10 @@ void L2EventService::start() {
 
 	logger.log("Start event service");
 
-	tEventLoop = new thread(l2EventServiceEventLoop);
+	tEventLoop = new thread(&L2EventService::l2EventServiceEventLoop, this);
 	tEventLoopNativeId = GetThreadId(reinterpret_cast<HANDLE>(tEventLoop->native_handle()));
+
+	startCompleted.get_future().wait();
 
 	logger.log("Complete event loop for l2 window data initialization");
 }
@@ -145,7 +149,7 @@ void L2EventService::stop() {
 	}
 }
 
-int l2EventServiceEventLoop() {
+void L2EventService::l2EventServiceEventLoop() {
 
 	HWINEVENTHOOK hForegroundHook = SetWinEventHook(
 		EVENT_OBJECT_FOCUS,
@@ -155,6 +159,8 @@ int l2EventServiceEventLoop() {
 		0,
 		0,
 		WINEVENT_OUTOFCONTEXT);
+
+	startCompleted.set_value(true);
 
 	HWINEVENTHOOK hEventObjectCreate = NULL;
 	HWINEVENTHOOK hEventPosChange = NULL;
@@ -262,8 +268,6 @@ int l2EventServiceEventLoop() {
 	else {
 		logger.log("Event loop failed: ", bRet);
 	}
-
-	return 0;
 }
 
 shared_ptr<promise<L2WindowCreatedEvent>> L2EventService::waitForL2Window(DWORD processId) {
