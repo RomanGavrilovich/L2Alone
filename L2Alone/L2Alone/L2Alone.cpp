@@ -166,6 +166,7 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 			eventService.setFocusHandler(d.processId, pvpHandler);
 
 			autologinStrategy->doAutologin(d.hWindow, login, password, slot);
+			unblockWindowFocus(d.hWindow);
 
 			auto layoutManagerUpdater = shared_ptr<L2WindowRectChangeHandler>(new LayoutManagerUpdateHandler(layoutManager));
 

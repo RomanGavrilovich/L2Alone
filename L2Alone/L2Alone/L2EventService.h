@@ -74,7 +74,9 @@ L2EventService eventService;
 
 void CALLBACK l2EventServiceEventObjCreateHandler(HWINEVENTHOOK hEventHook, DWORD dwEvent, HWND hWnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
 {
-	eventService.publishEventObjCreate(hWnd, dwEventThread);
+	if (dwEvent == EVENT_OBJECT_CREATE) {
+		eventService.publishEventObjCreate(hWnd, dwEventThread);
+	}
 }
 
 void CALLBACK L2EventServiceForegroundCheckHook(HWINEVENTHOOK hHook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
@@ -293,6 +295,8 @@ void L2EventService::publishEventObjCreate(HWND hWnd, DWORD dwEventThread) {
 			DWORD createdWindowPid = GetProcessIdOfThread(hThread);
 			for (auto& pair : waitL2WindowPromises) {
 				if (pair.first == createdWindowPid) {
+
+					blockWindowFocus(hWnd);
 
 					RECT rcClient;
 					GetClientRect(hWnd, &rcClient);

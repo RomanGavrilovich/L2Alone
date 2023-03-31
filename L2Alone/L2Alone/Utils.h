@@ -137,3 +137,20 @@ void startProcess(string &pathToExe, HANDLE& hProcess, DWORD& dwProcessId) {
 
 	CloseHandle(pi.hThread);
 }
+
+void blockWindowFocus(HWND hwnd) {
+	LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
+
+	style |= WS_EX_NOACTIVATE;
+
+	SetWindowLong(hwnd, GWL_EXSTYLE, style);
+}
+
+void unblockWindowFocus(HWND hwnd) {
+
+	LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
+
+	style &= ~WS_EX_NOACTIVATE;
+
+	SetWindowLong(hwnd, GWL_EXSTYLE, style);
+}
