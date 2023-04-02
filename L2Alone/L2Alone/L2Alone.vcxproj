@@ -198,7 +198,7 @@
     <ClInclude Include="C2AutoLoginStrategy.h" />
     <ClInclude Include="C5AutologinStrategy.h" />
     <ClInclude Include="CachedVisionInitializer.h" />
-    <ClInclude Include="config_utils.h" />
+    <ClInclude Include="ConfigUtils.h" />
     <ClInclude Include="GlobalFileLayoutCache.h" />
     <ClInclude Include="HwndVisionProvider.h" />
     <ClInclude Include="InMemoryLayoutCache.h" />

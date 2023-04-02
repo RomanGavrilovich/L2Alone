@@ -3,7 +3,7 @@
 #include <Windows.h>
 
 #include "L2KeyboardEventHandler.h"
-#include "config_utils.h"
+#include "ConfigUtils.h"
 
 class L2QuitKeyHandler : public L2KeyboardEventHandler {
 public:

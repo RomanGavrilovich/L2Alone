@@ -21,17 +21,23 @@
 
 // Features
 #define FAST_FLOW_ENABLED "FastFlowEnabled"
-#define LAYOUT_MANAGER "LayoutManagerEnabled"
-#define ACCOUNT_KEY "Account."
-#define CRASH_RECOVERY_ENABLED "CrashRecoveryEnabled"
-#define QUIT_ENABLED "QuitEnabled"
 #define CENTER_WINDOW_ENABLED "CenterWindowEnabled"
+#define ACCOUNT_KEY "Account."
+#define QUIT_ENABLED "QuitEnabled"
 
 // Debugging options
 #define DEBUGGING_ENABLED "DebugEnabled"
 #define SAVE_REF_SCREEN "SaveRefScreen"
 #define SAVE_WC_FAILURES "SaveWcFailures"
 #define LOGGER_ENABLED "LogEnabled"
+
+// Recovery feature
+#define CRASH_RECOVERY_ENABLED "CrashRecoveryEnabled"
+#define CRASH_RECOVERY_MIN_DELAY "CrashRecoveryMinDelayMs"
+
+// Layout management
+#define LAYOUT_MANAGER "LayoutManagerEnabled"
+#define LAYOUT_CACHE_ENABLED "LayoutManagerCacheEnabled"
  
 enum L2Version {
 	NONE,
@@ -67,10 +73,10 @@ struct L2AloneConfig {
 	int mouseEventsDelay = 0;
 	int visionInitTimeout = 10000;
 	bool fastFlowEnabled = true;
-	bool layoutManagerEnabled = false;
-	bool crashRecoveryEnabled = false;
+	bool layoutManagerEnabled = true;
 	bool quitEnabled = true;
 	bool centerWindow = true;
+	bool layoutCacheEnabled = true;
 
 	// Input
 	int inputInitialDelay = 100;
@@ -84,6 +90,10 @@ struct L2AloneConfig {
 	bool debugLogEnabled = false;
 	bool debugEnabled = false;
 	string debugBmpPath = "";
+
+	// Recovery
+	bool crashRecoveryEnabled = true;
+	int crashRecoveryMinDelayMs = 60000;
 };
 
 using namespace std;
@@ -187,10 +197,6 @@ L2AloneConfig loadL2AloneConfig() {
 				config.layoutManagerEnabled = stoi(trim(v));
 				logger.log("Layout manager: ", config.layoutManagerEnabled);
 			}
-			else if (k == CRASH_RECOVERY_ENABLED) {
-				config.crashRecoveryEnabled = stoi(trim(v));
-				logger.log("Crash recovery: ", config.crashRecoveryEnabled);
-			}
 			else if (k == QUIT_ENABLED) {
 				config.quitEnabled = stoi(trim(v));
 				logger.log("Quit enabled: ", config.quitEnabled);
@@ -198,6 +204,18 @@ L2AloneConfig loadL2AloneConfig() {
 			else if (k == CENTER_WINDOW_ENABLED) {
 				config.centerWindow = stoi(trim(v));
 				logger.log("Center window: ", config.centerWindow);
+			}
+			else if (k == LAYOUT_CACHE_ENABLED) {
+				config.layoutCacheEnabled = stoi(trim(v));
+				logger.log("Layout cache enabled: ", config.layoutCacheEnabled);
+			}
+			else if (k == CRASH_RECOVERY_ENABLED) {
+				config.crashRecoveryEnabled = stoi(trim(v));
+				logger.log("Crash recovery: ", config.crashRecoveryEnabled);
+			}
+			else if (k == CRASH_RECOVERY_MIN_DELAY) {
+				config.crashRecoveryMinDelayMs = stoi(trim(v));
+				logger.log("Crash recovery min delay ms: ", config.crashRecoveryMinDelayMs);
 			}
 		}
 	}

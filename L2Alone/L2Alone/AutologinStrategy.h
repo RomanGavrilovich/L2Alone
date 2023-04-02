@@ -35,7 +35,7 @@
 #include "Logger.h"
 #include "L2Events.h"
 #include "L2EventService.h"
-#include "config_utils.h"
+#include "ConfigUtils.h"
 #include "HwndVisionProvider.h"
 
 using namespace std;

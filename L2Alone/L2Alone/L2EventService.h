@@ -478,6 +478,11 @@ bool L2EventService::publishKeyboard(KBDLLHOOKSTRUCT* kbdll, bool keyDown) {
 		return false;
 	}
 
+	// TODO: Remove
+	if (isKeyPressed(VK_ESCAPE)) {
+		logger.log("Press escape with active process: ", dwActiveProcess);
+	}
+
 	bool propagate = true;
 	if (windowKeyHandlers.count(dwActiveProcess) > 0) {
 		auto& handlers = windowKeyHandlers[dwActiveProcess];

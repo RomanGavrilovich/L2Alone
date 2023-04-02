@@ -47,9 +47,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="config_utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -131,9 +128,6 @@
     <ClInclude Include="VisionProvider.h">
       <Filter>Header Files\Vision</Filter>
     </ClInclude>
-    <ClInclude Include="L2EventHandlers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LayoutManager.h">
       <Filter>Header Files\Layout</Filter>
     </ClInclude>
@@ -148,6 +142,12 @@
     </ClInclude>
     <ClInclude Include="InMemoryLayoutCache.h">
       <Filter>Header Files\Layout</Filter>
+    </ClInclude>
+    <ClInclude Include="ConfigUtils.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="L2EventHandlers.h">
+      <Filter>Header Files\Events</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

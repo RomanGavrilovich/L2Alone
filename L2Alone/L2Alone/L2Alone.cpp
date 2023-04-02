@@ -13,7 +13,7 @@
 #include <exception>
 #include <string>
 
-#include "config_utils.h"
+#include "ConfigUtils.h"
 #include "Utils.h"
 
 #include "Logger.h"
@@ -138,13 +138,17 @@ void showMessage(string message) {
 
 void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& config, AutologinStrategy *autologinStrategy) {
 
-	shared_ptr<LayoutCache> fileCache(new GlobalFileLayoutCache());
-	shared_ptr<LayoutCache> layoutCache(new InMemoryLayoutCache(fileCache));
-	shared_ptr<LayoutManager> layoutManager(new LayoutManager(layoutCache));
+	shared_ptr<LayoutCache> targetCache;
+	if (config.layoutCacheEnabled) {
+		targetCache = shared_ptr<LayoutCache>(new GlobalFileLayoutCache());
+	}
+	else {
+		targetCache = shared_ptr<LayoutCache>(new NoOpLayoutCache());
+	}
+	shared_ptr<LayoutCache> layoutCache(new InMemoryLayoutCache(targetCache));
+	shared_ptr<LayoutManager> layoutManager(new LayoutManager(targetCache));
 
 	auto lastFailureTime = GetTickCount64();
-	int minDelayBetweenRecovery = 60000; // 1 min
-
 	while (true) {
 		HANDLE hProcess;
 		DWORD dwProcessId;
@@ -203,7 +207,7 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 
 			if (config.crashRecoveryEnabled) {
 				if (exitCode == 1) {
-					if (GetTickCount64() - lastFailureTime > minDelayBetweenRecovery) {
+					if (GetTickCount64() - lastFailureTime > config.crashRecoveryMinDelayMs) {
 						logger.log("Recovery on crash");
 						lastFailureTime = GetTickCount64();
 						continue;
