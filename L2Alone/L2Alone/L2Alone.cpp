@@ -146,9 +146,9 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 		targetCache = shared_ptr<LayoutCache>(new NoOpLayoutCache());
 	}
 	shared_ptr<LayoutCache> layoutCache(new InMemoryLayoutCache(targetCache));
-	shared_ptr<LayoutManager> layoutManager(new LayoutManager(targetCache));
+	shared_ptr<LayoutManager> layoutManager(new LayoutManager(layoutCache));
 
-	auto lastFailureTime = GetTickCount64();
+	auto lastFailureTime = LONG_MAX;
 	while (true) {
 		HANDLE hProcess;
 		DWORD dwProcessId;
