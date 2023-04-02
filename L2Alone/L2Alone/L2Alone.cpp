@@ -172,6 +172,11 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 			autologinStrategy->doAutologin(d.hWindow, login, password, slot);
 			unblockWindowFocus(d.hWindow);
 
+			auto popupHandler = shared_ptr<SubmitL2WindowCreateHandler>(new SubmitL2WindowCreateHandler());
+			if (config.crashRecoveryEnabled) {
+				eventService.setWindowCreateHandler(dwProcessId, popupHandler);
+			}
+
 			auto layoutManagerUpdater = shared_ptr<L2WindowRectChangeHandler>(new LayoutManagerUpdateHandler(layoutManager));
 
 			if (config.layoutManagerEnabled) {
@@ -199,6 +204,9 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 			eventService.removeKeyboardHandler(d.processId, hotKeyHandler);
 			eventService.removeKeyboardHandler(d.processId, pvpHandler);
 			eventService.removeFocusHandler(d.processId, pvpHandler);
+			if (config.crashRecoveryEnabled) {
+				eventService.removeWindowCreateHandler(d.processId, popupHandler);
+			}
 
 			DWORD exitCode;
 			if (!GetExitCodeProcess(hProcess, &exitCode)) {

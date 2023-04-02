@@ -12,7 +12,6 @@
 
 using namespace std;
 
-UINT L2WM_WIN_HOOK = RegisterWindowMessageA("L2Alone_WinHook");
 UINT L2WM_WIN_PCHANGE_HOOK = RegisterWindowMessageA("L2Alone_WinHook_PosChange");
 UINT L2WM_KEY_LL_HOOK = RegisterWindowMessageA("L2Alone_KeyLowLevelHook");
 UINT L2WM_MOUSE_LL_HOOK = RegisterWindowMessageA("L2Alone_MouseLowLevelHook");
@@ -39,6 +38,9 @@ public:
 	void setWindowRectChangeHandler(HWND hWindow, shared_ptr<L2WindowRectChangeHandler> handler);
 	void removeWindowRectChange(HWND hWindow, shared_ptr<L2WindowRectChangeHandler> handler);
 
+	void setWindowCreateHandler(DWORD dwProcessId, shared_ptr<L2WindowCreateHandler> handler);
+	void removeWindowCreateHandler(DWORD dwProcessId, shared_ptr<L2WindowCreateHandler> handler);
+
 	bool waitMutex();
 	void releaseMutex();
 
@@ -51,6 +53,7 @@ private:
 	map<DWORD, vector<shared_ptr<L2KeyboardEventHandler>>> windowKeyHandlers;
 	map<DWORD, vector<shared_ptr<L2FocusEventHandler>>> windowFocusHandlers;
 	map<HWND, vector<shared_ptr<L2WindowRectChangeHandler>>> windowRectChangeHandlers;
+	map<DWORD, vector<shared_ptr<L2WindowCreateHandler>>> windowCreateHandlers;
 
 	DWORD tEventLoopNativeId;
 	thread* tEventLoop;
@@ -61,6 +64,8 @@ private:
 	vector<L2EventLockData> eventLockData;
 
 	promise<bool> startCompleted;
+
+	bool notifyWindowCreateHandlers(HWND hWnd, DWORD dwProcessId);
 };
 
 void CALLBACK l2EventServiceEventObjCreateHandler(HWINEVENTHOOK hEventHook, DWORD dwEvent, HWND hWnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime);
@@ -162,9 +167,18 @@ void L2EventService::l2EventServiceEventLoop() {
 		0,
 		WINEVENT_OUTOFCONTEXT);
 
+	HWINEVENTHOOK hEventObjectCreate = SetWinEventHook(
+		EVENT_OBJECT_CREATE,
+		EVENT_OBJECT_CREATE,
+		NULL,
+		l2EventServiceEventObjCreateHandler,
+		0,
+		0,
+		WINEVENT_OUTOFCONTEXT
+	);
+
 	startCompleted.set_value(true);
 
-	HWINEVENTHOOK hEventObjectCreate = NULL;
 	HWINEVENTHOOK hEventPosChange = NULL;
 	HHOOK hKeyLowLevelHook = NULL;
 	HHOOK hMouseLowLevelHook = NULL;
@@ -174,23 +188,7 @@ void L2EventService::l2EventServiceEventLoop() {
 	logger.log("Start event loop");
 	while ((bRet = GetMessage(&msg, NULL, 0, 0)) != 0)
 	{
-		if (msg.message == L2WM_WIN_HOOK) {
-			if (msg.wParam) {
-				logger.log("Set EVENT_OBJECT_CREATE hook");
-				hEventObjectCreate = SetWinEventHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_CREATE, NULL, l2EventServiceEventObjCreateHandler, 0, 0, WINEVENT_OUTOFCONTEXT);
-			}
-			else {
-				if (hEventObjectCreate) {
-					logger.log("Unhook EVENT_OBJECT_CREATE");
-					UnhookWinEvent(hEventObjectCreate);
-					hEventObjectCreate = NULL;
-				}
-				else {
-					logger.warn("EVENT_OBJECT_CREATE was not set");
-				}
-			}
-		}
-		else if (msg.message == L2WM_WIN_PCHANGE_HOOK) {
+		if (msg.message == L2WM_WIN_PCHANGE_HOOK) {
 			if (msg.wParam) {
 				logger.log("Set EVENT_OBJECT_LOCATIONCHANGE hook");
 				hEventPosChange = SetWinEventHook(EVENT_OBJECT_LOCATIONCHANGE, EVENT_OBJECT_LOCATIONCHANGE, NULL, l2EventServiceWinPosChange, 0, 0, WINEVENT_OUTOFCONTEXT);
@@ -253,7 +251,6 @@ void L2EventService::l2EventServiceEventLoop() {
 	}
 
 	if (hEventObjectCreate) {
-		logger.warn("EVENT_OBJECT_CREATE hook was not unhooked properly");
 		UnhookWinEvent(hEventObjectCreate);
 		hEventObjectCreate = NULL;
 	}
@@ -274,14 +271,26 @@ void L2EventService::l2EventServiceEventLoop() {
 
 shared_ptr<promise<L2WindowCreatedEvent>> L2EventService::waitForL2Window(DWORD processId) {
 
-	PostThreadMessage(tEventLoopNativeId, L2WM_WIN_HOOK, 1, 0);
-
 	auto promiseRef = new promise<L2WindowCreatedEvent>();
 
 	shared_ptr<promise<L2WindowCreatedEvent>> p(promiseRef);
 	waitL2WindowPromises[processId] = p;
 
 	return p;
+}
+
+bool L2EventService::notifyWindowCreateHandlers(HWND hWnd, DWORD dwProcessId) {
+
+	if (windowCreateHandlers.count(dwProcessId) > 0) {
+		auto& handlers = windowCreateHandlers[dwProcessId];
+		for (auto& handler : handlers) {
+			handler->onWindowCreate(hWnd);
+		}
+
+		return true;
+	}
+
+	return false;
 }
 
 void L2EventService::publishEventObjCreate(HWND hWnd, DWORD dwEventThread) {
@@ -293,6 +302,11 @@ void L2EventService::publishEventObjCreate(HWND hWnd, DWORD dwEventThread) {
 			bool windowFound = false;
 
 			DWORD createdWindowPid = GetProcessIdOfThread(hThread);
+
+			if (notifyWindowCreateHandlers(hWnd, createdWindowPid)) {
+				return;
+			}
+
 			for (auto& pair : waitL2WindowPromises) {
 				if (pair.first == createdWindowPid) {
 
@@ -330,8 +344,9 @@ void L2EventService::publishEventObjCreate(HWND hWnd, DWORD dwEventThread) {
 
 			if (windowFound) {
 				waitL2WindowPromises.erase(createdWindowPid);
-				PostThreadMessage(tEventLoopNativeId, L2WM_WIN_HOOK, 0, 0);
 			}
+
+
 		}
 		else {
 			logger.error("Received invalid thread handle");
@@ -380,6 +395,28 @@ void L2EventService::publishForegroundWindowChanged(HWND hWindow, DWORD dwEventT
 				}
 			}
 		}
+	}
+}
+
+void L2EventService::setWindowCreateHandler(DWORD dwProcessId, shared_ptr<L2WindowCreateHandler> handler) {
+	windowCreateHandlers[dwProcessId].push_back(handler);
+}
+
+void L2EventService::removeWindowCreateHandler(DWORD dwProcessId, shared_ptr<L2WindowCreateHandler> handler) {
+	
+	if (windowCreateHandlers.count(dwProcessId) == 0) {
+		logger.warn("There is no window create handlers for process ", dwProcessId);
+		return;
+	}
+
+	auto& handlers = windowCreateHandlers[dwProcessId];
+	auto pErase = handlers.erase(remove_if(
+		handlers.begin(),
+		handlers.end(),
+		[handler](shared_ptr<L2WindowCreateHandler> ptr) {return ptr.get() == handler.get();})
+	);
+	if (handlers.size() == 0) {
+		windowCreateHandlers.erase(dwProcessId);
 	}
 }
 
