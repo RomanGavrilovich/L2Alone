@@ -59,17 +59,12 @@ bool GlobalFileLayoutCache::load(LayoutCacheEntity& destEntity) {
 		vector<GlobalFileLayoutCacheEntity> entities;
 		readEntities(fileHandle, entities);
 
-		vector<GlobalFileLayoutCacheEntity> filtered;
+		vector<GlobalFileLayoutCacheEntity> processed;
 		GlobalFileLayoutCacheEntity available;
-		if (processCache(entities, filtered, available)) {
+		if (processCache(entities, processed, available)) {
 			destEntity.r = available.r;
 			loaded = true;
-
-			available.processId = GetCurrentProcessId();
-
-			filtered.push_back(available);
-
-			writeEntities(filtered, fileHandle);
+			writeEntities(processed, fileHandle);
 		}
 	}
 	catch (exception e) {
@@ -191,8 +186,11 @@ bool GlobalFileLayoutCache::processCache(vector<GlobalFileLayoutCacheEntity>& sr
 			dest.push_back(e);
 		}
 		else {
+			e.processId = GetCurrentProcessId();
 			available = e;
 			availableFound = true;
+
+			dest.push_back(e);
 		}
 	}
 
