@@ -10,34 +10,34 @@
 
 #define L2_ALONE_CONFIG_FILE_NAME "L2Alone.config"
 
-#define L2_FILE_CONFIG_KEY "PathToL2exe"
-#define L2_VERSION "L2Version"
-#define MOUSE_CLICK_DELAY "MouseClickDelay"
-#define MOUSE_EVENTS_DELAY "MouseEventsDelay"
-#define VISION_INIT_TIMEOUT "VisionInitTimeoutMs"
-#define INPUT_INITIAL_DELAY "InputInitialDelay"
-#define INPUT_FALLBACK_DELAY "InputFallbackDelay"
-#define ACCOUNT_IN_USE_DELAY "AccountInUseDelay"
+#define L2_FILE_CONFIG_KEY L"PathToL2exe"
+#define L2_VERSION L"L2Version"
+#define MOUSE_CLICK_DELAY L"MouseClickDelay"
+#define MOUSE_EVENTS_DELAY L"MouseEventsDelay"
+#define VISION_INIT_TIMEOUT L"VisionInitTimeoutMs"
+#define INPUT_INITIAL_DELAY L"InputInitialDelay"
+#define INPUT_FALLBACK_DELAY L"InputFallbackDelay"
+#define ACCOUNT_IN_USE_DELAY L"AccountInUseDelay"
 
 // Features
-#define FAST_FLOW_ENABLED "FastFlowEnabled"
-#define CENTER_WINDOW_ENABLED "CenterWindowEnabled"
-#define ACCOUNT_KEY "Account."
-#define QUIT_ENABLED "QuitEnabled"
+#define FAST_FLOW_ENABLED L"FastFlowEnabled"
+#define CENTER_WINDOW_ENABLED L"CenterWindowEnabled"
+#define ACCOUNT_KEY L"Account."
+#define QUIT_ENABLED L"QuitEnabled"
 
 // Debugging options
-#define DEBUGGING_ENABLED "DebugEnabled"
-#define SAVE_REF_SCREEN "SaveRefScreen"
-#define SAVE_WC_FAILURES "SaveWcFailures"
-#define LOGGER_ENABLED "LogEnabled"
+#define DEBUGGING_ENABLED L"DebugEnabled"
+#define SAVE_REF_SCREEN L"SaveRefScreen"
+#define SAVE_WC_FAILURES L"SaveWcFailures"
+#define LOGGER_ENABLED L"LogEnabled"
 
 // Recovery feature
-#define CRASH_RECOVERY_ENABLED "CrashRecoveryEnabled"
-#define CRASH_RECOVERY_MIN_DELAY "CrashRecoveryMinDelayMs"
+#define CRASH_RECOVERY_ENABLED L"CrashRecoveryEnabled"
+#define CRASH_RECOVERY_MIN_DELAY L"CrashRecoveryMinDelayMs"
 
 // Layout management
-#define LAYOUT_MANAGER "LayoutManagerEnabled"
-#define LAYOUT_CACHE_ENABLED "LayoutManagerCacheEnabled"
+#define LAYOUT_MANAGER L"LayoutManagerEnabled"
+#define LAYOUT_CACHE_ENABLED L"LayoutManagerCacheEnabled"
  
 enum L2Version {
 	NONE,
@@ -67,7 +67,7 @@ struct LayoutConfig {
 
 struct L2AloneConfig {
 	L2Version version = L2Version::NONE;
-	string pathToL2 = "";
+	wstring pathToL2 = L"";
 	vector<L2AccountHotKey> accountHotKeys;
 	int mouseClickDelay = -1;
 	int mouseEventsDelay = 0;
@@ -98,8 +98,9 @@ struct L2AloneConfig {
 
 using namespace std;
 
-bool splitParam(string s, string& k, string& v);
+bool splitParam(wstring s, wstring& k, wstring& v);
 bool toBoolean(string s);
+wstring trim(wstring s);
 string trim(string s);
 
 L2AccountHotKey getAccountHotKey(string& hotKeyConfigKey, string hotKeyConfigValue);
@@ -109,7 +110,7 @@ L2AloneConfig loadL2AloneConfig() {
 
 	L2AloneConfig config;
 
-	ifstream configFile;
+	wifstream configFile;
 
 	configFile.open(L2_ALONE_CONFIG_FILE_NAME);
 	if (!configFile.is_open()) {
@@ -119,34 +120,37 @@ L2AloneConfig loadL2AloneConfig() {
 		throw std::exception(s.c_str());
 	}
 
-	std::vector<string> params;
-	std::string line;
+	std::vector<wstring> params;
+	std::wstring line;
 	while (std::getline(configFile, line)) {
 		params.push_back(line);
 	}
 	configFile.close();
 
-	for (string s : params) {
+	for (wstring s : params) {
 
 		if (trim(s).size() == 0) {
 			continue;
 		}
 
-		string k, v;
+		wstring k, v;
 		if (splitParam(s, k, v)) {
-			if (startWith(k, "//")) {
+			if (startWith(k, L"//")) {
 				continue;
 			}
 
 			if (k == L2_FILE_CONFIG_KEY) {
 				config.pathToL2 = v;
-				cout << "L2 file set to: " << config.pathToL2 << endl;
+				logger.log("L2 file set to: ", config.pathToL2);
 			}
 			else if (startWith(k, ACCOUNT_KEY)) {
-				config.accountHotKeys.push_back(getAccountHotKey(k, v));
+				string accountHk(k.begin(), k.end());
+				string accountHv(v.begin(), v.end());
+				config.accountHotKeys.push_back(getAccountHotKey(accountHk, accountHv));
 			}
 			else if (k == L2_VERSION) {
-				config.version = toL2Version(v);
+				string l2VersionV(v.begin(), v.end());
+				config.version = toL2Version(l2VersionV);
 				logger.log("L2 version: ", config.version);
 			}
 			else if (k == MOUSE_CLICK_DELAY) {
@@ -256,6 +260,31 @@ bool toBoolean(string s) {
 	return hasHorizontalBorder;
 }
 
+wstring trim(wstring s) {
+
+	if (s.size() == 0) {
+		return s;
+	}
+
+	size_t trimStart = 0;
+	for (auto i = 0; i < s.size(); ++i) {
+		if (s[i] != ' ') {
+			trimStart = i;
+			break;
+		}
+	}
+
+	size_t trimEnd = 0;
+	for (auto i = s.size() - 1; i >= 0; --i) {
+		if (s[i] != ' ') {
+			trimEnd = i;
+			break;
+		}
+	}
+
+	return s.substr(trimStart, trimEnd - trimStart + 1);
+}
+
 string trim(string s) {
 
 	if (s.size() == 0) {
@@ -281,8 +310,8 @@ string trim(string s) {
 	return s.substr(trimStart, trimEnd - trimStart + 1);
 }
 
-bool splitParam(string s, string& k, string& v) {
-	auto index = s.find("=");
+bool splitParam(wstring s, wstring& k, wstring& v) {
+	auto index = s.find(L"=");
 	if (index >= 0) {
 		k = trim(s.substr(0, index));
 		v = trim(s.substr(index + 1, s.size()));
