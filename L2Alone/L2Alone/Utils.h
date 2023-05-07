@@ -8,7 +8,7 @@ using namespace std;
 
 #define EXIT_HOT_KEY_OFFSET 34200
 
-bool startWith(wstring target, wstring prefix) {
+bool startWith(string target, string prefix) {
 
 	return target.find(prefix) == 0;
 }
@@ -101,19 +101,19 @@ void doClick(HWND hWindow, int globalX, int globalY, int timeout) {
 	Sleep(timeout);
 }
 
-void startProcess(wstring &pathToExe, HANDLE& hProcess, DWORD& dwProcessId) {
+void startProcess(string &pathToExe, HANDLE& hProcess, DWORD& dwProcessId) {
 
-	STARTUPINFOW si;
+	STARTUPINFOA si;
 	PROCESS_INFORMATION pi;
 	ZeroMemory(&si, sizeof(si));
 	si.cb = sizeof(si);
 	ZeroMemory(&pi, sizeof(pi));
 
-	wstring folder = pathToExe.substr(0, pathToExe.length() - 6);
+	string folder = pathToExe.substr(0, pathToExe.length() - 6);
 
 	logger.log("Create L2 process from file: ", pathToExe);
 
-	auto r = CreateProcessW(
+	auto r = CreateProcessA(
 		pathToExe.c_str(),   // the path
 		NULL,           // Command line
 		NULL,           // Process handle not inheritable
@@ -127,12 +127,9 @@ void startProcess(wstring &pathToExe, HANDLE& hProcess, DWORD& dwProcessId) {
 	);
 
 	if (!r) {
-		wstringstream ss;
-		ss << L"Can't start L2 process with path: " << pathToExe;
-		
-		auto ws = ss.str();
-		string cs(ws.begin(), ws.end());
-		throw exception(cs.c_str());
+		stringstream ss;
+		ss << "Can't start L2 process with path: " + pathToExe;
+		throw exception(ss.str().c_str());
 	}
 
 	hProcess = pi.hProcess;
