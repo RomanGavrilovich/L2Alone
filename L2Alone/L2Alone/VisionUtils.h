@@ -30,25 +30,6 @@ struct HSV {
 	int v;
 };
 
-struct RGB {
-	int r;
-	int g;
-	int b;
-
-	bool operator<(const RGB& other) const {
-
-		if (r != other.r) {
-			return r < other.r;
-		}
-
-		if (g != other.g) {
-			return g < other.g;
-		}
-
-		return b < other.b;
-	}
-};
-
 class HueDistributionCapturer {
 public:
 	virtual void capture(BitMapInfo& bmi, map<int, double>& dest) = 0;
@@ -484,25 +465,21 @@ bool isLoadingWindow(BitMapInfo& bmi) {
 	int threshold = bmi.width * bmi.height / 2;
 	int count = 0;
 
-	map<RGB, int> counts;
-
 	for (int i = 0; i < bmi.width; ++i) {
 		for (int j = 0; j < bmi.height; ++j) {
-			RGB rgb;
-			getPixelRgb(bmi, i, j, rgb.r, rgb.g, rgb.b);
+			int r, g, b;
+			getPixelRgb(bmi, i, j, r, g, b);
+			if (isBlack(r, g, b) || isWhite(r, g, b)) {
+				count++;
+			}
 
-			counts[rgb]++;
+			if (count > threshold) {
+				return true;
+			}
 		}
 	}
 
-	int maxCount = 0;
-	for (auto& pair : counts) {
-		if (pair.second > maxCount) {
-			maxCount = pair.second;
-		}
-	}
-
-	return maxCount > threshold;
+	return false;
 }
 
 Point toLbPoint(int rtWidth, int rtHeight, BitMapInfo& bitMapInfo, ButtonDefinition& bDef) {
@@ -536,7 +513,7 @@ bool hasHorizontalBorder(BitMapInfo& bmi, int x, int y, int width, int borderThr
 	int missThreshold = (int)(width * missFactor);
 
 	for (int i = x; i < x + width; ++i) {
-
+		
 		int targetH = getV(bmi, i, y);
 		int underH = getV(bmi, i, y - 1);
 		int nextH = getV(bmi, i + 1, y);
@@ -563,7 +540,7 @@ bool hasHorizontalBorder(BitMapInfo& bmi, int x, int y, int width, int borderThr
 }
 
 bool hasVerticalBorder(BitMapInfo& bmi, int x, int y, int height, int borderThreshold, double missFactor, bool draw) {
-
+	
 	bool result = true;
 
 	int missThreshold = (int)(height * missFactor);
@@ -599,7 +576,7 @@ bool hasHorizontalBorderInRange(BitMapInfo& bmi, int x, int y, int width, int bo
 
 	bool r = false;
 
-	int startY = y - range / 2;
+	int startY = y - range / 2 ;
 	for (int i = 0; i < range; ++i) {
 		if (hasHorizontalBorder(bmi, x, startY + i, width, borderThreshold, missFactor, false)) {
 			r = true;
@@ -607,12 +584,12 @@ bool hasHorizontalBorderInRange(BitMapInfo& bmi, int x, int y, int width, int bo
 		}
 	}
 
-	//#ifdef TEST
-	//	for (int i = 0; i < range; ++i) {
-	//		if (hasHorizontalBorder(bmi, x, startY + i, width, borderThreshold, missFactor, false)) {
-	//		}
-	//	}
-	//#endif // TEST
+//#ifdef TEST
+//	for (int i = 0; i < range; ++i) {
+//		if (hasHorizontalBorder(bmi, x, startY + i, width, borderThreshold, missFactor, false)) {
+//		}
+//	}
+//#endif // TEST
 
 	return r;
 }
@@ -642,7 +619,7 @@ bool hasBorders(int rtWidth, int rtHeight, BitMapInfo& bmi, ButtonDefinition& bD
 	Point p = toLbPoint(rtWidth, rtHeight, bmi, bDef);
 
 	int borderFound = 0;
-
+	
 	// Top border
 	if (hasHorizontalBorderInRange(bmi, p.x, p.y, bDef.width, borderVThreshold, missFactor, range)) {
 		borderFound++;
@@ -664,7 +641,7 @@ bool hasBorders(int rtWidth, int rtHeight, BitMapInfo& bmi, ButtonDefinition& bD
 	}
 
 	return borderFound >= 2;
-}
+ }
 
 // Text
 
@@ -749,7 +726,7 @@ int getSystemMessageLength(BitMapInfo& bitMapInfo, HSV& color) {
 }
 
 
-void captureTextReferenceColor(BitMapInfo& bmi, HSV& textColor) {
+void captureTextReferenceColor(BitMapInfo& bmi, HSV &textColor) {
 
 	int textHeight = 10;
 	int textOffset = 22;
@@ -763,7 +740,7 @@ void captureTextReferenceColor(BitMapInfo& bmi, HSV& textColor) {
 
 	map<HSV, int, HsvComparator> hsvCountMap;
 
-	for (int x = startX; x < startX + captureWidth; ++x) {
+	for(int x = startX; x < startX + captureWidth; ++x) {
 		for (int y = textOffset; y < textOffset + textHeight; ++y) {
 			HSV hsv;
 			getPixelHsv(bmi, x, y, hsv.h, hsv.s, hsv.v);
