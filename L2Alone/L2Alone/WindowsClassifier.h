@@ -211,6 +211,7 @@ L2Window WindowsClassifier::waitForWindow(VisionProvider& vp, int timeoutMs) {
 	vector<L2Window> v;
 
 	v.push_back(L2Window::WELCOME);
+	v.push_back(L2Window::CONNECTING);
 	v.push_back(L2Window::AGREEMENT);
 	v.push_back(L2Window::INCORRECT_PASSWORD);
 	v.push_back(L2Window::ACCOUNT_IN_USE);

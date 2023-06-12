@@ -38,6 +38,13 @@ public:
 		auto incorrectPasswordDef = WindowDefinition{ welcomeBtnDefs, 400, 500 };
 		dest.wDefs[L2Window::INCORRECT_PASSWORD] = incorrectPasswordDef;
 
+		// Connecting screen
+		vector<ButtonDefinition> connectingBtnDefs;
+		connectingBtnDefs.push_back(ButtonDefinition{ 634, 434, 92, 20 });
+
+		auto connectingDef = WindowDefinition{ connectingBtnDefs, 0, 0 };
+		dest.wDefs[L2Window::CONNECTING] = connectingDef;
+
 		// Agreement screen
 		vector<ButtonDefinition> agreementBtnDefs;
 		agreementBtnDefs.push_back(ButtonDefinition{ 603, 568, 74, 21 });
