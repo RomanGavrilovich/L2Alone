@@ -39,7 +39,7 @@
 #define LAYOUT_MANAGER "LayoutManagerEnabled"
 #define LAYOUT_CACHE_ENABLED "LayoutManagerCacheEnabled"
  
-enum L2Version {
+enum L2Version { 
 	NONE,
 	C2,
 	C5,

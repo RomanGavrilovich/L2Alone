@@ -61,6 +61,10 @@ WindowsClassifier::~WindowsClassifier() {
 
 bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
 
+	if (vDef.wDefs.count(window) == 0) {
+		return false;
+	}
+
 	auto wDef = vDef.wDefs[window];
 
 	bool res = true;

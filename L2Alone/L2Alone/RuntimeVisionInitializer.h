@@ -47,7 +47,7 @@ VisionParams RuntimeVisionInitializer::init(VisionProvider& vp, int timeoutMs) {
 				if (debugFolder.size() > 0) {
 					writeBmpToFile((debugFolder + "/Ref.bmp").c_str(), bitMapInfo);
 				}
-
+				
 				return vp;
 			}
 		}
