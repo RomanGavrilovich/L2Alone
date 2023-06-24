@@ -281,6 +281,9 @@ void AutologinStrategy::doConfirmationFlow(HWND hWindow, SelectCharacterDefiniti
 
 void AutologinStrategy::selectCharacter(HWND hWindow, SelectCharacterDefinition& def) {
 
+	float scaleFactor = getScaleFactor(hWindow);
+	logger.log("Scale factor: ", scaleFactor);
+
 	RECT r;
 	GetClientRect(hWindow, &r);
 
@@ -293,16 +296,19 @@ void AutologinStrategy::selectCharacter(HWND hWindow, SelectCharacterDefinition&
 	int wWidth = r.right - r.left;
 	int wHeight = r.bottom - r.top;
 
-	auto p = convertRtPoint(refScreenWidth, refScreenHeight, wWidth, wHeight, def.startX, def.startY, def.startAnchor);
+	int dropDownX = def.dropDownX / scaleFactor;
+	int dropDownY = def.dropDownY / scaleFactor;
+
+	int dropdownClickX, dropdownClickY;
+	convertToGlobalClientRect(hWindow, dropDownX, dropDownY, dropdownClickX, dropdownClickY);
+
+	int charSlotClickX, charSlotClickY;
+	convertToGlobalClientRect(hWindow, dropDownX, dropDownY + charDropdownOffset, charSlotClickX, charSlotClickY);
+
+	auto p = convertRtPoint(refScreenWidth, refScreenHeight, wWidth, wHeight, def.startX, def.startY, def.startAnchor, scaleFactor);
 
 	int targetX, targetY;
 	convertToGlobalClientRect(hWindow, p.x, p.y, targetX, targetY);
-
-	int dropdownClickX, dropdownClickY;
-	convertToGlobalClientRect(hWindow, def.dropDownX, def.dropDownY, dropdownClickX, dropdownClickY);
-
-	int charSlotClickX, charSlotClickY;
-	convertToGlobalClientRect(hWindow, def.dropDownX, def.dropDownY + charDropdownOffset, charSlotClickX, charSlotClickY);
 
 	vector<L2EventLockData> v;
 	v.push_back(L2EventLockData{ WM_MOUSEMOVE, dropdownClickX, dropdownClickY });

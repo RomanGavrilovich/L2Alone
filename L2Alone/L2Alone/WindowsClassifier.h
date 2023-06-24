@@ -20,7 +20,7 @@
 using namespace std;
 
 // TODO: Move to parameters
-bool TRACE_CAPTURES = false;
+bool TRACE_CAPTURES = true;
 
 
 class WindowsClassifier {

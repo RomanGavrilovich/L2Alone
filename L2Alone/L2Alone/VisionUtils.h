@@ -257,7 +257,8 @@ Point toLbViaCenterOffset(int rtWidth, int rtHeight, int lbWidth, int lbHeight, 
 	return p;
 }
 
-Point convertRtPoint(int srcWidth, int srcHeight, int destWidth, int destHeight, int x, int y, RefAnchor anchor) {
+Point convertRtPoint(int srcWidth, int srcHeight, int destWidth, int destHeight, int x, int y, RefAnchor anchor, double scaleFactor) {
+
 	Point p;
 	if (anchor == RefAnchor::CenterBottom) {
 		int shw = srcWidth / 2;
@@ -273,7 +274,7 @@ Point convertRtPoint(int srcWidth, int srcHeight, int destWidth, int destHeight,
 		int syOffset = srcHeight - y;
 
 		p.x = destWidth - sxOffset;
-		p.y = destHeight - syOffset;
+		p.y = destHeight - syOffset / scaleFactor;
 	}
 	else {
 		throw exception("Unsupported reference anchor");
@@ -579,6 +580,12 @@ bool hasHorizontalBorderInRange(BitMapInfo& bmi, int x, int y, int width, int bo
 		if (hasHorizontalBorder(bmi, x, startY + i, width, borderThreshold, missFactor, false)) {
 			r = true;
 			break;
+		}
+	}
+
+	// DEBUG
+	for (int i = 0; i < range; ++i) {
+		if (hasHorizontalBorder(bmi, x, startY + i, width, borderThreshold, missFactor, true)) {
 		}
 	}
 

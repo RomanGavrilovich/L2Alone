@@ -56,6 +56,13 @@ void postCredentials(HWND hWindow, string& login, string& password) {
 	logger.log("Credentials posted");
 }
 
+float getScaleFactor(HWND windowHandle) {
+	HDC hdc = GetDC(windowHandle);
+	int dpiX = GetDpiForWindow(windowHandle);
+	ReleaseDC(windowHandle, hdc);
+	return static_cast<float>(dpiX) / 96.0f;
+}
+
 void convertToGlobalClientRect(HWND hWindow, int x, int y, int& globalX, int& globalY) {
 
 	POINT clientPoint = { x, y };
