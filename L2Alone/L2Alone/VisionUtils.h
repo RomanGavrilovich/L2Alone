@@ -443,9 +443,6 @@ void initHDistribution(BitMapInfo& bitMapInfo, int x, int y, int width, int heig
 			int h, s, v;
 			getPixelHsv(bitMapInfo, ix, iy, h, s, v);
 
-			// TODO: REMOVE
-			//drawPixelRgb(bitMapInfo, ix, iy, 255, 0, 0);
-
 			tmp[h] += 100.0 / total;
 		}
 	}
@@ -584,13 +581,6 @@ bool hasHorizontalBorderInRange(BitMapInfo& bmi, int x, int y, int width, int bo
 			break;
 		}
 	}
-
-//#ifdef TEST
-//	for (int i = 0; i < range; ++i) {
-//		if (hasHorizontalBorder(bmi, x, startY + i, width, borderThreshold, missFactor, false)) {
-//		}
-//	}
-//#endif // TEST
 
 	return r;
 }
