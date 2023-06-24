@@ -301,27 +301,37 @@ void AutologinStrategy::selectCharacter(HWND hWindow, SelectCharacterDefinition&
 
 	int dropdownClickX, dropdownClickY;
 	convertToGlobalClientRect(hWindow, dropDownX, dropDownY, dropdownClickX, dropdownClickY);
+	logger.log("Drop down click x: ", dropdownClickX, ", Drop down click y: ", dropdownClickY);
 
 	int charSlotClickX, charSlotClickY;
 	convertToGlobalClientRect(hWindow, dropDownX, dropDownY + charDropdownOffset, charSlotClickX, charSlotClickY);
+	logger.log("Char slot click x: ", charSlotClickX, ", Char slot click y: ", charSlotClickY);
 
 	auto p = convertRtPoint(refScreenWidth, refScreenHeight, wWidth, wHeight, def.startX, def.startY, def.startAnchor, scaleFactor);
 
 	int targetX, targetY;
 	convertToGlobalClientRect(hWindow, p.x, p.y, targetX, targetY);
+	logger.log("Target click x: ", targetX, ", Target click y: ", targetY);
 
 	vector<L2EventLockData> v;
-	v.push_back(L2EventLockData{ WM_MOUSEMOVE, dropdownClickX, dropdownClickY });
-	v.push_back(L2EventLockData{ WM_LBUTTONDOWN, dropdownClickX, dropdownClickY });
-	v.push_back(L2EventLockData{ WM_LBUTTONUP, dropdownClickX, dropdownClickY });
 
-	v.push_back(L2EventLockData{ WM_MOUSEMOVE, charSlotClickX, charSlotClickY });
-	v.push_back(L2EventLockData{ WM_LBUTTONDOWN, charSlotClickX, charSlotClickY });
-	v.push_back(L2EventLockData{ WM_LBUTTONUP, charSlotClickX, charSlotClickY });
+	int lockClickX = dropdownClickX * scaleFactor;
+	int lockClickY = dropdownClickY * scaleFactor;
+	v.push_back(L2EventLockData{ WM_MOUSEMOVE, lockClickX, lockClickY });
+	v.push_back(L2EventLockData{ WM_LBUTTONDOWN, lockClickX, lockClickY });
+	v.push_back(L2EventLockData{ WM_LBUTTONUP, lockClickX, lockClickY });
 
-	v.push_back(L2EventLockData{ WM_MOUSEMOVE, targetX, targetY });
-	v.push_back(L2EventLockData{ WM_LBUTTONDOWN, targetX, targetY });
-	v.push_back(L2EventLockData{ WM_LBUTTONUP, targetX, targetY });
+	int lockSlotClickX = charSlotClickX * scaleFactor;
+	int lockSlotClickY = charSlotClickY * scaleFactor;
+	v.push_back(L2EventLockData{ WM_MOUSEMOVE, lockSlotClickX, lockSlotClickY });
+	v.push_back(L2EventLockData{ WM_LBUTTONDOWN, lockSlotClickX, lockSlotClickY });
+	v.push_back(L2EventLockData{ WM_LBUTTONUP, lockSlotClickX, lockSlotClickY });
+
+	int lockTargetX = targetX * scaleFactor;
+	int lockTargetY = targetY * scaleFactor;
+	v.push_back(L2EventLockData{ WM_MOUSEMOVE, lockTargetX, lockTargetY });
+	v.push_back(L2EventLockData{ WM_LBUTTONDOWN, lockTargetX, lockTargetY });
+	v.push_back(L2EventLockData{ WM_LBUTTONUP, lockTargetX, lockTargetY });
 
 	POINT cursorPointer;
 	GetCursorPos(&cursorPointer);
