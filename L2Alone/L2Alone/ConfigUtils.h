@@ -20,7 +20,7 @@
 #define ACCOUNT_IN_USE_DELAY "AccountInUseDelay"
 
 // Features
-#define AUTOLOGIN_LINK_ENABLED "AutologinLinkEnabled"
+#define LOGIN_PASSWORD_VALIDATION_ENABLED "LoginPasswordValidationEnabled"
 #define FAST_FLOW_ENABLED "FastFlowEnabled"
 #define CENTER_WINDOW_ENABLED "CenterWindowEnabled"
 #define ACCOUNT_KEY "Account."
@@ -97,7 +97,7 @@ struct L2AloneConfig {
 	int crashRecoveryMinDelayMs = 60000;
 
 	// Autologin link
-	bool autologinLinkEnabled = true;
+	bool loginPasswordValidatinEnabled = true;
 };
 
 using namespace std;
@@ -221,9 +221,9 @@ L2AloneConfig loadL2AloneConfig() {
 				config.crashRecoveryMinDelayMs = stoi(trim(v));
 				logger.log("Crash recovery min delay ms: ", config.crashRecoveryMinDelayMs);
 			}
-			else if (k == AUTOLOGIN_LINK_ENABLED) {
-				config.autologinLinkEnabled = stoi(trim(v));
-				logger.log("Autologin link enabled: ", config.autologinLinkEnabled);
+			else if (k == LOGIN_PASSWORD_VALIDATION_ENABLED) {
+				config.loginPasswordValidatinEnabled = stoi(trim(v));
+				logger.log("Login and password validation enabled: ", config.loginPasswordValidatinEnabled);
 			}
 		}
 	}

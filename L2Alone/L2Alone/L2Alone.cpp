@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 		stringstream ss;
 
 		L2AloneConfig config = loadL2AloneConfig();
-		if (config.autologinLinkEnabled) {
+		if (config.loginPasswordValidatinEnabled) {
 			if (argc < 2) {
 				showMessage("Login is not provided");
 				return 1;
@@ -68,24 +68,6 @@ int main(int argc, char* argv[])
 			if (argc < 3) {
 				showMessage("Password is not provided");
 				return 1;
-			}
-
-			if (argc > 3) {
-				try {
-					int slotValue = stoi(argv[3]);
-					if (1 <= slotValue && slotValue <= 7) {
-						slot = (L2CharSlot)slotValue;
-					}
-					else {
-						throw exception("Incorrect char slot value");
-					}
-				}
-				catch (exception e) {
-					stringstream ss;
-					ss << "Incorrect char slot index: " << argv[3] << ". Expected index in range [1,7]";
-					showMessage(ss.str());
-					return 1;
-				}
 			}
 		}
 
@@ -108,9 +90,27 @@ int main(int argc, char* argv[])
 
 		string account;
 		string password;
-		if (config.autologinLinkEnabled) {
+		if (argc > 2) {
 			account = argv[1];
 			password = argv[2];
+		}
+
+		if (argc > 3) {
+			try {
+				int slotValue = stoi(argv[3]);
+				if (1 <= slotValue && slotValue <= 7) {
+					slot = (L2CharSlot)slotValue;
+				}
+				else {
+					throw exception("Incorrect char slot value");
+				}
+			}
+			catch (exception e) {
+				stringstream ss;
+				ss << "Incorrect char slot index: " << argv[3] << ". Expected index in range [1,7]";
+				showMessage(ss.str());
+				return 1;
+			}
 		}
 
 		AutologinStrategy *autologinStrategy;
