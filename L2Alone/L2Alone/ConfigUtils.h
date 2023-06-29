@@ -20,6 +20,7 @@
 #define ACCOUNT_IN_USE_DELAY "AccountInUseDelay"
 
 // Features
+#define AUTOLOGIN_LINK_ENABLED "AutologinLinkEnabled"
 #define FAST_FLOW_ENABLED "FastFlowEnabled"
 #define CENTER_WINDOW_ENABLED "CenterWindowEnabled"
 #define ACCOUNT_KEY "Account."
@@ -94,6 +95,9 @@ struct L2AloneConfig {
 	// Recovery
 	bool crashRecoveryEnabled = true;
 	int crashRecoveryMinDelayMs = 60000;
+
+	// Autologin link
+	bool autologinLinkEnabled = true;
 };
 
 using namespace std;
@@ -216,6 +220,10 @@ L2AloneConfig loadL2AloneConfig() {
 			else if (k == CRASH_RECOVERY_MIN_DELAY) {
 				config.crashRecoveryMinDelayMs = stoi(trim(v));
 				logger.log("Crash recovery min delay ms: ", config.crashRecoveryMinDelayMs);
+			}
+			else if (k == AUTOLOGIN_LINK_ENABLED) {
+				config.autologinLinkEnabled = stoi(trim(v));
+				logger.log("Autologin link enabled: ", config.autologinLinkEnabled);
 			}
 		}
 	}

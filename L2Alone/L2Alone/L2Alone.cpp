@@ -56,37 +56,39 @@ int main(int argc, char* argv[])
 
 		L2CharSlot slot = L2CharSlot::ACTIVE;
 
-		if (argc < 2) {
-			showMessage("Login is not provided");
-			return 1;
-		}
-
-		if (argc < 3) {
-			showMessage("Password is not provided");
-			return 1;
-		}
-
-		if (argc > 3) {
-			try {
-				int slotValue = stoi(argv[3]);
-				if (1 <= slotValue && slotValue <= 7) {
-					slot = (L2CharSlot)slotValue;
-				}
-				else {
-					throw exception("Incorrect char slot value");
-				}
-			}
-			catch (exception e) {
-				stringstream ss;
-				ss << "Incorrect char slot index: " << argv[3] << ". Expected index in range [1,7]";
-				showMessage(ss.str());
-				return 1;
-			}
-		}
-
 		stringstream ss;
 
 		L2AloneConfig config = loadL2AloneConfig();
+		if (config.autologinLinkEnabled) {
+			if (argc < 2) {
+				showMessage("Login is not provided");
+				return 1;
+			}
+
+			if (argc < 3) {
+				showMessage("Password is not provided");
+				return 1;
+			}
+
+			if (argc > 3) {
+				try {
+					int slotValue = stoi(argv[3]);
+					if (1 <= slotValue && slotValue <= 7) {
+						slot = (L2CharSlot)slotValue;
+					}
+					else {
+						throw exception("Incorrect char slot value");
+					}
+				}
+				catch (exception e) {
+					stringstream ss;
+					ss << "Incorrect char slot index: " << argv[3] << ". Expected index in range [1,7]";
+					showMessage(ss.str());
+					return 1;
+				}
+			}
+		}
+
 		if (config.debugEnabled) {
 			ss << "Debug/" << GetCurrentProcessId();
 			prepareDirectory("Debug");
@@ -104,8 +106,12 @@ int main(int argc, char* argv[])
 
 		eventService.start();
 
-		string account = argv[1];
-		string password = argv[2];
+		string account;
+		string password;
+		if (config.autologinLinkEnabled) {
+			account = argv[1];
+			password = argv[2];
+		}
 
 		AutologinStrategy *autologinStrategy;
 		if (config.version == C2) {
@@ -169,7 +175,9 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 			eventService.setKeyboardHandler(d.processId, pvpHandler);
 			eventService.setFocusHandler(d.processId, pvpHandler);
 
-			autologinStrategy->doAutologin(d.hWindow, login, password, slot);
+			if (!login.empty() && !password.empty()) {
+				autologinStrategy->doAutologin(d.hWindow, login, password, slot);
+			}
 			unblockWindowFocus(d.hWindow);
 
 			auto popupHandler = shared_ptr<SubmitL2WindowCreateHandler>(new SubmitL2WindowCreateHandler());
