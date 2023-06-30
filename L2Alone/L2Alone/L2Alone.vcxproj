@@ -196,6 +196,7 @@
     <ClInclude Include="BmpVisionProvider.h" />
     <ClInclude Include="ButtonHueDistributionCapturer.h" />
     <ClInclude Include="C2AutoLoginStrategy.h" />
+    <ClInclude Include="C4AutologinStrategy.h" />
     <ClInclude Include="C5AutologinStrategy.h" />
     <ClInclude Include="CachedVisionInitializer.h" />
     <ClInclude Include="ConfigUtils.h" />
