@@ -273,7 +273,7 @@ Point convertRtPoint(int srcWidth, int srcHeight, int destWidth, int destHeight,
 		int sxOffset = srcWidth - x;
 		int syOffset = srcHeight - y;
 
-		p.x = destWidth - sxOffset;
+		p.x = destWidth - sxOffset / scaleFactor;
 		p.y = destHeight - syOffset / scaleFactor;
 	}
 	else {
