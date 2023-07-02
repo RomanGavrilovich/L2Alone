@@ -266,8 +266,8 @@ Point convertRtPoint(int srcWidth, int srcHeight, int destWidth, int destHeight,
 		int syOffset = srcHeight - y;
 
 		int dhw = destWidth / 2;
-		p.x = dhw + sxOffset;
-		p.y = destHeight - syOffset;
+		p.x = dhw + sxOffset / scaleFactor;
+		p.y = destHeight - syOffset / scaleFactor;
 	}
 	else if (anchor == RefAnchor::BottomRight) {
 		int sxOffset = srcWidth - x;
