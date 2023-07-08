@@ -128,6 +128,14 @@ public:
 		dest.wDefs[L2Window::CHARACTERS] = charsDef;
 	}
 
+	static VisionDefinition createC3VisionDefinition() {
+		VisionDefinition vDef;
+
+		// C3 layout is the same as Ñ4
+		initC4WindowsDefinitions(vDef);
+		return vDef;
+	}
+
 	static VisionDefinition createC2VisionDefinition() {
 		VisionDefinition vDef;
 		initC2WindowsDefinitions(vDef);

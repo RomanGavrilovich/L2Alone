@@ -23,6 +23,7 @@
 #include "AutologinStrategy.h"
 #include "C5AutologinStrategy.h"
 #include "C4AutologinStrategy.h"
+#include "C3AutologinStrategy.h"
 #include "C2AutoLoginStrategy.h"
 #include "LayoutManager.h"
 #include "LayoutManagerUpdateHandler.h"
@@ -123,6 +124,9 @@ int main(int argc, char* argv[])
 		}
 		else if (config.version == C4) {
 			autologinStrategy = new C4AutologinStrategy(config);
+		}
+		else if (config.version == C3) {
+			autologinStrategy = new C3AutologinStrategy(config);
 		}
 		else {
 			throw exception("Unsupported L2 version");

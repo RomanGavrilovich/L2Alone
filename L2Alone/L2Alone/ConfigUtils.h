@@ -43,6 +43,7 @@
 enum L2Version { 
 	NONE,
 	C2,
+	C3,
 	C4,
 	C5,
 };
@@ -247,6 +248,9 @@ L2AloneConfig loadL2AloneConfig() {
 L2Version toL2Version(string value) {
 	if (value == "C2") {
 		return L2Version::C2;
+	}
+	else if (value == "C3") {
+		return L2Version::C3;
 	}
 	else if (value == "C4") {
 		return L2Version::C4;

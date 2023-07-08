@@ -152,6 +152,9 @@
     <ClInclude Include="C4AutologinStrategy.h">
       <Filter>Header Files\Autologin</Filter>
     </ClInclude>
+    <ClInclude Include="C3AutologinStrategy.h">
+      <Filter>Header Files\Autologin</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="L2Alone.rc">
