@@ -2,11 +2,36 @@
 
 #include <string>
 #include <Windows.h>
+#include <VersionHelpers.h>
 #include "Logger.h"
 
 using namespace std;
 
 #define EXIT_HOT_KEY_OFFSET 34200
+
+int getDpi(HWND hWindow) {
+
+	HMODULE user32Module = LoadLibrary(L"user32.dll");
+
+	if (user32Module) {
+		// Attempt to get the address of GetDpiForWindow
+		typedef UINT(WINAPI* GetDpiForWindowFunc)(HWND);
+		GetDpiForWindowFunc getDpiForWindow = reinterpret_cast<GetDpiForWindowFunc>(
+			GetProcAddress(user32Module, "GetDpiForWindow"));
+
+		int dpi = 96.0f;
+		if (getDpiForWindow) {
+			dpi = getDpiForWindow(hWindow);
+		}
+
+		// Unload the dynamically loaded library
+		FreeLibrary(user32Module);
+		return dpi;
+	}
+	else {
+		throw exception("Failed to load user32.dll");
+	}
+}
 
 bool startWith(string target, string prefix) {
 
@@ -49,6 +74,7 @@ void postControlMessage(HWND hWindow, int vk) {
 }
 
 void postCredentials(HWND hWindow, string& login, string& password) {
+
 	postText(hWindow, login);
 	postControlMessage(hWindow, VK_TAB);
 	postText(hWindow, password);
@@ -56,9 +82,10 @@ void postCredentials(HWND hWindow, string& login, string& password) {
 	logger.log("Credentials posted");
 }
 
+
 float getScaleFactor(HWND windowHandle) {
 	HDC hdc = GetDC(windowHandle);
-	int dpiX = GetDpiForWindow(windowHandle);
+	int dpiX = getDpi(windowHandle);
 	ReleaseDC(windowHandle, hdc);
 	return static_cast<float>(dpiX) / 96.0f;
 }

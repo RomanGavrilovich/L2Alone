@@ -5,6 +5,7 @@
 #include <map>
 
 #include "Logger.h"
+#include "Utils.h"
 #include "WindowDefinition.h"
 
 using namespace std;
@@ -369,6 +370,15 @@ double getDistributionError(map<int, double>& a, map<int, double>& b) {
 	return sum;
 }
 
+void scaleClientRect(HWND hWnd, RECT& rcClient) {
+
+	int dpi = getDpi(hWnd);
+	rcClient.left = MulDiv(rcClient.left, dpi, USER_DEFAULT_SCREEN_DPI);
+	rcClient.right = MulDiv(rcClient.right, dpi, USER_DEFAULT_SCREEN_DPI);
+	rcClient.top = MulDiv(rcClient.top, dpi, USER_DEFAULT_SCREEN_DPI);
+	rcClient.bottom = MulDiv(rcClient.bottom, dpi, USER_DEFAULT_SCREEN_DPI);
+}
+
 bool captureDcBmp(HWND hWnd, BitMapInfo& bitMapInfo) {
 
 	bool success = false;
@@ -377,12 +387,7 @@ bool captureDcBmp(HWND hWnd, BitMapInfo& bitMapInfo) {
 	HDC hMemDC = CreateCompatibleDC(hWindowDC);
 	RECT rcClient;
 	GetClientRect(hWnd, &rcClient);
-
-	int dpi = GetDpiForWindow(hWnd);
-	rcClient.left = MulDiv(rcClient.left, dpi, USER_DEFAULT_SCREEN_DPI);
-	rcClient.right = MulDiv(rcClient.right, dpi, USER_DEFAULT_SCREEN_DPI);
-	rcClient.top = MulDiv(rcClient.top, dpi, USER_DEFAULT_SCREEN_DPI);
-	rcClient.bottom = MulDiv(rcClient.bottom, dpi, USER_DEFAULT_SCREEN_DPI);
+	scaleClientRect(hWnd, rcClient);
 
 	HBITMAP hBitmap = CreateCompatibleBitmap(hWindowDC, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top);
 	HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
