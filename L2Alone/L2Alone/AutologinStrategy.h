@@ -68,6 +68,8 @@ protected:
 	void selectCharacter(HWND hWindow, SelectCharacterDefinition& def);
 	L2Window captureAuthResultWindows(HWND hWindow);
 
+	virtual void beforeCharSlotSelection(HWND hWindow, int targetX, int targetY);
+
 protected:
 	virtual bool fastFlowSupported(L2CharSlot slot);
 	virtual bool stopFastLogin(L2Window w);
@@ -116,6 +118,9 @@ bool AutologinStrategy::fastFlowSupported(L2CharSlot slot) {
 
 bool AutologinStrategy::stopFastLogin(L2Window w) {
 	return false;
+}
+
+void AutologinStrategy::beforeCharSlotSelection(HWND hWindow, int targetX, int targetY) {
 }
 
 L2Window AutologinStrategy::doFastAutoLogin(HWND hWindow, bool fromAccountInUse) {
@@ -345,6 +350,7 @@ void AutologinStrategy::selectCharacter(HWND hWindow, SelectCharacterDefinition&
 		doClick(hWindow, dropdownClickX, dropdownClickY, config.mouseEventsDelay);
 		Sleep(def.actionTimeout);
 
+		beforeCharSlotSelection(hWindow, charSlotClickX, charSlotClickY);
 		doClick(hWindow, charSlotClickX, charSlotClickY, config.mouseEventsDelay);
 		Sleep(def.actionTimeout);
 

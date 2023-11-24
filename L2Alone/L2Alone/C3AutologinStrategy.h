@@ -11,10 +11,19 @@ public:
 protected:
 	void initSelectCharDefinition(SelectCharacterDefinition& def) override;
 	void onAccountInUse(HWND hWindow) override;
+	void beforeCharSlotSelection(HWND hWindow, int targetX, int targetY) override;
 };
 
 C3AutologinStrategy::C3AutologinStrategy(L2AloneConfig& config) : AutologinStrategy(WindowsDefinitions::createC4VisionDefinition(), config) {
 
+}
+
+void C3AutologinStrategy::beforeCharSlotSelection(HWND hWindow, int targetX, int targetY) {
+	for (int i = 0; i < 10; ++i) {
+		for (int j = 0; j < 10; ++j) {
+			sendLowLevelMouseEvent(hWindow, targetX - 5 + i, targetY - 5 + j, MOUSEEVENTF_MOVE);
+		}
+	}
 }
 
 void C3AutologinStrategy::initSelectCharDefinition(SelectCharacterDefinition& def) {
