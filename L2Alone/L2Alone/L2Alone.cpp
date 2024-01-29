@@ -184,7 +184,13 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 			eventService.setFocusHandler(d.processId, pvpHandler);
 
 			if (!login.empty() && !password.empty()) {
-				autologinStrategy->doAutologin(d.hWindow, login, password, slot);
+				try {
+					autologinStrategy->doAutologin(d.hWindow, login, password, slot);
+				}
+				catch (exception e) {
+					logger.log("Auto login failure: ", e.what());
+					showMessage(e.what());
+				}
 			}
 			unblockWindowFocus(d.hWindow);
 
@@ -259,7 +265,6 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 		catch (exception e) {
 			logger.log("Auto login failure: ", e.what());
 			showMessage(e.what());
-			TerminateProcess(hProcess, 0);
 		}
 
 		CloseHandle(hProcess);
