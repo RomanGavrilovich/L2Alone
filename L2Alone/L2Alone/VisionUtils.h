@@ -486,7 +486,7 @@ bool isLoadingWindow(BitMapInfo& bmi) {
 	return false;
 }
 
-Point toLbPoint(int rtWidth, int rtHeight, BitMapInfo& bitMapInfo, ButtonDefinition& bDef) {
+Point toLbPoint(int rtWidth, int rtHeight, BitMapInfo& bitMapInfo, RectDefinition& bDef) {
 
 	if (bDef.anchor == RefAnchor::Center) {
 		return toLbViaCenterOffset(rtWidth, rtHeight, bitMapInfo.width, bitMapInfo.height, bDef.rtX, bDef.rtY);
@@ -612,7 +612,7 @@ bool hasVerticalBorderInRange(BitMapInfo& bmi, int x, int y, int height, int bor
 	return r;
 }
 
-bool hasBorders(int rtWidth, int rtHeight, BitMapInfo& bmi, ButtonDefinition& bDef) {
+bool hasBorders(int rtWidth, int rtHeight, BitMapInfo& bmi, RectDefinition& bDef) {
 
 	int range = 8;
 	double missFactor = 0.3;

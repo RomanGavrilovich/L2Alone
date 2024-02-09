@@ -26,9 +26,9 @@ public:
 		dest.wHeight = refScreenHeight;
 
 		// Log-in screen
-		vector<ButtonDefinition> welcomeBtnDefs;
-		welcomeBtnDefs.push_back(ButtonDefinition{ 583, 402, 94, 21 });
-		welcomeBtnDefs.push_back(ButtonDefinition{ 683, 402, 94, 21 });
+		vector<RectDefinition> welcomeBtnDefs;
+		welcomeBtnDefs.push_back(RectDefinition{ 583, 402, 94, 21 });
+		welcomeBtnDefs.push_back(RectDefinition{ 683, 402, 94, 21 });
 
 		dest.wDefs[L2Window::WELCOME] = WindowDefinition{ welcomeBtnDefs, 0, 0 };
 
@@ -39,35 +39,35 @@ public:
 		dest.wDefs[L2Window::INCORRECT_PASSWORD] = incorrectPasswordDef;
 
 		// Connecting screen
-		vector<ButtonDefinition> connectingBtnDefs;
-		connectingBtnDefs.push_back(ButtonDefinition{ 634, 434, 92, 20 });
+		vector<RectDefinition> connectingBtnDefs;
+		connectingBtnDefs.push_back(RectDefinition{ 634, 434, 92, 20 });
 
 		auto connectingDef = WindowDefinition{ connectingBtnDefs, 0, 0 };
 		dest.wDefs[L2Window::CONNECTING] = connectingDef;
 
 		// Agreement screen
-		vector<ButtonDefinition> agreementBtnDefs;
-		agreementBtnDefs.push_back(ButtonDefinition{ 603, 568, 74, 21 });
-		agreementBtnDefs.push_back(ButtonDefinition{ 683, 568, 74, 21 });
+		vector<RectDefinition> agreementBtnDefs;
+		agreementBtnDefs.push_back(RectDefinition{ 603, 568, 74, 21 });
+		agreementBtnDefs.push_back(RectDefinition{ 683, 568, 74, 21 });
 
 		auto agreementDef = WindowDefinition{ agreementBtnDefs, 0, 0 };
 		dest.wDefs[L2Window::AGREEMENT] = agreementDef;
 
 		// Servers screen
-		vector<ButtonDefinition> serverBtnDefs;
-		serverBtnDefs.push_back(ButtonDefinition{ 563, 410, 74, 21 });
-		serverBtnDefs.push_back(ButtonDefinition{ 643, 410, 74, 21 });
-		serverBtnDefs.push_back(ButtonDefinition{ 724, 410, 74, 21 });
+		vector<RectDefinition> serverBtnDefs;
+		serverBtnDefs.push_back(RectDefinition{ 563, 410, 74, 21 });
+		serverBtnDefs.push_back(RectDefinition{ 643, 410, 74, 21 });
+		serverBtnDefs.push_back(RectDefinition{ 724, 410, 74, 21 });
 
 		auto serversDef = WindowDefinition{ serverBtnDefs, 0, 0 };
 		dest.wDefs[L2Window::SERVERS] = serversDef;
 
 		// Chars screen
-		vector<ButtonDefinition> charsBtnDefs;
-		charsBtnDefs.push_back(ButtonDefinition{ 623, 668, 114, 29, RefAnchor::CenterBottom });
-		charsBtnDefs.push_back(ButtonDefinition{ 1219, 589, 94, 21, RefAnchor::BottomRight });
-		charsBtnDefs.push_back(ButtonDefinition{ 1219, 613, 94, 21, RefAnchor::BottomRight });
-		charsBtnDefs.push_back(ButtonDefinition{ 1219, 663, 94, 21, RefAnchor::BottomRight });
+		vector<RectDefinition> charsBtnDefs;
+		charsBtnDefs.push_back(RectDefinition{ 623, 668, 114, 29, RefAnchor::CenterBottom });
+		charsBtnDefs.push_back(RectDefinition{ 1219, 589, 94, 21, RefAnchor::BottomRight });
+		charsBtnDefs.push_back(RectDefinition{ 1219, 613, 94, 21, RefAnchor::BottomRight });
+		charsBtnDefs.push_back(RectDefinition{ 1219, 663, 94, 21, RefAnchor::BottomRight });
 
 		auto charsDef = WindowDefinition{ charsBtnDefs, 0, 0 };
 		dest.wDefs[L2Window::CHARACTERS] = charsDef;
@@ -88,9 +88,9 @@ public:
 		dest.wHeight = refScreenHeight;
 
 		// Log-in screen
-		vector<ButtonDefinition> welcomeBtnDefs;
-		welcomeBtnDefs.push_back(ButtonDefinition{ 583, 377, 94, 21 });
-		welcomeBtnDefs.push_back(ButtonDefinition{ 683, 377, 94, 21 });
+		vector<RectDefinition> welcomeBtnDefs;
+		welcomeBtnDefs.push_back(RectDefinition{ 583, 377, 94, 21 });
+		welcomeBtnDefs.push_back(RectDefinition{ 683, 377, 94, 21 });
 
 		dest.wDefs[L2Window::WELCOME] = WindowDefinition{ welcomeBtnDefs, 0, 0 };
 
@@ -101,28 +101,28 @@ public:
 		dest.wDefs[L2Window::INCORRECT_PASSWORD] = incorrectPasswordDef;
 
 		// Agreement screen
-		vector<ButtonDefinition> agreementBtnDefs;
-		agreementBtnDefs.push_back(ButtonDefinition{ 603, 541, 74, 21 });
-		agreementBtnDefs.push_back(ButtonDefinition{ 683, 541, 74, 21 });
+		vector<RectDefinition> agreementBtnDefs;
+		agreementBtnDefs.push_back(RectDefinition{ 603, 541, 74, 21 });
+		agreementBtnDefs.push_back(RectDefinition{ 683, 541, 74, 21 });
 
 		auto agreementDef = WindowDefinition{ agreementBtnDefs, 0, 0 };
 		dest.wDefs[L2Window::AGREEMENT] = agreementDef;
 
 		// Servers screen
-		vector<ButtonDefinition> serverBtnDefs;
-		serverBtnDefs.push_back(ButtonDefinition{ 563, 384, 74, 21 });
-		serverBtnDefs.push_back(ButtonDefinition{ 643, 384, 74, 21 });
-		serverBtnDefs.push_back(ButtonDefinition{ 724, 384, 74, 21 });
+		vector<RectDefinition> serverBtnDefs;
+		serverBtnDefs.push_back(RectDefinition{ 563, 384, 74, 21 });
+		serverBtnDefs.push_back(RectDefinition{ 643, 384, 74, 21 });
+		serverBtnDefs.push_back(RectDefinition{ 724, 384, 74, 21 });
 
 		auto serversDef = WindowDefinition{ serverBtnDefs, 0, 0 };
 		dest.wDefs[L2Window::SERVERS] = serversDef;
 
 		// Chars screen
-		vector<ButtonDefinition> charsBtnDefs;
-		charsBtnDefs.push_back(ButtonDefinition{ 623, 668, 114, 29, RefAnchor::CenterBottom });
-		charsBtnDefs.push_back(ButtonDefinition{ 1219, 589, 94, 21, RefAnchor::BottomRight });
-		charsBtnDefs.push_back(ButtonDefinition{ 1219, 613, 94, 21, RefAnchor::BottomRight });
-		charsBtnDefs.push_back(ButtonDefinition{ 1219, 663, 94, 21, RefAnchor::BottomRight });
+		vector<RectDefinition> charsBtnDefs;
+		charsBtnDefs.push_back(RectDefinition{ 623, 668, 114, 29, RefAnchor::CenterBottom });
+		charsBtnDefs.push_back(RectDefinition{ 1219, 589, 94, 21, RefAnchor::BottomRight });
+		charsBtnDefs.push_back(RectDefinition{ 1219, 613, 94, 21, RefAnchor::BottomRight });
+		charsBtnDefs.push_back(RectDefinition{ 1219, 663, 94, 21, RefAnchor::BottomRight });
 
 		auto charsDef = WindowDefinition{ charsBtnDefs, 0, 0 };
 		dest.wDefs[L2Window::CHARACTERS] = charsDef;
@@ -151,9 +151,9 @@ public:
 		dest.wHeight = refScreenHeight;
 
 		// Log-in screen
-		vector<ButtonDefinition> welcomeBtnDefs;
-		welcomeBtnDefs.push_back(ButtonDefinition{ 606, 407, 64, 19 });
-		welcomeBtnDefs.push_back(ButtonDefinition{ 691, 407, 64, 19 });
+		vector<RectDefinition> welcomeBtnDefs;
+		welcomeBtnDefs.push_back(RectDefinition{ 606, 407, 64, 19 });
+		welcomeBtnDefs.push_back(RectDefinition{ 691, 407, 64, 19 });
 
 		auto welcomeDef = WindowDefinition{ welcomeBtnDefs, 0, 0 };
 		dest.wDefs[L2Window::WELCOME] = welcomeDef;
@@ -165,28 +165,28 @@ public:
 		dest.wDefs[L2Window::INCORRECT_PASSWORD] = incorrectPasswordDef;
 
 		// Agreement screen
-		vector<ButtonDefinition> agreementBtnDefs;
-		agreementBtnDefs.push_back(ButtonDefinition{ 580, 545, 67, 19 });
-		agreementBtnDefs.push_back(ButtonDefinition{ 713, 545, 67, 19 });
+		vector<RectDefinition> agreementBtnDefs;
+		agreementBtnDefs.push_back(RectDefinition{ 580, 545, 67, 19 });
+		agreementBtnDefs.push_back(RectDefinition{ 713, 545, 67, 19 });
 
 		auto agreementDef = WindowDefinition{ agreementBtnDefs, 0, 0 };
 		dest.wDefs[L2Window::AGREEMENT] = agreementDef;
 
 		// Servers screen
-		vector<ButtonDefinition> serverBtnDefs;
-		serverBtnDefs.push_back(ButtonDefinition{ 555, 686, 67, 19 });
-		serverBtnDefs.push_back(ButtonDefinition{ 647, 686, 67, 19 });
-		serverBtnDefs.push_back(ButtonDefinition{ 741, 686, 67, 19 });
+		vector<RectDefinition> serverBtnDefs;
+		serverBtnDefs.push_back(RectDefinition{ 555, 686, 67, 19 });
+		serverBtnDefs.push_back(RectDefinition{ 647, 686, 67, 19 });
+		serverBtnDefs.push_back(RectDefinition{ 741, 686, 67, 19 });
 
 		auto serversDef = WindowDefinition{ serverBtnDefs, 0, 0 };
 		dest.wDefs[L2Window::SERVERS] = serversDef;
 
 		// Chars screen
-		vector<ButtonDefinition> charsBtnDefs;
-		charsBtnDefs.push_back(ButtonDefinition{ 1229, 544, 99, 19, RefAnchor::BottomRight });
-		charsBtnDefs.push_back(ButtonDefinition{ 1229, 568, 99, 19, RefAnchor::BottomRight });
-		charsBtnDefs.push_back(ButtonDefinition{ 1229, 592, 99, 19, RefAnchor::BottomRight });
-		charsBtnDefs.push_back(ButtonDefinition{ 1229, 616, 99, 19, RefAnchor::BottomRight });
+		vector<RectDefinition> charsBtnDefs;
+		charsBtnDefs.push_back(RectDefinition{ 1229, 544, 99, 19, RefAnchor::BottomRight });
+		charsBtnDefs.push_back(RectDefinition{ 1229, 568, 99, 19, RefAnchor::BottomRight });
+		charsBtnDefs.push_back(RectDefinition{ 1229, 592, 99, 19, RefAnchor::BottomRight });
+		charsBtnDefs.push_back(RectDefinition{ 1229, 616, 99, 19, RefAnchor::BottomRight });
 
 		auto charsDef = WindowDefinition{ charsBtnDefs, 0, 0 };
 		dest.wDefs[L2Window::CHARACTERS] = charsDef;

@@ -69,7 +69,7 @@ bool WindowsClassifier::isWindow(BitMapInfo& bmi, L2Window window) {
 
 	bool res = true;
 	for (auto& bDef : wDef.bDefs) {
-		ButtonHueDistributionCapturer capturer(vDef.wWidth, vDef.wHeight, bDef);
+		RectHueDistributionCapturer capturer(vDef.wWidth, vDef.wHeight, bDef);
 
 		map<int, double> hDistr;
 		capturer.capture(bmi, hDistr);

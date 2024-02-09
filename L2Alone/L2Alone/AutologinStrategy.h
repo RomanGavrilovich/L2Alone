@@ -37,6 +37,8 @@
 #include "L2EventService.h"
 #include "ConfigUtils.h"
 #include "HwndVisionProvider.h"
+#include "LoadingPredicate.h"
+#include "TrueLoadingPredicate.h"
 
 using namespace std;
 
@@ -55,6 +57,7 @@ class AutologinStrategy {
 
 public:
 
+	AutologinStrategy(VisionDefinition vDef, L2AloneConfig& config, LoadingPredicate* loadingPredicate);
 	AutologinStrategy(VisionDefinition vDef, L2AloneConfig& config);
 	~AutologinStrategy();
 
@@ -82,6 +85,7 @@ private:
 	VisionInitializer* vInitializer;
 	InMemoryVisionCache* inMemoryVisionCache;
 	RuntimeVisionInitializer* runtimeVisionInitializer;
+	LoadingPredicate* loadingPredicate;
 
 	void doConfirmationFlow(HWND hWindow, SelectCharacterDefinition& selectCharDef);
 	void handleAccountIsUsing(HWND hWindow, SelectCharacterDefinition& selectCharDef);
@@ -92,16 +96,21 @@ private:
 	L2Window doFastAutoLogin(HWND hWindow, bool fromAccountInUse);
 };
 
-AutologinStrategy::AutologinStrategy(VisionDefinition vDef, L2AloneConfig& config) {
+AutologinStrategy::AutologinStrategy(VisionDefinition vDef, L2AloneConfig& config, LoadingPredicate* loadingPredicate) {
 	this->config = config;
+	this->loadingPredicate = loadingPredicate;
 
 	auto bDef = vDef.wDefs[L2Window::WELCOME].bDefs[0];
-	capturer = new ButtonHueDistributionCapturer(vDef.wWidth, vDef.wHeight, bDef);
+	capturer = new RectHueDistributionCapturer(vDef.wWidth, vDef.wHeight, bDef);
 
 	inMemoryVisionCache = new InMemoryVisionCache();
 	runtimeVisionInitializer = new RuntimeVisionInitializer(capturer, config.debugBmpPath);
 	vInitializer = new CachedVisionInitializer(inMemoryVisionCache, runtimeVisionInitializer);
 	wClassifier = new WindowsClassifier(vDef, config.debugBmpPath);
+}
+
+AutologinStrategy::AutologinStrategy(VisionDefinition vDef, L2AloneConfig& config) 
+	: AutologinStrategy(vDef, config, new TrueLoadingPredicate()) {
 }
 
 AutologinStrategy::~AutologinStrategy() {

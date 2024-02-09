@@ -7,28 +7,28 @@
 
 using namespace std;
 
-class ButtonHueDistributionCapturer : public HueDistributionCapturer
+class RectHueDistributionCapturer : public HueDistributionCapturer
 {
 public:
 
-	ButtonHueDistributionCapturer(int rtWidth, int rtHeight, ButtonDefinition& def);
+	RectHueDistributionCapturer(int rtWidth, int rtHeight, RectDefinition& def);
 
 	virtual void capture(BitMapInfo& bmi, map<int, double>& dest) override;
 
 private:
 
-	ButtonDefinition def;
+	RectDefinition def;
 	int rtWidth;
 	int rtHeight;
 };
 
-ButtonHueDistributionCapturer::ButtonHueDistributionCapturer(int rtWidth, int rtHeight, ButtonDefinition &def) {
+RectHueDistributionCapturer::RectHueDistributionCapturer(int rtWidth, int rtHeight, RectDefinition &def) {
 	this->def = def;
 	this->rtWidth = rtWidth;
 	this->rtHeight = rtHeight;
 }
 
-void ButtonHueDistributionCapturer::capture(BitMapInfo& bmi, map<int, double>& dest) {
+void RectHueDistributionCapturer::capture(BitMapInfo& bmi, map<int, double>& dest) {
 
 	Point targetLb = toLbPoint(rtWidth, rtHeight, bmi, def);
 	int lbX = targetLb.x;

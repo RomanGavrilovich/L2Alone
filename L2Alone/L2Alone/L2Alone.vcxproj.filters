@@ -101,7 +101,7 @@
     <ClInclude Include="TestUtils.h">
       <Filter>Header Files\Test</Filter>
     </ClInclude>
-    <ClInclude Include="ButtonHueDistributionCapturer.h">
+    <ClInclude Include="RectHueDistributionCapturer.h">
       <Filter>Header Files\Vision</Filter>
     </ClInclude>
     <ClInclude Include="CachedVisionInitializer.h">
@@ -154,6 +154,15 @@
     </ClInclude>
     <ClInclude Include="C3AutologinStrategy.h">
       <Filter>Header Files\Autologin</Filter>
+    </ClInclude>
+    <ClInclude Include="LoadingPredicate.h">
+      <Filter>Header Files\Vision</Filter>
+    </ClInclude>
+    <ClInclude Include="TrueLoadingPredicate.h">
+      <Filter>Header Files\Vision</Filter>
+    </ClInclude>
+    <ClInclude Include="InputHueLoadingPredicate.h">
+      <Filter>Header Files\Vision</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

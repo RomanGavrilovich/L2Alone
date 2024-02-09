@@ -33,7 +33,7 @@ enum RefAnchor {
 	BottomRight
 };
 
-struct ButtonDefinition {
+struct RectDefinition {
 	int rtX;
 	int rtY;
 	int width;
@@ -42,7 +42,7 @@ struct ButtonDefinition {
 };
 
 struct WindowDefinition {
-	vector<ButtonDefinition> bDefs;
+	vector<RectDefinition> bDefs;
 	int textMinSize = 0;
 	int textMaxSize = 0;
 };

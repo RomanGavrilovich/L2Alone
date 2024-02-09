@@ -194,7 +194,7 @@
     <ClInclude Include="AutologinStrategy.h" />
     <ClInclude Include="BmpVisionInitializer.h" />
     <ClInclude Include="BmpVisionProvider.h" />
-    <ClInclude Include="ButtonHueDistributionCapturer.h" />
+    <ClInclude Include="RectHueDistributionCapturer.h" />
     <ClInclude Include="C2AutoLoginStrategy.h" />
     <ClInclude Include="C3AutologinStrategy.h" />
     <ClInclude Include="C4AutologinStrategy.h" />
@@ -205,6 +205,7 @@
     <ClInclude Include="HwndVisionProvider.h" />
     <ClInclude Include="InMemoryLayoutCache.h" />
     <ClInclude Include="InMemoryVisionCache.h" />
+    <ClInclude Include="InputHueLoadingPredicate.h" />
     <ClInclude Include="L2EventHandlers.h" />
     <ClInclude Include="L2FocusEventHandler.h" />
     <ClInclude Include="L2PvpModeHandler.h" />
@@ -215,7 +216,9 @@
     <ClInclude Include="LayoutManager.h" />
     <ClInclude Include="LayoutManagerUpdateHandler.h" />
     <ClInclude Include="LayoutCache.h" />
+    <ClInclude Include="LoadingPredicate.h" />
     <ClInclude Include="RuntimeVisionInitializer.h" />
+    <ClInclude Include="TrueLoadingPredicate.h" />
     <ClInclude Include="VisionInitializer.h" />
     <ClInclude Include="VisionProvider.h" />
     <ClInclude Include="TestUtils.h" />
