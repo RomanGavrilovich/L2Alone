@@ -3,6 +3,8 @@
 #include "LoadingAwaiter.h"
 #include "Logger.h"
 
+#include <Windows.h>
+
 #include <vector>
 
 class InputHueLoadingAwaiter : public LoadingAwaiter {
@@ -10,7 +12,7 @@ class InputHueLoadingAwaiter : public LoadingAwaiter {
 public:
 	InputHueLoadingAwaiter(int rtWidth, int rtHeight, vector<RectDefinition> inputRects);
 	
-	void await(VisionProvider& bmi) override;
+	void await(HWND hWindow, VisionProvider& bmi) override;
 
 private:
 	int rtWidth;
@@ -18,6 +20,7 @@ private:
 	vector<RectDefinition> inputRects;
 
 	void initDistribution(BitMapInfo& bmi, RectDefinition& rect, map<int, double>& dest);
+	void tryFocusInput(HWND hWindow);
 };
 
 InputHueLoadingAwaiter::InputHueLoadingAwaiter(int rtWidth, int rtHeight, vector<RectDefinition> inputRects) {
@@ -26,7 +29,12 @@ InputHueLoadingAwaiter::InputHueLoadingAwaiter(int rtWidth, int rtHeight, vector
 	this->rtHeight = rtHeight;
 }
 
-void InputHueLoadingAwaiter::await(VisionProvider& vp) {
+void InputHueLoadingAwaiter::tryFocusInput(HWND hWindow) {
+
+	postControlMessage(hWindow, VK_RETURN);
+}
+
+void InputHueLoadingAwaiter::await(HWND hWindow, VisionProvider& vp) {
 
 	int retryDelay = 500;
 	for (int i = 0; i < 20; ++i) {
@@ -43,6 +51,9 @@ void InputHueLoadingAwaiter::await(VisionProvider& vp) {
 			double distrError = getDistributionError(h1, h2);
 			if (distrError < 5) {
 				logger.log("Distribution error between input fields are ", distrError, ". Looks like input has no focus");
+
+				tryFocusInput(hWindow);
+
 				vp.dispose(bmi);
 			}
 			else {

@@ -5,5 +5,5 @@
 class LoadingAwaiter {
 
 public:
-	virtual void await(VisionProvider& vp) = 0;
+	virtual void await(HWND hWindow, VisionProvider& vp) = 0;
 };

@@ -6,9 +6,9 @@
 class NoOpLoadingAwaiter : public LoadingAwaiter {
 
 public:
-	void await(VisionProvider& bmi) override;
+	void await(HWND hWindow, VisionProvider& bmi) override;
 };
 
-void NoOpLoadingAwaiter::await(VisionProvider& vp) {
+void NoOpLoadingAwaiter::await(HWND hWindow, VisionProvider& vp) {
 
 }

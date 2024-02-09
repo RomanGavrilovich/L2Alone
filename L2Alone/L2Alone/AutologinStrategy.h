@@ -169,7 +169,7 @@ void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passwor
 		charDef.actionTimeout = config.mouseClickDelay;
 	}
 
-	loadingAwaiter->await(provider);
+	loadingAwaiter->await(hWindow, provider);
 
 	postCredentials(hWindow, login, password);
 	if (config.fastFlowEnabled && fastFlowSupported(slot)) {
