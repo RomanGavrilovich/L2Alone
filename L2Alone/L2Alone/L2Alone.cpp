@@ -47,8 +47,35 @@ void showMessage(string message);
 bool isRunnedFromExe(string process);
 L2WindowCreatedEvent waitL2WindowCreated(int processId, int timeoutMs);
 
-int main(int argc, char* argv[])
+
+std::string convertLPWSTRToUTF8(LPWSTR lpwstr) {
+	int len = WideCharToMultiByte(CP_UTF8, 0, lpwstr, -1, NULL, 0, NULL, NULL);
+	if (len == 0) {
+		// Failed to get length
+		return "";
+	}
+
+	std::string str(len, 0);
+	WideCharToMultiByte(CP_UTF8, 0, lpwstr, -1, &str[0], len, NULL, NULL);
+	return str;
+}
+
+
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
+	_In_opt_ HINSTANCE hPrevInstance,
+	_In_ LPWSTR    lpCmdLine,
+	_In_ int       nCmdShow)
 {
+	// Parse command-line arguments
+	LPWSTR* argv;
+	int argc;
+
+	argv = CommandLineToArgvW(lpCmdLine, &argc);
+	if (argv == NULL) {
+		std::cerr << "Failed to parse command line arguments." << std::endl;
+		return 1;
+	}
+
 	try {
 
 #ifdef L2A_RELEASE
@@ -62,12 +89,12 @@ int main(int argc, char* argv[])
 
 		L2AloneConfig config = loadL2AloneConfig();
 		if (config.loginPasswordValidatinEnabled) {
-			if (argc < 2) {
+			if (argc < 1) {
 				showMessage("Login is not provided");
 				return 1;
 			}
 
-			if (argc < 3) {
+			if (argc < 2) {
 				showMessage("Password is not provided");
 				return 1;
 			}
@@ -92,14 +119,14 @@ int main(int argc, char* argv[])
 
 		string account;
 		string password;
-		if (argc > 2) {
-			account = argv[1];
-			password = argv[2];
+		if (argc > 1) {
+			account = convertLPWSTRToUTF8(argv[0]);
+			password = convertLPWSTRToUTF8(argv[1]);
 		}
 
-		if (argc > 3) {
+		if (argc > 2) {
 			try {
-				int slotValue = stoi(argv[3]);
+				int slotValue = stoi(argv[2]);
 				if (1 <= slotValue && slotValue <= 7) {
 					slot = (L2CharSlot)slotValue;
 				}
