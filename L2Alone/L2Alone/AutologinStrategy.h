@@ -28,7 +28,7 @@
 #include "WindowsClassifier.h"
 #include "WindowsDefinitions.h"
 #include "WindowDefinition.h"
-#include "ButtonHueDistributionCapturer.h"
+#include "RectHueDistributionCapturer.h"
 #include "CachedVisionInitializer.h"
 #include "InMemoryVisionCache.h"
 #include "RuntimeVisionInitializer.h"
@@ -37,8 +37,9 @@
 #include "L2EventService.h"
 #include "ConfigUtils.h"
 #include "HwndVisionProvider.h"
-#include "LoadingPredicate.h"
-#include "TrueLoadingPredicate.h"
+#include "LoadingAwaiter.h"
+#include "InputHueLoadingAwaiter.h"
+#include "NoOpLoadingAwaiter.h"
 
 using namespace std;
 
@@ -57,7 +58,6 @@ class AutologinStrategy {
 
 public:
 
-	AutologinStrategy(VisionDefinition vDef, L2AloneConfig& config, LoadingPredicate* loadingPredicate);
 	AutologinStrategy(VisionDefinition vDef, L2AloneConfig& config);
 	~AutologinStrategy();
 
@@ -85,7 +85,7 @@ private:
 	VisionInitializer* vInitializer;
 	InMemoryVisionCache* inMemoryVisionCache;
 	RuntimeVisionInitializer* runtimeVisionInitializer;
-	LoadingPredicate* loadingPredicate;
+	LoadingAwaiter* loadingAwaiter;
 
 	void doConfirmationFlow(HWND hWindow, SelectCharacterDefinition& selectCharDef);
 	void handleAccountIsUsing(HWND hWindow, SelectCharacterDefinition& selectCharDef);
@@ -96,9 +96,8 @@ private:
 	L2Window doFastAutoLogin(HWND hWindow, bool fromAccountInUse);
 };
 
-AutologinStrategy::AutologinStrategy(VisionDefinition vDef, L2AloneConfig& config, LoadingPredicate* loadingPredicate) {
+AutologinStrategy::AutologinStrategy(VisionDefinition vDef, L2AloneConfig& config) {
 	this->config = config;
-	this->loadingPredicate = loadingPredicate;
 
 	auto bDef = vDef.wDefs[L2Window::WELCOME].bDefs[0];
 	capturer = new RectHueDistributionCapturer(vDef.wWidth, vDef.wHeight, bDef);
@@ -107,10 +106,13 @@ AutologinStrategy::AutologinStrategy(VisionDefinition vDef, L2AloneConfig& confi
 	runtimeVisionInitializer = new RuntimeVisionInitializer(capturer, config.debugBmpPath);
 	vInitializer = new CachedVisionInitializer(inMemoryVisionCache, runtimeVisionInitializer);
 	wClassifier = new WindowsClassifier(vDef, config.debugBmpPath);
-}
 
-AutologinStrategy::AutologinStrategy(VisionDefinition vDef, L2AloneConfig& config) 
-	: AutologinStrategy(vDef, config, new TrueLoadingPredicate()) {
+	if (vDef.inputFieldsDef.empty()) {
+		loadingAwaiter = new NoOpLoadingAwaiter();
+	}
+	else {
+		loadingAwaiter = new InputHueLoadingAwaiter(vDef.wWidth, vDef.wHeight, vDef.inputFieldsDef);
+	}
 }
 
 AutologinStrategy::~AutologinStrategy() {
@@ -119,6 +121,7 @@ AutologinStrategy::~AutologinStrategy() {
 	delete vInitializer;
 	delete inMemoryVisionCache;
 	delete runtimeVisionInitializer;
+	delete loadingAwaiter;
 }
 
 bool AutologinStrategy::fastFlowSupported(L2CharSlot slot) {
@@ -165,6 +168,8 @@ void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passwor
 	if (config.mouseClickDelay >= 0) {
 		charDef.actionTimeout = config.mouseClickDelay;
 	}
+
+	loadingAwaiter->await(provider);
 
 	postCredentials(hWindow, login, password);
 	if (config.fastFlowEnabled && fastFlowSupported(slot)) {

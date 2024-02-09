@@ -17,11 +17,11 @@ public:
 		return vDef;
 	}
 
-	static void initC5WindowsDefinitions(VisionDefinition &dest) {
+	static void initC5WindowsDefinitions(VisionDefinition& dest) {
 
 		int refScreenWidth = 1360;
 		int refScreenHeight = 768;
-		
+
 		dest.wWidth = refScreenWidth;
 		dest.wHeight = refScreenHeight;
 
@@ -29,6 +29,9 @@ public:
 		vector<RectDefinition> welcomeBtnDefs;
 		welcomeBtnDefs.push_back(RectDefinition{ 583, 402, 94, 21 });
 		welcomeBtnDefs.push_back(RectDefinition{ 683, 402, 94, 21 });
+
+		dest.inputFieldsDef.push_back(RectDefinition{ 640,351 ,123,12 });
+		dest.inputFieldsDef.push_back(RectDefinition{ 640,373,123,12 });
 
 		dest.wDefs[L2Window::WELCOME] = WindowDefinition{ welcomeBtnDefs, 0, 0 };
 

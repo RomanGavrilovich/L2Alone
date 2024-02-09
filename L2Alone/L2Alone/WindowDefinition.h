@@ -51,4 +51,5 @@ struct VisionDefinition {
 	int wWidth;
 	int wHeight;
 	map<L2Window, WindowDefinition> wDefs;
+	vector<RectDefinition> inputFieldsDef;
 };

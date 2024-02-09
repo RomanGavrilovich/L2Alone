@@ -155,13 +155,13 @@
     <ClInclude Include="C3AutologinStrategy.h">
       <Filter>Header Files\Autologin</Filter>
     </ClInclude>
-    <ClInclude Include="LoadingPredicate.h">
+    <ClInclude Include="LoadingAwaiter.h">
       <Filter>Header Files\Vision</Filter>
     </ClInclude>
-    <ClInclude Include="TrueLoadingPredicate.h">
+    <ClInclude Include="InputHueLoadingAwaiter.h">
       <Filter>Header Files\Vision</Filter>
     </ClInclude>
-    <ClInclude Include="InputHueLoadingPredicate.h">
+    <ClInclude Include="NoOpLoadingAwaiter.h">
       <Filter>Header Files\Vision</Filter>
     </ClInclude>
   </ItemGroup>

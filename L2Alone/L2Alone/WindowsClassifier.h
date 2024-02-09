@@ -7,7 +7,7 @@
 
 #include "Logger.h"
 #include "WindowDefinition.h"
-#include "ButtonHueDistributionCapturer.h"
+#include "RectHueDistributionCapturer.h"
 #include "VisionUtils.h"
 #include "VisionInitializer.h"
 #include "VisionProvider.h"
