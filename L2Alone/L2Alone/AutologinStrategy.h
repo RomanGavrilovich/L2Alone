@@ -169,9 +169,20 @@ void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passwor
 		charDef.actionTimeout = config.mouseClickDelay;
 	}
 
-	loadingAwaiter->await(hWindow, provider);
+	vector<L2EventLockData> lockData;
+	lockData.push_back(L2EventLockData{0, 0, 0});
+	try {
+		eventService.lockForEvents(lockData);
+		loadingAwaiter->await(hWindow, provider);
 
-	postCredentials(hWindow, login, password);
+		postCredentials(hWindow, login, password);
+	}
+	catch (exception e) {
+		eventService.releaseLockForEvents();
+		throw e;
+	}
+	eventService.releaseLockForEvents();
+
 	if (config.fastFlowEnabled && fastFlowSupported(slot)) {
 
 		bool fromAccountInUse = false;

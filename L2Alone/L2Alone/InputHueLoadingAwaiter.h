@@ -36,8 +36,8 @@ void InputHueLoadingAwaiter::tryFocusInput(HWND hWindow) {
 
 void InputHueLoadingAwaiter::await(HWND hWindow, VisionProvider& vp) {
 
-	int retryDelay = 500;
-	for (int i = 0; i < 20; ++i) {
+	int retryDelay = 50;
+	for (int i = 0; i < 3; ++i) {
 		BitMapInfo bmi;
 		if (vp.capture(bmi)) {
 			RectDefinition def1 = inputRects[0];
@@ -49,9 +49,10 @@ void InputHueLoadingAwaiter::await(HWND hWindow, VisionProvider& vp) {
 			initDistribution(bmi, def2, h2);
 
 			double distrError = getDistributionError(h1, h2);
+			logger.log("Distribution error between input fields are ", distrError);
 			if (distrError < 5) {
-				logger.log("Distribution error between input fields are ", distrError, ". Looks like input has no focus");
 
+				logger.log("Try to set focus for input field");
 				tryFocusInput(hWindow);
 
 				vp.dispose(bmi);
