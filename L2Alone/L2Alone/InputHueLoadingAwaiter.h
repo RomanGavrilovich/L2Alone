@@ -37,7 +37,7 @@ void InputHueLoadingAwaiter::tryFocusInput(HWND hWindow) {
 void InputHueLoadingAwaiter::await(HWND hWindow, VisionProvider& vp) {
 
 	int retryDelay = 50;
-	for (int i = 0; i < 3; ++i) {
+	for (int i = 0; i < 30; ++i) {
 		BitMapInfo bmi;
 		if (vp.capture(bmi)) {
 			RectDefinition def1 = inputRects[0];
