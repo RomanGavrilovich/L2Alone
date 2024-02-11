@@ -207,6 +207,7 @@ void AutologinStrategy::doAutologin(HWND hWindow, string& login, string& passwor
 		}
 	}
 	else {
+		config.windowTransitionRetryCount = 1;
 		L2Window w = captureAuthResultWindows(hWindow);
 		logger.log("Captured auth result: ", getL2WindowName(w));
 		if (w == AGREEMENT) {
