@@ -73,7 +73,7 @@ struct L2AloneConfig {
 	string pathToL2 = "";
 	vector<L2AccountHotKey> accountHotKeys;
 	int mouseClickDelay = -1;
-	int mouseEventsDelay = 0;
+	int mouseEventsDelay = 25;
 	int visionInitTimeout = 10000;
 	bool fastFlowEnabled = true;
 	bool layoutManagerEnabled = true;
@@ -157,11 +157,11 @@ L2AloneConfig loadL2AloneConfig() {
 			}
 			else if (k == MOUSE_CLICK_DELAY) {
 				config.mouseClickDelay = stoi(trim(v));
-				logger.log("Mouse input speed: ", config.mouseClickDelay);
+				logger.log("Mouse click delay: ", config.mouseClickDelay);
 			}
 			else if (k == MOUSE_EVENTS_DELAY) {
 				config.mouseEventsDelay = stoi(trim(v));
-				logger.log("Mouse input delay: ", config.mouseEventsDelay);
+				logger.log("Mouse events delay: ", config.mouseEventsDelay);
 			}
 			else if (k == VISION_INIT_TIMEOUT) {
 				config.visionInitTimeout = stoi(trim(v));

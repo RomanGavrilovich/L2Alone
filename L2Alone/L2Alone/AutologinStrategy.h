@@ -380,7 +380,7 @@ void AutologinStrategy::selectCharacter(HWND hWindow, SelectCharacterDefinition&
 		doClick(hWindow, charSlotClickX, charSlotClickY, config.mouseEventsDelay);
 		Sleep(def.actionTimeout);
 
-		doClick(hWindow, targetX, targetY, def.actionTimeout);
+		doClick(hWindow, targetX, targetY, config.mouseEventsDelay);
 	}
 	catch (exception e) {
 		logger.error(e.what());
