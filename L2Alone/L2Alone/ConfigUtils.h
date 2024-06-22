@@ -46,6 +46,7 @@ enum L2Version {
 	C3,
 	C4,
 	C5,
+	ESSENSE
 };
 
 struct L2AccountHotKey {
@@ -258,6 +259,9 @@ L2Version toL2Version(string value) {
 	else if (value == "C5") {
 		return L2Version::C5;
 	}
+	else if (value == "ESSENSE") {
+		return L2Version::ESSENSE;
+	}
 
 	stringstream ss;
 	ss << "Error in configuration. Invalid " << L2_VERSION << " '" << value << "'" << ". Expected 'C2' or 'C5' ";
@@ -385,6 +389,9 @@ string getL2VersionName(L2Version v) {
 	}
 	else if (v == L2Version::C5) {
 		return "C5";
+	}
+	else if (v == L2Version::ESSENSE) {
+		return "ESSENSE";
 	}
 
 	throw exception("Unexpected L2 version");

@@ -8,17 +8,16 @@
 #include "WindowDefinition.h"
 #include "WindowsDefinitions.h"
 #include "TestUtils.h"
-#include "WindowsDefinitions.h"
 #include "Utils.h"
 #include "WindowsClassifier.h"
 #include "VisionUtils.h"
 #include "BmpVisionInitializer.h"
 #include "BmpVisionProvider.h"
-#include "config_utils.h"
+#include "ConfigUtils.h"
 
 using namespace std;
 
-bool CAPTURE_ALL_WINDOWS = false;
+bool CAPTURE_ALL_WINDOWS = true;
 
 struct TestL2VersionFailure {
 	string path;
@@ -88,12 +87,15 @@ void debugCollision(L2Version version, L2Window expected, L2Window collision, st
 	else if(version == L2Version::C2){
 		WindowsDefinitions::initC2WindowsDefinitions(vDef);
 	}
+	else if (version == L2Version::ESSENSE) {
+		WindowsDefinitions::initEssenseWindowsDefinitions(vDef);
+	}
 	else {
 		throw exception("Unexpected l2 version");
 	}
 
 	auto bDef = vDef.wDefs[L2Window::WELCOME].bDefs[0];
-	ButtonHueDistributionCapturer capturer(vDef.wWidth, vDef.wHeight, bDef);
+	RectHueDistributionCapturer capturer(vDef.wWidth, vDef.wHeight, bDef);
 
 	// For every window we iterate and check 
 	auto refBmp = readBmpFile(referenceImage.c_str());
@@ -148,12 +150,15 @@ void testL2VersionSuite(L2Version version, string& pathToSuit, TestL2VersionRepo
 	else if (version == L2Version::C2) {
 		WindowsDefinitions::initC2WindowsDefinitions(vDef);
 	}
+	else if (version == L2Version::ESSENSE) {
+		WindowsDefinitions::initEssenseWindowsDefinitions(vDef);
+	}
 	else {
 		throw exception("Unexpected l2 version");
 	}
 
 	auto bDef = vDef.wDefs[L2Window::WELCOME].bDefs[0];
-	ButtonHueDistributionCapturer capturer(vDef.wWidth, vDef.wHeight, bDef);
+	RectHueDistributionCapturer capturer(vDef.wWidth, vDef.wHeight, bDef);
 
 	// For every window we iterate and check 
 	auto refBmp = readBmpFile(referenceImage.c_str());
@@ -194,11 +199,13 @@ int main(int argc, char* argv[])
 {
 	CAPTURE_ALL_WINDOWS = false;
 
-	//debugCollision(L2Version::C5, L2Window::WELCOME, L2Window::WELCOME, "TestResources/Vision/C5/1564x837");
+	/*debugCollision(L2Version::ESSENSE, L2Window::ACCOUNT_IN_USE, L2Window::ACCOUNT_IN_USE, "TestResources/Vision/Essense/1360x768");
+	return 0;*/
 
 	vector<TestL2VersionReport> reports;
 	reports.push_back(TestL2VersionReport{ L2Version::C5 });
 	reports.push_back(TestL2VersionReport{ L2Version::C2 });
+	reports.push_back(TestL2VersionReport{ L2Version::ESSENSE });
 
 	for (auto& report : reports) {
 		testL2Version(report);

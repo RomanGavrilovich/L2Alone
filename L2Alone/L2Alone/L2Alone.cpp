@@ -21,6 +21,7 @@
 #include "L2QuitKeyHandler.h"
 #include "L2PvpModeHandler.h"
 #include "AutologinStrategy.h"
+#include "EssenseAutologinStrategy.h"
 #include "C5AutologinStrategy.h"
 #include "C4AutologinStrategy.h"
 #include "C3AutologinStrategy.h"
@@ -154,6 +155,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		}
 		else if (config.version == C3) {
 			autologinStrategy = new C3AutologinStrategy(config);
+		}
+		else if (config.version == ESSENSE) {
+			autologinStrategy = new EssenseAutologinStrategy(config);
 		}
 		else {
 			throw exception("Unsupported L2 version");

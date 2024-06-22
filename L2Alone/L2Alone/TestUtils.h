@@ -10,7 +10,7 @@
 
 #include "VisionUtils.h"
 #include "Utils.h"
-#include "config_utils.h"
+#include "ConfigUtils.h"
 
 using namespace std;
 
@@ -143,7 +143,7 @@ void getTestVisionDirectories(L2Version version, vector<string> &dest) {
 	FindClose(hFind);
 }
 
-void debugDraw(BitMapInfo& bmi, int rtWidth, int rtHeight, ButtonDefinition def) {
+void debugDraw(BitMapInfo& bmi, int rtWidth, int rtHeight, RectDefinition def) {
 
 	auto point = toLbPoint(rtWidth, rtHeight, bmi, def);
 	point.y -= def.height;

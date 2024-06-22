@@ -121,7 +121,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -164,7 +164,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -194,6 +194,7 @@
     <ClInclude Include="AutologinStrategy.h" />
     <ClInclude Include="BmpVisionInitializer.h" />
     <ClInclude Include="BmpVisionProvider.h" />
+    <ClInclude Include="EssenseAutologinStrategy.h" />
     <ClInclude Include="NoOpLoadingAwaiter.h" />
     <ClInclude Include="RectHueDistributionCapturer.h" />
     <ClInclude Include="C2AutoLoginStrategy.h" />

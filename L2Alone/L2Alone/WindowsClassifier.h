@@ -19,10 +19,6 @@
 
 using namespace std;
 
-// TODO: Move to parameters
-bool TRACE_CAPTURES = false;
-
-
 class WindowsClassifier {
 
 public:
@@ -152,7 +148,7 @@ L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>&
 				if (w != UNKNOWN) {
 					logger.log("Capture window result: ", getL2WindowName(w));
 
-					if (TRACE_CAPTURES) {
+					if (false) {
 						stringstream ssOut;
 						ssOut << saveFailurePath << "/" << k << "_S_" << ss.str() << "_" << getL2WindowName(w) << ".bmp";
 
@@ -164,7 +160,7 @@ L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>&
 				}
 				else {
 
-					if (TRACE_CAPTURES) {
+					if (false) {
 						stringstream ssOut;
 						ssOut << saveFailurePath << "/" << k << "_F_" << ss.str() << ".bmp";
 
@@ -215,7 +211,7 @@ L2Window WindowsClassifier::waitForWindow(VisionProvider& vp, int timeoutMs) {
 	vector<L2Window> v;
 
 	v.push_back(L2Window::WELCOME);
-	v.push_back(L2Window::CONNECTING);
+	//v.push_back(L2Window::CONNECTING);
 	v.push_back(L2Window::AGREEMENT);
 	v.push_back(L2Window::INCORRECT_PASSWORD);
 	v.push_back(L2Window::ACCOUNT_IN_USE);

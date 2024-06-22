@@ -237,7 +237,7 @@ string getL2WindowName(L2Window window) {
 	if (window == INCORRECT_PASSWORD) return "INCORRECT_PASSWORD";
 	if (window == SERVERS) return "SERVERS";
 	if (window == CHARACTERS) return "CHARACTERS";
-	if (window == CONNECTING) return "CONNECTING";
+	//if (window == CONNECTING) return "CONNECTING";
 	return "UNDEFINED";
 }
 
@@ -747,6 +747,11 @@ void captureTextReferenceColor(BitMapInfo& bmi, HSV &textColor) {
 		for (int y = textOffset; y < textOffset + textHeight; ++y) {
 			HSV hsv;
 			getPixelHsv(bmi, x, y, hsv.h, hsv.s, hsv.v);
+
+			// Unlikely it's black
+			if (hsv.h < 10) {
+				continue;
+			}
 
 			hsvCountMap[hsv] += 1;
 		}

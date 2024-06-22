@@ -11,6 +11,64 @@ class WindowsDefinitions {
 
 public:
 
+	static VisionDefinition createEssenseVisionDefinition() {
+		VisionDefinition vDef;
+		initEssenseWindowsDefinitions(vDef);
+		return vDef;
+	}
+
+	static void initEssenseWindowsDefinitions(VisionDefinition& dest) {
+
+		int refScreenWidth = 1360;
+		int refScreenHeight = 768;
+
+		dest.wWidth = refScreenWidth;
+		dest.wHeight = refScreenHeight;
+
+		// Log-in screen
+		vector<RectDefinition> welcomeBtnDefs;
+		welcomeBtnDefs.push_back(RectDefinition{ 585, 467, 93, 18 });
+		welcomeBtnDefs.push_back(RectDefinition{ 685, 467, 93, 18 });
+
+		dest.inputFieldsDef.push_back(RectDefinition{ 636,413,128,17 });
+		dest.inputFieldsDef.push_back(RectDefinition{ 636,435,128,17 });
+
+		dest.wDefs[L2Window::WELCOME] = WindowDefinition{ welcomeBtnDefs, 0, 0 };
+
+		auto accountInUseDef = WindowDefinition{ welcomeBtnDefs, 200, 300 };
+		dest.wDefs[L2Window::ACCOUNT_IN_USE] = accountInUseDef;
+
+		auto incorrectPasswordDef = WindowDefinition{ welcomeBtnDefs, 400, 500 };
+		dest.wDefs[L2Window::INCORRECT_PASSWORD] = incorrectPasswordDef;
+
+		// Agreement screen
+		vector<RectDefinition> agreementBtnDefs;
+		agreementBtnDefs.push_back(RectDefinition{ 605, 610, 71, 19 });
+		agreementBtnDefs.push_back(RectDefinition{ 685, 610, 71, 19 });
+
+		auto agreementDef = WindowDefinition{ agreementBtnDefs, 0, 0 };
+		dest.wDefs[L2Window::AGREEMENT] = agreementDef;
+
+		// Servers screen
+		vector<RectDefinition> serverBtnDefs;
+		serverBtnDefs.push_back(RectDefinition{ 565, 548, 71, 19 });
+		serverBtnDefs.push_back(RectDefinition{ 645, 548, 71, 19 });
+		serverBtnDefs.push_back(RectDefinition{ 725, 548, 71, 19 });
+
+		auto serversDef = WindowDefinition{ serverBtnDefs, 0, 0 };
+		dest.wDefs[L2Window::SERVERS] = serversDef;
+
+		// Chars screen
+		vector<RectDefinition> charsBtnDefs;
+		charsBtnDefs.push_back(RectDefinition{ 624, 669, 113, 28, RefAnchor::CenterBottom });
+		charsBtnDefs.push_back(RectDefinition{ 1221, 590, 93, 19, RefAnchor::BottomRight });
+		charsBtnDefs.push_back(RectDefinition{ 1221, 615, 93, 19, RefAnchor::BottomRight });
+		charsBtnDefs.push_back(RectDefinition{ 1221, 665, 93, 19, RefAnchor::BottomRight });
+
+		auto charsDef = WindowDefinition{ charsBtnDefs, 0, 0 };
+		dest.wDefs[L2Window::CHARACTERS] = charsDef;
+	}
+
 	static VisionDefinition createC5VisionDefinition() {
 		VisionDefinition vDef;
 		initC5WindowsDefinitions(vDef);
@@ -42,11 +100,11 @@ public:
 		dest.wDefs[L2Window::INCORRECT_PASSWORD] = incorrectPasswordDef;
 
 		// Connecting screen
-		vector<RectDefinition> connectingBtnDefs;
+		/*vector<RectDefinition> connectingBtnDefs;
 		connectingBtnDefs.push_back(RectDefinition{ 634, 434, 92, 20 });
 
 		auto connectingDef = WindowDefinition{ connectingBtnDefs, 0, 0 };
-		dest.wDefs[L2Window::CONNECTING] = connectingDef;
+		dest.wDefs[L2Window::CONNECTING] = connectingDef;*/
 
 		// Agreement screen
 		vector<RectDefinition> agreementBtnDefs;
