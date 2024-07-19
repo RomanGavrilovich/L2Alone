@@ -310,8 +310,6 @@ void L2EventService::publishEventObjCreate(HWND hWnd, DWORD dwEventThread) {
 			for (auto& pair : waitL2WindowPromises) {
 				if (pair.first == createdWindowPid) {
 
-					blockWindowFocus(hWnd);
-
 					RECT rcClient;
 					GetClientRect(hWnd, &rcClient);
 					int wWidth = rcClient.right - rcClient.left;
@@ -345,8 +343,6 @@ void L2EventService::publishEventObjCreate(HWND hWnd, DWORD dwEventThread) {
 			if (windowFound) {
 				waitL2WindowPromises.erase(createdWindowPid);
 			}
-
-
 		}
 		else {
 			logger.error("Received invalid thread handle");

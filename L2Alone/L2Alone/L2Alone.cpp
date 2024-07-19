@@ -223,7 +223,6 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 					showMessage(e.what());
 				}
 			}
-			unblockWindowFocus(d.hWindow);
 
 			auto popupHandler = shared_ptr<SubmitL2WindowCreateHandler>(new SubmitL2WindowCreateHandler());
 			if (config.crashRecoveryEnabled) {
