@@ -46,6 +46,7 @@ enum L2Version {
 	C3,
 	C4,
 	C5,
+	IL,
 	ESSENSE
 };
 
@@ -259,12 +260,15 @@ L2Version toL2Version(string value) {
 	else if (value == "C5") {
 		return L2Version::C5;
 	}
+	else if (value == "IL") {
+		return L2Version::IL;
+	}
 	else if (value == "ESSENSE") {
 		return L2Version::ESSENSE;
 	}
 
 	stringstream ss;
-	ss << "Error in configuration. Invalid " << L2_VERSION << " '" << value << "'" << ". Expected 'C2' or 'C5' ";
+	ss << "Error in configuration. Invalid " << L2_VERSION << " '" << value << "'" << ". Allowed are 'C2', 'C3', 'C4', 'C5', 'IL', 'ESSENSE'";
 	throw exception(ss.str().c_str());
 }
 
@@ -384,13 +388,28 @@ L2AccountHotKey getAccountHotKey(string& hotKeyConfigKey, string hotKeyConfigVal
 }
 
 string getL2VersionName(L2Version v) {
+	
 	if (v == L2Version::C2) {
 		return "C2";
 	}
-	else if (v == L2Version::C5) {
+
+	if (v == L2Version::C3) {
+		return "C3";
+	}
+
+	if (v == L2Version::C4) {
+		return "C4";
+	}
+
+	if (v == L2Version::C5) {
 		return "C5";
 	}
-	else if (v == L2Version::ESSENSE) {
+
+	if (v == L2Version::IL) {
+		return "IL";
+	}
+
+	if (v == L2Version::ESSENSE) {
 		return "ESSENSE";
 	}
 

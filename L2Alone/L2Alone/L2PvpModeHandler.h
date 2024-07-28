@@ -16,8 +16,21 @@ public:
 	bool onKeyDown(KBDLLHOOKSTRUCT* kbdll) override {
 
 		int vkCode = kbdll->vkCode;
+		int extraInfo = kbdll->dwExtraInfo;
+
+		if (extraInfo != syntheticPayload && (vkCode == VK_LCONTROL || vkCode == VK_RCONTROL)) {
+			ctrlDown = true;
+		}
+
 		if (vkCode == VK_SPACE && (GetKeyState(VK_CONTROL) & 0x8000)) {
-			switchPvpMode();
+			if (pvpModeEnabled) {
+				if (ctrlDown) {
+					switchPvpMode();
+				}
+			}
+			else {
+				switchPvpMode();
+			}
 		}
 		else if (vkCode == VK_LMENU || vkCode == VK_RMENU || vkCode == VK_TAB || vkCode == VK_ESCAPE) {
 			lostFocus();
@@ -29,6 +42,11 @@ public:
 	bool onKeyUp(KBDLLHOOKSTRUCT* kbdll) override {
 		
 		int vkCode = kbdll->vkCode;
+		int extraInfo = kbdll->dwExtraInfo;
+		if (extraInfo != syntheticPayload && (vkCode == VK_LCONTROL || vkCode == VK_RCONTROL)) {
+			ctrlDown = false;
+		}
+
 		if (pvpModeEnabled && hasFocus && (vkCode == VK_LCONTROL || vkCode == VK_RCONTROL)) {
 			return false;
 		}
@@ -52,6 +70,9 @@ public:
 private:
 	bool hasFocus = false;
 	bool pvpModeEnabled = false;
+	bool ctrlDown = false;
+
+	const int syntheticPayload = 4300043;
 
 	void enterPvpMode() {
 		if (!pvpModeEnabled) {
@@ -62,7 +83,7 @@ private:
 	void exitPvpMode() {
 		if (pvpModeEnabled) {
 			pvpModeEnabled = false;
-			keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
+			keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, syntheticPayload);
 		}
 	}
 
@@ -72,7 +93,7 @@ private:
 		}
 
 		hasFocus = false;
-		keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
+		keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, syntheticPayload);
 	}
 
 	void gotFocus() {
@@ -82,7 +103,7 @@ private:
 
 		hasFocus = true;
 		if (pvpModeEnabled) {
-			keybd_event(VK_CONTROL, 0, 0, 0);
+			keybd_event(VK_CONTROL, 0, 0, syntheticPayload);
 		}
 	}
 

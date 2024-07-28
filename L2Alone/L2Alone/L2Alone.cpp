@@ -147,7 +147,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		if (config.version == C2) {
 			autologinStrategy = new C2AutologinStrategy(config);
 		}
-		else if (config.version == C5) {
+		else if (config.version == C5 || config.version == IL) {
 			autologinStrategy = new C5AutologinStrategy(config);
 		}
 		else if (config.version == C4) {
