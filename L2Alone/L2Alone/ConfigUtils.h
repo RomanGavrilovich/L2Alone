@@ -47,6 +47,7 @@ enum L2Version {
 	C4,
 	C5,
 	IL,
+	GRACIA_EPILOGUE,
 	ESSENSE
 };
 
@@ -266,9 +267,12 @@ L2Version toL2Version(string value) {
 	else if (value == "ESSENSE") {
 		return L2Version::ESSENSE;
 	}
+	else if (value == "GRACIA_EPILOGUE") {
+		return L2Version::GRACIA_EPILOGUE;
+	}
 
 	stringstream ss;
-	ss << "Error in configuration. Invalid " << L2_VERSION << " '" << value << "'" << ". Allowed are 'C2', 'C3', 'C4', 'C5', 'IL', 'ESSENSE'";
+	ss << "Error in configuration. Invalid " << L2_VERSION << " '" << value << "'" << ". Allowed are 'C2', 'C3', 'C4', 'C5', 'IL', 'ESSENSE', 'GRACIA_EPILOGUE'";
 	throw exception(ss.str().c_str());
 }
 

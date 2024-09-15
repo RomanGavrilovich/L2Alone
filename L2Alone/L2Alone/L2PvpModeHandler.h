@@ -22,15 +22,8 @@ public:
 			ctrlDown = true;
 		}
 
-		if (vkCode == VK_SPACE && (GetKeyState(VK_CONTROL) & 0x8000)) {
-			if (pvpModeEnabled) {
-				if (ctrlDown) {
-					switchPvpMode();
-				}
-			}
-			else {
-				switchPvpMode();
-			}
+		if (vkCode == VK_SPACE && ctrlDown) {
+			switchPvpMode();
 		}
 		else if (vkCode == VK_LMENU || vkCode == VK_RMENU || vkCode == VK_TAB || vkCode == VK_ESCAPE) {
 			lostFocus();

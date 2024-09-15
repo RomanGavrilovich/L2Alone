@@ -45,9 +45,6 @@
     <ClCompile Include="L2AloneTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EssenseAutologinStrategy.h">
-      <Filter>Header Files\Autologin</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -166,6 +163,12 @@
     </ClInclude>
     <ClInclude Include="NoOpLoadingAwaiter.h">
       <Filter>Header Files\Vision</Filter>
+    </ClInclude>
+    <ClInclude Include="EssenseAutologinStrategy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeAutologinStrategy.h">
+      <Filter>Header Files\Autologin</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

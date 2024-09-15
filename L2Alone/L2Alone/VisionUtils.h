@@ -237,7 +237,7 @@ string getL2WindowName(L2Window window) {
 	if (window == INCORRECT_PASSWORD) return "INCORRECT_PASSWORD";
 	if (window == SERVERS) return "SERVERS";
 	if (window == CHARACTERS) return "CHARACTERS";
-	//if (window == CONNECTING) return "CONNECTING";
+	if (window == CONNECTING) return "CONNECTING";
 	return "UNDEFINED";
 }
 

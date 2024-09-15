@@ -252,4 +252,58 @@ public:
 		auto charsDef = WindowDefinition{ charsBtnDefs, 0, 0 };
 		dest.wDefs[L2Window::CHARACTERS] = charsDef;
 	}
+
+	static void initGeWindowsDefinitions(VisionDefinition& dest) {
+
+		int refScreenWidth = 1360;
+		int refScreenHeight = 768;
+
+		dest.wWidth = refScreenWidth;
+		dest.wHeight = refScreenHeight;
+
+		// Log-in screen
+		vector<RectDefinition> welcomeBtnDefs;
+		welcomeBtnDefs.push_back(RectDefinition{ 543, 433, 94, 21 });
+		welcomeBtnDefs.push_back(RectDefinition{ 643, 433, 94, 21 });
+
+		dest.wDefs[L2Window::WELCOME] = WindowDefinition{ welcomeBtnDefs, 0, 0 };
+
+		auto accountInUseDef = WindowDefinition{ welcomeBtnDefs, 200, 300 };
+		dest.wDefs[L2Window::ACCOUNT_IN_USE] = accountInUseDef;
+
+		auto incorrectPasswordDef = WindowDefinition{ welcomeBtnDefs, 400, 500 };
+		dest.wDefs[L2Window::INCORRECT_PASSWORD] = incorrectPasswordDef;
+
+		// Loading modal
+		vector<RectDefinition> loadingModal;
+		loadingModal.push_back(RectDefinition{ 634, 343, 92, 21 });
+
+		auto loadingWindow = WindowDefinition{ loadingModal, 0, 0 };
+		dest.wDefs[L2Window::CONNECTING] = loadingWindow;
+
+		// Servers screen
+		vector<RectDefinition> serverBtnDefs;
+		serverBtnDefs.push_back(RectDefinition{ 563, 384, 74, 21 });
+		serverBtnDefs.push_back(RectDefinition{ 643, 384, 74, 21 });
+		serverBtnDefs.push_back(RectDefinition{ 724, 384, 74, 21 });
+
+		auto serversDef = WindowDefinition{ serverBtnDefs, 0, 0 };
+		dest.wDefs[L2Window::SERVERS] = serversDef;
+
+		// Chars screen
+		vector<RectDefinition> charsBtnDefs;
+		charsBtnDefs.push_back(RectDefinition{ 623, 668, 114, 29, RefAnchor::CenterBottom });
+		charsBtnDefs.push_back(RectDefinition{ 1219, 589, 94, 21, RefAnchor::BottomRight });
+		charsBtnDefs.push_back(RectDefinition{ 1219, 613, 94, 21, RefAnchor::BottomRight });
+		charsBtnDefs.push_back(RectDefinition{ 1219, 663, 94, 21, RefAnchor::BottomRight });
+
+		auto charsDef = WindowDefinition{ charsBtnDefs, 0, 0 };
+		dest.wDefs[L2Window::CHARACTERS] = charsDef;
+	}
+
+	static VisionDefinition createGeVisionDefinition() {
+		VisionDefinition vDef;
+		initGeWindowsDefinitions(vDef);
+		return vDef;
+	}
 };
