@@ -71,6 +71,7 @@ void postText(HWND hWindow, string& s) {
 
 void postControlMessage(HWND hWindow, int vk) {
 	PostMessage(hWindow, WM_KEYDOWN, vk, 0);
+	PostMessage(hWindow, WM_KEYUP, vk, 0);
 }
 
 void postCredentials(HWND hWindow, string& login, string& password) {

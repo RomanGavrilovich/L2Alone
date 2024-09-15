@@ -263,8 +263,14 @@ public:
 
 		// Log-in screen
 		vector<RectDefinition> welcomeBtnDefs;
-		welcomeBtnDefs.push_back(RectDefinition{ 543, 433, 94, 21 });
-		welcomeBtnDefs.push_back(RectDefinition{ 643, 433, 94, 21 });
+		welcomeBtnDefs.push_back(RectDefinition{ 583, 433, 94, 21 });
+		welcomeBtnDefs.push_back(RectDefinition{ 683, 433, 94, 21 });
+
+		// Right buttons
+	/*	welcomeBtnDefs.push_back(RectDefinition{ 1248, 569, 94, 21, RefAnchor::BottomRight});
+		welcomeBtnDefs.push_back(RectDefinition{ 1248, 595, 94, 21, RefAnchor::BottomRight });
+		welcomeBtnDefs.push_back(RectDefinition{ 1248, 621, 94, 21, RefAnchor::BottomRight });
+		welcomeBtnDefs.push_back(RectDefinition{ 1248, 647, 94, 21, RefAnchor::BottomRight });*/
 
 		dest.wDefs[L2Window::WELCOME] = WindowDefinition{ welcomeBtnDefs, 0, 0 };
 
@@ -276,16 +282,16 @@ public:
 
 		// Loading modal
 		vector<RectDefinition> loadingModal;
-		loadingModal.push_back(RectDefinition{ 634, 343, 92, 21 });
+		loadingModal.push_back(RectDefinition{ 635, 434, 92, 21 });
 
 		auto loadingWindow = WindowDefinition{ loadingModal, 0, 0 };
 		dest.wDefs[L2Window::CONNECTING] = loadingWindow;
 
 		// Servers screen
 		vector<RectDefinition> serverBtnDefs;
-		serverBtnDefs.push_back(RectDefinition{ 563, 384, 74, 21 });
-		serverBtnDefs.push_back(RectDefinition{ 643, 384, 74, 21 });
-		serverBtnDefs.push_back(RectDefinition{ 724, 384, 74, 21 });
+		serverBtnDefs.push_back(RectDefinition{ 558, 393, 76, 21 });
+		serverBtnDefs.push_back(RectDefinition{ 642, 393, 76, 21 });
+		serverBtnDefs.push_back(RectDefinition{ 726, 393, 76, 21 });
 
 		auto serversDef = WindowDefinition{ serverBtnDefs, 0, 0 };
 		dest.wDefs[L2Window::SERVERS] = serversDef;

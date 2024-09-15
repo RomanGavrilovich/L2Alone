@@ -139,6 +139,8 @@ L2Window AutologinStrategy::doFastAutoLogin(HWND hWindow, bool fromAccountInUse)
 	
 	for (int i = 0; i < 50; ++i) {
 		Sleep(config.inputInitialDelay);
+		logger.log("Post VK_RETURN");
+
 		postControlMessage(hWindow, VK_RETURN);
 
 		HwndVisionProvider provider(hWindow);

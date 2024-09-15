@@ -43,6 +43,7 @@ L2Window testL2WindowClassifier(string& pathToTestBmp, L2Window expected, Window
 		v.push_back(L2Window::ACCOUNT_IN_USE);
 		v.push_back(L2Window::SERVERS);
 		v.push_back(L2Window::CHARACTERS);
+		v.push_back(L2Window::CONNECTING);
 
 		for (L2Window w : v) {
 			auto bmi = readBmpFile(pathToTestBmp.c_str());
@@ -89,6 +90,9 @@ void debugCollision(L2Version version, L2Window expected, L2Window collision, st
 	}
 	else if (version == L2Version::ESSENSE) {
 		WindowsDefinitions::initEssenseWindowsDefinitions(vDef);
+	}
+	else if (version == L2Version::GRACIA_EPILOGUE) {
+		WindowsDefinitions::initGeWindowsDefinitions(vDef);
 	}
 	else {
 		throw exception("Unexpected l2 version");
@@ -140,6 +144,7 @@ void testL2VersionSuite(L2Version version, string& pathToSuit, TestL2VersionRepo
 	windowsToTest.push_back(L2Window::INCORRECT_PASSWORD);
 	windowsToTest.push_back(L2Window::SERVERS);
 	windowsToTest.push_back(L2Window::CHARACTERS);
+	windowsToTest.push_back(L2Window::CONNECTING);
 
 	string referenceImage = pathToSuit + "/REF.bmp";
 
@@ -199,13 +204,14 @@ int main(int argc, char* argv[])
 {
 	CAPTURE_ALL_WINDOWS = false;
 
-	/*debugCollision(L2Version::ESSENSE, L2Window::ACCOUNT_IN_USE, L2Window::ACCOUNT_IN_USE, "TestResources/Vision/Essense/1360x768");
-	return 0;*/
+	debugCollision(L2Version::GRACIA_EPILOGUE, L2Window::WELCOME, L2Window::WELCOME, "TestResources/Vision/GRACIA_EPILOGUE/1360x768");
+	return 0;
 
 	vector<TestL2VersionReport> reports;
-	reports.push_back(TestL2VersionReport{ L2Version::C5 });
-	reports.push_back(TestL2VersionReport{ L2Version::C2 });
-	reports.push_back(TestL2VersionReport{ L2Version::ESSENSE });
+	//reports.push_back(TestL2VersionReport{ L2Version::C5 });
+	//reports.push_back(TestL2VersionReport{ L2Version::C2 });
+	//reports.push_back(TestL2VersionReport{ L2Version::ESSENSE });
+	reports.push_back(TestL2VersionReport{ L2Version::GRACIA_EPILOGUE });
 
 	for (auto& report : reports) {
 		testL2Version(report);

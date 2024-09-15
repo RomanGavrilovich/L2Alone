@@ -198,6 +198,7 @@ L2Window WindowsClassifier::waitForWindows(VisionProvider& vp, vector<L2Window>&
 		}
 	} while (GetTickCount64() < endTick);
 
+	logger.log("Return window: ", getL2WindowName(w));
 	return w;
 }
 
