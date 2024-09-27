@@ -78,6 +78,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		return 1;
 	}
 
+	L2AloneConfig config;
 	try {
 
 #ifdef L2A_RELEASE
@@ -89,7 +90,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 		stringstream ss;
 
-		L2AloneConfig config = loadL2AloneConfig();
+		config = loadL2AloneConfig();
 		if (config.loginPasswordValidatinEnabled) {
 			if (argc < 1) {
 				showMessage("Login is not provided");
@@ -127,20 +128,26 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		}
 
 		if (argc > 2) {
-			try {
-				int slotValue = stoi(argv[2]);
-				if (1 <= slotValue && slotValue <= 7) {
-					slot = (L2CharSlot)slotValue;
-				}
-				else {
-					throw exception("Incorrect char slot value");
-				}
+			if (argv[2] == nullptr || argv[2][0] == 0) {
+				ss << "Empty char slot received. Expected index in range [1,7]. Using ACTIVE as fallback";
+				slot = L2CharSlot::ACTIVE;
 			}
-			catch (exception e) {
-				stringstream ss;
-				ss << "Incorrect char slot index: " << argv[3] << ". Expected index in range [1,7]";
-				showMessage(ss.str());
-				return 1;
+			else {
+				try {
+					int slotValue = stoi(argv[2]);
+					if (1 <= slotValue && slotValue <= 7) {
+						slot = (L2CharSlot)slotValue;
+					}
+					else {
+						throw exception("Incorrect char slot value");
+					}
+				}
+				catch (exception e) {
+					stringstream ss;
+					ss << "Incorrect char slot index: " << argv[3] << ". Expected index in range [1,7]";
+					showMessage(ss.str());
+					return 1;
+				}
 			}
 		}
 
@@ -173,7 +180,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	}
 	catch (exception e) {
 		cout << "ERROR: " << e.what() << endl;
-		MessageBoxA(NULL, e.what(), APP_NAME, MB_OK);
+		
+		if (config.errorWindowEnabled) {
+			MessageBoxA(NULL, e.what(), APP_NAME, MB_OK);
+		}
 
 		eventService.stop();
 
@@ -224,7 +234,9 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 				}
 				catch (exception e) {
 					logger.log("Auto login failure: ", e.what());
-					showMessage(e.what());
+					if (config.errorWindowEnabled) {
+						showMessage(e.what());
+					}
 				}
 			}
 
@@ -298,7 +310,9 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 		}
 		catch (exception e) {
 			logger.log("Auto login failure: ", e.what());
-			showMessage(e.what());
+			if (config.errorWindowEnabled) {
+				showMessage(e.what());
+			}
 		}
 
 		CloseHandle(hProcess);

@@ -31,6 +31,7 @@
 #define SAVE_REF_SCREEN "SaveRefScreen"
 #define SAVE_WC_FAILURES "SaveWcFailures"
 #define LOGGER_ENABLED "LogEnabled"
+#define ERROR_WINDOW_ENABLED "ErrorWindowEnabled"
 
 // Recovery feature
 #define CRASH_RECOVERY_ENABLED "CrashRecoveryEnabled"
@@ -96,6 +97,7 @@ struct L2AloneConfig {
 	bool debugLogEnabled = false;
 	bool debugEnabled = false;
 	string debugBmpPath = "";
+	bool errorWindowEnabled = true;
 
 	// Recovery
 	bool crashRecoveryEnabled = true;
@@ -229,6 +231,10 @@ L2AloneConfig loadL2AloneConfig() {
 			else if (k == LOGIN_PASSWORD_VALIDATION_ENABLED) {
 				config.loginPasswordValidatinEnabled = stoi(trim(v));
 				logger.log("Login and password validation enabled: ", config.loginPasswordValidatinEnabled);
+			}
+			else if (k == ERROR_WINDOW_ENABLED) {
+				config.errorWindowEnabled = stoi(trim(v));
+				logger.log("Error window enabled: ", config.errorWindowEnabled);
 			}
 		}
 	}
