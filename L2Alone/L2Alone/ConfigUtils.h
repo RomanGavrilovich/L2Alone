@@ -25,6 +25,7 @@
 #define CENTER_WINDOW_ENABLED "CenterWindowEnabled"
 #define ACCOUNT_KEY "Account."
 #define QUIT_ENABLED "QuitEnabled"
+#define PVP_MODE_ENABLED "PvpModeEnabled"
 
 // Debugging options
 #define DEBUGGING_ENABLED "DebugEnabled"
@@ -82,6 +83,7 @@ struct L2AloneConfig {
 	bool fastFlowEnabled = true;
 	bool layoutManagerEnabled = true;
 	bool quitEnabled = true;
+	bool pvpModeEnabled = true;
 	bool centerWindow = true;
 	bool layoutCacheEnabled = true;
 
@@ -211,6 +213,10 @@ L2AloneConfig loadL2AloneConfig() {
 			else if (k == QUIT_ENABLED) {
 				config.quitEnabled = stoi(trim(v));
 				logger.log("Quit enabled: ", config.quitEnabled);
+			}
+			else if (k == PVP_MODE_ENABLED) {
+				config.pvpModeEnabled = stoi(trim(v));
+				logger.log("Pvp mode enabled: ", config.pvpModeEnabled);
 			}
 			else if (k == CENTER_WINDOW_ENABLED) {
 				config.centerWindow = stoi(trim(v));

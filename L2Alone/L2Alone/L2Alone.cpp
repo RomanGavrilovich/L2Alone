@@ -225,8 +225,10 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 			eventService.setKeyboardHandler(d.processId, hotKeyHandler);
 
 			auto pvpHandler = shared_ptr<L2PvpModeHandler>(new L2PvpModeHandler());
-			eventService.setKeyboardHandler(d.processId, pvpHandler);
-			eventService.setFocusHandler(d.processId, pvpHandler);
+			if (config.pvpModeEnabled) {
+				eventService.setKeyboardHandler(d.processId, pvpHandler);
+				eventService.setFocusHandler(d.processId, pvpHandler);
+			}
 
 			if (!login.empty() && !password.empty()) {
 				try {
@@ -270,8 +272,11 @@ void autoLoginL2(string login, string password, L2CharSlot slot, L2AloneConfig& 
 			}
 
 			eventService.removeKeyboardHandler(d.processId, hotKeyHandler);
-			eventService.removeKeyboardHandler(d.processId, pvpHandler);
-			eventService.removeFocusHandler(d.processId, pvpHandler);
+
+			if (config.pvpModeEnabled) {
+				eventService.removeKeyboardHandler(d.processId, pvpHandler);
+				eventService.removeFocusHandler(d.processId, pvpHandler);
+			}
 			if (config.crashRecoveryEnabled) {
 				eventService.removeWindowCreateHandler(d.processId, popupHandler);
 			}
