@@ -312,4 +312,66 @@ public:
 		initGeWindowsDefinitions(vDef);
 		return vDef;
 	}
+
+	static void initKamaelWindowsDefinitions(VisionDefinition& dest) {
+
+		int refScreenWidth = 1360;
+		int refScreenHeight = 768;
+
+		dest.wWidth = refScreenWidth;
+		dest.wHeight = refScreenHeight;
+
+		// Log-in screen
+		vector<RectDefinition> welcomeBtnDefs;
+		welcomeBtnDefs.push_back(RectDefinition{ 583, 432, 94, 21 });
+		welcomeBtnDefs.push_back(RectDefinition{ 683, 432, 94, 21 });
+
+		dest.wDefs[L2Window::WELCOME] = WindowDefinition{ welcomeBtnDefs, 0, 0 };
+
+		auto accountInUseDef = WindowDefinition{ welcomeBtnDefs, 200, 300 };
+		dest.wDefs[L2Window::ACCOUNT_IN_USE] = accountInUseDef;
+
+		auto incorrectPasswordDef = WindowDefinition{ welcomeBtnDefs, 400, 500 };
+		dest.wDefs[L2Window::INCORRECT_PASSWORD] = incorrectPasswordDef;
+
+		// Loading modal
+		vector<RectDefinition> loadingModal;
+		loadingModal.push_back(RectDefinition{ 635, 434, 92, 21 });
+
+		auto loadingWindow = WindowDefinition{ loadingModal, 0, 0 };
+		dest.wDefs[L2Window::CONNECTING] = loadingWindow;
+
+		// Agreement screen
+		vector<RectDefinition> agreementBtnDefs;
+		agreementBtnDefs.push_back(RectDefinition{ 601, 586, 74, 20 });
+		agreementBtnDefs.push_back(RectDefinition{ 682, 586, 74, 20 });
+
+		auto agreementDef = WindowDefinition{ agreementBtnDefs, 0, 0 };
+		dest.wDefs[L2Window::AGREEMENT] = agreementDef;
+
+		// Servers screen
+		vector<RectDefinition> serverBtnDefs;
+		serverBtnDefs.push_back(RectDefinition{ 558, 393, 76, 21 });
+		serverBtnDefs.push_back(RectDefinition{ 642, 393, 76, 21 });
+		serverBtnDefs.push_back(RectDefinition{ 726, 393, 76, 21 });
+
+		auto serversDef = WindowDefinition{ serverBtnDefs, 0, 0 };
+		dest.wDefs[L2Window::SERVERS] = serversDef;
+
+		// Chars screen
+		vector<RectDefinition> charsBtnDefs;
+		charsBtnDefs.push_back(RectDefinition{ 623, 668, 114, 29, RefAnchor::CenterBottom });
+		charsBtnDefs.push_back(RectDefinition{ 1247, 595, 94, 21, RefAnchor::BottomRight });
+		charsBtnDefs.push_back(RectDefinition{ 1247, 620, 94, 21, RefAnchor::BottomRight });
+		charsBtnDefs.push_back(RectDefinition{ 1247, 673, 94, 21, RefAnchor::BottomRight });
+
+		auto charsDef = WindowDefinition{ charsBtnDefs, 0, 0 };
+		dest.wDefs[L2Window::CHARACTERS] = charsDef;
+	}
+
+	static VisionDefinition createKamaelVisionDefinition() {
+		VisionDefinition vDef;
+		initKamaelWindowsDefinitions(vDef);
+		return vDef;
+	}
 };

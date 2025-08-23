@@ -196,6 +196,7 @@
     <ClInclude Include="BmpVisionProvider.h" />
     <ClInclude Include="EssenseAutologinStrategy.h" />
     <ClInclude Include="GeAutologinStrategy.h" />
+    <ClInclude Include="KamaelAutologinStrategy.h" />
     <ClInclude Include="NoOpLoadingAwaiter.h" />
     <ClInclude Include="RectHueDistributionCapturer.h" />
     <ClInclude Include="C2AutoLoginStrategy.h" />

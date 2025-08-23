@@ -56,9 +56,6 @@
     <ClInclude Include="L2KeyboardEventHandler.h">
       <Filter>Header Files\Events</Filter>
     </ClInclude>
-    <ClInclude Include="L2EventService.h">
-      <Filter>Header Files\Events</Filter>
-    </ClInclude>
     <ClInclude Include="L2Events.h">
       <Filter>Header Files\Events</Filter>
     </ClInclude>
@@ -168,6 +165,12 @@
       <Filter>Header Files\Autologin</Filter>
     </ClInclude>
     <ClInclude Include="EssenseAutologinStrategy.h">
+      <Filter>Header Files\Autologin</Filter>
+    </ClInclude>
+    <ClInclude Include="L2EventService.h">
+      <Filter>Header Files\Layout</Filter>
+    </ClInclude>
+    <ClInclude Include="KamaelAutologinStrategy.h">
       <Filter>Header Files\Autologin</Filter>
     </ClInclude>
   </ItemGroup>

@@ -27,6 +27,7 @@
 #include "C3AutologinStrategy.h"
 #include "C2AutoLoginStrategy.h"
 #include "GeAutologinStrategy.h"
+#include "KamaelAutologinStrategy.h"
 #include "LayoutManager.h"
 #include "LayoutManagerUpdateHandler.h"
 #include "GlobalFileLayoutCache.h"
@@ -169,6 +170,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		}
 		else if (config.version == GRACIA_EPILOGUE) {
 			autologinStrategy = new GeAutologinStrategy(config);
+		}
+		else if (config.version == KAMAEL) {
+			autologinStrategy = new KamaelAutologinStrategy(config);
 		}
 		else {
 			throw exception("Unsupported L2 version");

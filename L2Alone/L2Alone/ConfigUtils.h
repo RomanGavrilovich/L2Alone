@@ -50,7 +50,8 @@ enum L2Version {
 	C5,
 	IL,
 	GRACIA_EPILOGUE,
-	ESSENSE
+	ESSENSE,
+	KAMAEL
 };
 
 struct L2AccountHotKey {
@@ -282,9 +283,12 @@ L2Version toL2Version(string value) {
 	else if (value == "GRACIA_EPILOGUE") {
 		return L2Version::GRACIA_EPILOGUE;
 	}
+	else if (value == "KAMAEL") {
+		return L2Version::KAMAEL;
+	}
 
 	stringstream ss;
-	ss << "Error in configuration. Invalid " << L2_VERSION << " '" << value << "'" << ". Allowed are 'C2', 'C3', 'C4', 'C5', 'IL', 'ESSENSE', 'GRACIA_EPILOGUE'";
+	ss << "Error in configuration. Invalid " << L2_VERSION << " '" << value << "'" << ". Allowed are 'C2', 'C3', 'C4', 'C5', 'IL', 'ESSENSE', 'GRACIA_EPILOGUE', 'KAMAEL'";
 	throw exception(ss.str().c_str());
 }
 
